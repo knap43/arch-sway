@@ -74,6 +74,7 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | ⌘ Esc | lock |
 | ⌘ ⇧ Q | power menu (lock, suspend, log out, reboot, power off) |
 | ⌘ ⇧ C | reload sway config |
+| ⌘ N | night light on / off (on by default, 4000 K) |
 | Alt ⇧ | switch US ⇄ RU |
 | F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume |
 

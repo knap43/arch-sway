@@ -9,6 +9,9 @@ set $up k
 set $right l
 set $term foot
 set $menu fuzzel
+# Night light: always 4000 K. wlsunset needs a day and a night value, so
+# day is set 1 K higher than night, which keeps the tint constant.
+set $nightlight wlsunset -t 4000 -T 4001 -S 06:00 -s 18:00
 
 # ---- Look: no gaps, thin borders, nothing that animates ----------------------
 font pango:Noto Sans 10
@@ -49,6 +52,7 @@ exec swayidle -w \
 
 # ---- Autostart ---------------------------------------------------------------
 exec mako
+exec $nightlight
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec nm-applet --indicator
 exec wl-paste --watch cliphist store
@@ -163,6 +167,7 @@ bindsym --to-code {
     $mod+Escape        exec swaylock -f -c 1e1e1e
     $mod+Shift+q       exec sway-power-menu
     $mod+Shift+c       reload
+    $mod+n             exec pkill wlsunset || $nightlight
 }
 
 # Mac function keys (work on the lock screen too)
