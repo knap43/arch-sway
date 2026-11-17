@@ -1,0 +1,12 @@
+[Unit]
+Description=Create the live session user
+After=systemd-sysusers.service
+Before=getty@tty1.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/live-user-setup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

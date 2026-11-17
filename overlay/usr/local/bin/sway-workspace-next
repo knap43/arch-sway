@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Go one workspace right; past the last one, open a fresh empty one.
+   --move  carries the focused window along."""
+import json, subprocess, sys
+
+
+def sway(*a):
+    return json.loads(subprocess.run(["swaymsg", "-t", *a],
+                                     capture_output=True, text=True).stdout)
+
+
+def find(node, wid):
+    if node.get("id") == wid:
+        return node
+    for c in node.get("nodes", []) + node.get("floating_nodes", []):
+        if (r := find(c, wid)):
+            return r
+    return None
+
+
+move = "--move" in sys.argv
+wss = sway("get_workspaces")
+cur = next(w for w in wss if w["focused"])
+right = sorted(w["num"] for w in wss
+               if w["output"] == cur["output"] and w["num"] > cur["num"])
+
+if right:
+    target = right[0]
+else:
+    node = find(sway("get_tree"), cur["id"])
+    if not node["nodes"] and not node["floating_nodes"]:
+        sys.exit()                      # already on the empty one
+    target = max(cur["num"], 0) + 1
+
+cmd = f"workspace number {target}"
+if move:
+    cmd = f"move container to workspace number {target}; " + cmd
+subprocess.run(["swaymsg", cmd], capture_output=True)

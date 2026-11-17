@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# mbp-install — installs the configured Arch + sway system to the internal disk.
+# WIPES THE WHOLE TARGET DISK. Run from the live session:  sudo mbp-install
+set -euo pipefail
+
+PKG_LIST=/usr/local/share/mbp/packages.system
+MNT=/mnt
+
+die()  { printf '\e[31m!! %s\e[0m\n' "$*" >&2; exit 1; }
+info() { printf '\e[34m::\e[0m %s\n' "$*"; }
+ask()  { local p=$1 d=${2-} r; read -rp "$p${d:+ [$d]}: " r; printf '%s' "${r:-$d}"; }
+
+[[ $EUID -eq 0 ]] || die "Run as root: sudo mbp-install"
+[[ -f $PKG_LIST ]] || die "Package list missing: $PKG_LIST"
+
+info "Checking internet connection"
+curl -fsS --max-time 10 -o /dev/null https://archlinux.org \
+    || die "No internet. Connect with the network icon in the bar, or run: nmtui"
+
+# ---- Firmware mode ----------------------------------------------------------
+if [[ -d /sys/firmware/efi ]]; then MODE=uefi; else MODE=bios; fi
+info "Boot mode: $MODE"
+
+# ---- Pick the disk (never the USB stick we booted from) ---------------------
+LIVE_DEV=""
+if src=$(findmnt -no SOURCE /run/archiso/bootmnt 2>/dev/null); then
+    LIVE_DEV=/dev/$(lsblk -no PKNAME "$src" | head -n1)
+fi
+echo
+echo "Available disks:"
+mapfile -t DISKS < <(lsblk -dpno NAME,TYPE | awk '$2=="disk"{print $1}' | grep -v "^${LIVE_DEV:-none}$" | grep -vE 'loop|zram|sr')
+((${#DISKS[@]})) || die "No suitable disk found"
+for d in "${DISKS[@]}"; do lsblk -dno NAME,SIZE,MODEL "$d" | sed 's/^/   /'; done
+echo
+DISK=$(ask "Install to which disk" "${DISKS[0]}")
+[[ -b $DISK ]] || die "$DISK is not a block device"
+[[ $DISK != "$LIVE_DEV" ]] || die "That is the USB stick you booted from"
+
+# ---- Questions --------------------------------------------------------------
+HOSTNAME_=$(ask "Hostname" "macbook")
+USERNAME=$(ask "Username" "")
+[[ $USERNAME =~ ^[a-z_][a-z0-9_-]*$ ]] || die "Invalid username"
+while :; do
+    read -rsp "Password for $USERNAME: " PASS1; echo
+    read -rsp "Repeat password: " PASS2; echo
+    [[ -n $PASS1 && $PASS1 == "$PASS2" ]] && break
+    echo "Passwords empty or different, try again."
+done
+TIMEZONE=$(ask "Timezone" "Europe/Moscow")
+[[ -f /usr/share/zoneinfo/$TIMEZONE ]] || die "Unknown timezone: $TIMEZONE"
+LANG_=$(ask "System language (en_US.UTF-8 or ru_RU.UTF-8)" "en_US.UTF-8")
+
+echo
+printf '\e[31mEVERYTHING on %s will be erased (including macOS).\e[0m\n' "$DISK"
+CONFIRM=$(ask "Type the disk name again to continue" "")
+[[ $CONFIRM == "$DISK" ]] || die "Aborted"
+
+# ---- Partition & format -----------------------------------------------------
+part() { [[ $DISK =~ [0-9]$ ]] && echo "${DISK}p$1" || echo "${DISK}$1"; }
+
+info "Partitioning $DISK"
+umount -R "$MNT" 2>/dev/null || true
+swapoff -a 2>/dev/null || true
+wipefs -af "$DISK"
+sgdisk --zap-all "$DISK" >/dev/null
+
+if [[ $MODE == uefi ]]; then
+    sgdisk -n1:0:+512M -t1:ef00 -c1:EFI -n2:0:0 -t2:8304 -c2:root "$DISK"
+    ESP=$(part 1); ROOT=$(part 2)
+else
+    parted -s "$DISK" mklabel msdos mkpart primary ext4 1MiB 100% set 1 boot on
+    ROOT=$(part 1)
+fi
+partprobe "$DISK"; udevadm settle
+
+info "Formatting"
+mkfs.ext4 -F -L root "$ROOT"
+mount "$ROOT" "$MNT"
+if [[ $MODE == uefi ]]; then
+    mkfs.fat -F32 -n EFI "$ESP"
+    mount --mkdir "$ESP" "$MNT/boot"
+fi
+
+# ---- Install packages -------------------------------------------------------
+mapfile -t PKGS < <(grep -vE '^\s*(#|$)' "$PKG_LIST")
+[[ $MODE == bios ]] && PKGS+=(grub)
+
+info "Installing ${#PKGS[@]} packages (downloads ~1.5 GB)"
+pacstrap -K "$MNT" "${PKGS[@]}"
+genfstab -U "$MNT" >> "$MNT/etc/fstab"
+
+# ---- Carry over configs from the live session --------------------------------
+info "Copying desktop configuration"
+cp -rT /etc/skel/.config "$MNT/etc/skel/.config"
+install -Dm755 -t "$MNT/usr/local/bin" /usr/local/bin/sway-*
+if compgen -G '/etc/NetworkManager/system-connections/*' >/dev/null; then
+    install -d -m700 "$MNT/etc/NetworkManager/system-connections"
+    cp -a /etc/NetworkManager/system-connections/. "$MNT/etc/NetworkManager/system-connections/"
+    chmod 600 "$MNT"/etc/NetworkManager/system-connections/*
+fi
+
+cat > "$MNT/etc/systemd/zram-generator.conf" <<'EOF'
+[zram0]
+zram-size = min(ram / 2, 4096)
+compression-algorithm = zstd
+EOF
+
+echo "%wheel ALL=(ALL:ALL) ALL" > "$MNT/etc/sudoers.d/10-wheel"
+chmod 440 "$MNT/etc/sudoers.d/10-wheel"
+
+# ---- Configure inside the new system ----------------------------------------
+ROOT_UUID=$(blkid -s UUID -o value "$ROOT")
+CMDLINE="root=UUID=$ROOT_UUID rw quiet"
+
+info "Configuring system"
+arch-chroot "$MNT" /bin/bash -e <<EOF
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+hwclock --systohc
+
+sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/; s/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+locale-gen
+echo "LANG=$LANG_" > /etc/locale.conf
+echo "KEYMAP=us" > /etc/vconsole.conf
+
+echo "$HOSTNAME_" > /etc/hostname
+cat > /etc/hosts <<HOSTS
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   $HOSTNAME_.localdomain $HOSTNAME_
+HOSTS
+
+# Early KMS for the Intel HD 3000
+sed -i 's/^MODULES=(\(.*\))/MODULES=(\1 i915)/; s/^MODULES=( /MODULES=(/' /etc/mkinitcpio.conf
+mkinitcpio -P
+
+useradd -m -G wheel -s /usr/bin/fish "$USERNAME"
+passwd -l root
+
+systemctl enable NetworkManager bluetooth tlp fstrim.timer systemd-timesyncd
+systemctl mask systemd-rfkill.service systemd-rfkill.socket
+EOF
+
+printf '%s:%s\n' "$USERNAME" "$PASS1" | arch-chroot "$MNT" chpasswd
+unset PASS1 PASS2
+
+# ---- Boot loader ------------------------------------------------------------
+info "Installing boot loader"
+if [[ $MODE == uefi ]]; then
+    # Apple firmware sometimes refuses NVRAM writes; the fallback path
+    # \EFI\BOOT\BOOTX64.EFI is what the Option-key menu shows as "EFI Boot".
+    arch-chroot "$MNT" bootctl --esp-path=/boot install \
+        || arch-chroot "$MNT" bootctl --esp-path=/boot --no-variables install
+    cat > "$MNT/boot/loader/loader.conf" <<EOF
+default arch.conf
+timeout 2
+editor no
+EOF
+    cat > "$MNT/boot/loader/entries/arch.conf" <<EOF
+title   Arch Linux
+linux   /vmlinuz-linux
+initrd  /intel-ucode.img
+initrd  /initramfs-linux.img
+options $CMDLINE
+EOF
+    cat > "$MNT/boot/loader/entries/arch-fallback.conf" <<EOF
+title   Arch Linux (fallback)
+linux   /vmlinuz-linux
+initrd  /intel-ucode.img
+initrd  /initramfs-linux-fallback.img
+options $CMDLINE
+EOF
+else
+    sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet\"|" "$MNT/etc/default/grub"
+    sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=2/' "$MNT/etc/default/grub"
+    arch-chroot "$MNT" grub-install --target=i386-pc "$DISK"
+    arch-chroot "$MNT" grub-mkconfig -o /boot/grub/grub.cfg
+fi
+
+sync
+umount -R "$MNT"
+
+echo
+info "Installation complete."
+echo "   Remove the USB stick and reboot:  sudo reboot"
+echo "   Log in as '$USERNAME' on the console — sway starts by itself."

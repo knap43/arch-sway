@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Lock / suspend / log out / reboot / power off, picked from fuzzel.
+choice=$(printf '%s\n' Lock Suspend "Log out" Reboot "Power off" \
+    | fuzzel --dmenu --prompt "Power: " --lines 5 --width 20) || exit 0
+case $choice in
+    Lock)        swaylock -f -c 1e1e1e ;;
+    Suspend)     systemctl suspend ;;
+    "Log out")   swaymsg exit ;;
+    Reboot)      systemctl reboot ;;
+    "Power off") systemctl poweroff ;;
+esac
