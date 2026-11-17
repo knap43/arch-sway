@@ -16,7 +16,7 @@ default_border pixel 2
 default_floating_border pixel 2
 hide_edge_borders smart
 focus_follows_mouse no
-output * bg #1e1e1e solid_color
+output * bg /usr/share/backgrounds/mbp-sway/wallpaper.jpg fill #1e1e1e
 
 # class                 border  bg      text    indicator child_border
 client.focused          #5e81ac #5e81ac #ffffff #81a1c1   #5e81ac

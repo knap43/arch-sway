@@ -93,6 +93,7 @@ genfstab -U "$MNT" >> "$MNT/etc/fstab"
 info "Copying desktop configuration"
 cp -rT /etc/skel/.config "$MNT/etc/skel/.config"
 install -Dm755 -t "$MNT/usr/local/bin" /usr/local/bin/sway-*
+install -Dm644 -t "$MNT/usr/share/backgrounds/mbp-sway" /usr/share/backgrounds/mbp-sway/wallpaper.jpg
 if compgen -G '/etc/NetworkManager/system-connections/*' >/dev/null; then
     install -d -m700 "$MNT/etc/NetworkManager/system-connections"
     cp -a /etc/NetworkManager/system-connections/. "$MNT/etc/NetworkManager/system-connections/"

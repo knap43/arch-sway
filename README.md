@@ -78,6 +78,7 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume |
 
 Screenshots go to `~/Pictures/Screenshots`. Helper scripts live in `/usr/local/bin/sway-*`.
+The default wallpaper is `/usr/share/backgrounds/mbp-sway/wallpaper.jpg` (change the `output * bg` line in the sway config to use another). The fish prompt is `[$PWD]$`, set in `~/.config/fish/functions/fish_prompt.fish`.
 
 Configs live in `~/.config/{sway,foot,fuzzel,mako,i3status,fish}`.
 
