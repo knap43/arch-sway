@@ -17,7 +17,10 @@ mkdir -p "$WORK"
 cp -a "$RELENG" "$PROFILE"
 
 # Packages: releng's list + ours, deduplicated.
-grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$HERE/packages.system" | sort -u > "$WORK/pkgs"
+# (releng still lists the prebuilt broadcom-wl, which Arch has dropped
+#  in favour of broadcom-wl-dkms, so filter it out.)
+grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$HERE/packages.system" \
+    | grep -vx 'broadcom-wl' | sort -u > "$WORK/pkgs"
 mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 
 # Overlay our files onto the live root filesystem.

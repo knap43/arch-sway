@@ -6,7 +6,8 @@ base
 linux
 linux-firmware
 intel-ucode
-broadcom-wl
+broadcom-wl-dkms
+linux-headers
 mesa
 libva-intel-driver
 xorg-xwayland

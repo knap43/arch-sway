@@ -25,6 +25,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 1. Hold **Option (⌥)** at the chime, pick **EFI Boot**.
 2. sway starts automatically (user `live`, no password).
 3. Connect to Wi-Fi with the network icon in the bar (or `nmtui`).
+   No Wi-Fi? Plug in an Android phone and turn on USB tethering — it needs no driver.
 4. ⌘+Return for a terminal, then `sudo mbp-install`.
    It asks for disk, hostname, user, password, timezone, language,
    then **wipes the whole disk** (macOS included) and installs.
@@ -36,7 +37,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Area | Choice |
 |---|---|
 | Graphics | Intel HD 3000 (i915 + Mesa crocus), early KMS, VA-API video decoding, Xwayland |
-| Wi-Fi | `broadcom-wl` (BCM4331) via NetworkManager + nm-applet |
+| Wi-Fi | `broadcom-wl-dkms` (BCM4331, built for the kernel at install) via NetworkManager + nm-applet |
 | Session | sway, swaybar + i3status, swayidle/swaylock, mako, fuzzel, foot |
 | Shell | fish (autostarts sway on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |
