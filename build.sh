@@ -29,6 +29,7 @@ mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 # Overlay our files onto the live root filesystem.
 cp -a "$HERE/overlay/." "$PROFILE/airootfs/"
 install -Dm644 "$HERE/packages.system" "$PROFILE/airootfs/usr/local/share/mbp/packages.system"
+install -Dm644 "$HERE/README.md" "$PROFILE/airootfs/usr/local/share/mbp/README.md"
 
 # Tether (clipboard + file sharing with the phone and other computers).
 echo ":: Fetching Tether from $TETHER_REPO"

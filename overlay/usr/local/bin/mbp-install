@@ -93,7 +93,7 @@ genfstab -U "$MNT" >> "$MNT/etc/fstab"
 info "Copying desktop configuration"
 cp -rT /etc/skel/.config "$MNT/etc/skel/.config"
 for f in /usr/local/bin/*; do
-    case ${f##*/} in mbp-install|live-user-setup) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
+    case ${f##*/} in mbp-install|live-user-setup|live-welcome) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service

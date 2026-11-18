@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install mbp-sway
+Comment=Walkthrough and installer for the internal disk
+Exec=foot --app-id=live-welcome --title="Install mbp-sway" live-welcome
+Icon=system-software-install
+Terminal=false
+Categories=System;

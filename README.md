@@ -23,14 +23,18 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 ## Boot & install
 
 1. Hold **Option (⌥)** at the chime, pick **EFI Boot**.
-2. sway starts automatically (user `live`, no password).
-3. Connect to Wi-Fi with the network icon in the bar (or `nmtui`).
-   No Wi-Fi? Plug in an Android phone and turn on USB tethering — it needs no driver.
-4. ⌘+Return for a terminal, then `sudo mbp-install`.
-   It asks for disk, hostname, user, password, timezone, language,
-   then **wipes the whole disk** (macOS included) and installs.
-   Your live Wi-Fi connection is carried over.
-5. Reboot, remove the stick, log in on the console — sway starts by itself.
+2. sway starts automatically (user `live`, no password) and a **welcome window** opens.
+   It shows whether you're online, the essential shortcuts, and what the installer will do:
+   - **W** picks a Wi-Fi network (or use the network icon in the bar).
+     No Wi-Fi? Plug in an Android phone and turn on USB tethering — it needs no driver.
+   - **K** lists every shortcut.
+   - **Enter** starts the installer. It asks for disk, hostname, user, password, timezone and
+     language, then **wipes the whole disk** (macOS included) and installs. Your live Wi-Fi
+     connection is carried over.
+   - **Q** closes the window; reopen it from the launcher as *Install mbp-sway*
+     (or run `sudo mbp-install` in a terminal).
+3. When it's done, remove the stick and press Enter to reboot. Log in on the console —
+   sway starts by itself.
 
 ## What's in it
 
@@ -111,6 +115,7 @@ overlay/            files copied onto the live root filesystem
   etc/skel/.config  desktop configs (also copied to the installed system)
   usr/local/bin/mbp-install       the installer
   usr/local/bin/live-user-setup   creates the live user at boot
+  usr/local/bin/live-welcome      the live session's walkthrough (live ISO only)
   usr/local/bin/sway-*            workspace, window-cycle, power-menu, screenshot, OSD and battery helpers
   usr/local/bin/tether*           Tether launcher and the Thunar send action
 ```
