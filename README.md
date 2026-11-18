@@ -76,8 +76,7 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
 | ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
 | ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |
-| ⌘ Esc | lock |
-| ⌘ ⇧ Q | power menu (lock, suspend, log out, reboot, power off) |
+| ⌘ ⇧ Q or ⌘ Esc | power menu (lock, suspend, log out, reboot, power off) |
 | ⌘ ⇧ C | reload sway config |
 | ⌘ N | night light on / off (on by default, 4000 K) |
 | Alt ⇧ | switch US ⇄ RU |

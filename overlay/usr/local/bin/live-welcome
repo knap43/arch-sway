@@ -24,7 +24,7 @@ page() {
 
     printf '%s\n' "${b}2. Try things out${r} ${d}(optional)${r}"
     printf '   %s\n' "⌘ = Command key.  ⌘D terminal · ⌘Space launcher · ⌘W close"
-    printf '   %s\n' "⌘A / ⌘S workspaces · ⌘⇧Q power menu · Alt+Shift US ⇄ RU"
+    printf '   %s\n' "⌘A / ⌘S workspaces · ⌘⇧Q or ⌘Esc power menu · Alt+Shift US ⇄ RU"
     printf '   %s\n\n' "Caps Lock and Escape are swapped. Press ${b}K${r} for every shortcut."
 
     printf '%s\n' "${b}3. Install${r}"

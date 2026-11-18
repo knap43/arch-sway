@@ -175,7 +175,7 @@ mode "resize" {
 bindsym --to-code {
     $mod+Ctrl+s        exec sway-screenshot
     $mod+Ctrl+Shift+s  exec sway-screenshot --full
-    $mod+Escape        exec swaylock -f -c 1e1e1e
+    $mod+Escape        exec sway-power-menu
     $mod+Shift+q       exec sway-power-menu
     $mod+Shift+c       reload
     $mod+n             exec pkill wlsunset || $nightlight
