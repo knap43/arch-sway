@@ -150,9 +150,9 @@ bindsym --to-code {
 bindsym --to-code {
     $mod+backslash  splith
     $mod+minus      splitv
-    $mod+t          layout toggle split
+    $mod+period     layout toggle split
     $mod+comma      layout tabbed
-    $mod+period     layout stacking
+    $mod+t          layout stacking
     $mod+r          mode "resize"
     $mod+Shift+grave  move scratchpad
     $mod+grave        scratchpad show

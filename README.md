@@ -71,7 +71,7 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | ⌘ F / ⌘ ⇧ F | fullscreen / floating |
 | ⌘ ⇧ Space | switch focus between floating and tiled |
 | ⌘ \\ / ⌘ - | split side by side / top and bottom |
-| ⌘ T / ⌘ , / ⌘ . | toggle split / tabbed / stacked |
+| ⌘ . / ⌘ , / ⌘ T | tiling (press again to flip split direction) / tabbed / stacked |
 | ⌘ P | focus parent container |
 | ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
 | ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
