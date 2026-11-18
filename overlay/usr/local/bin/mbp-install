@@ -183,8 +183,31 @@ else
     arch-chroot "$MNT" grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
+# pacstrap -K sets up the new system's pacman keyring, which leaves gpg-agent
+# and keyboxd running inside it; they keep the disk busy, so stop anything
+# whose root is the new system before unmounting.
+stop_chrooted() {
+    local proc pid
+    for proc in /proc/[0-9]*; do
+        pid=${proc#/proc/}
+        [[ $(readlink "$proc/root" 2>/dev/null) == "$MNT"* ]] && kill "$@" "$pid" 2>/dev/null
+    done
+    return 0
+}
+
+info "Unmounting"
 sync
-umount -R "$MNT"
+stop_chrooted
+sleep 1
+if ! umount -R "$MNT" 2>/dev/null; then
+    stop_chrooted -9
+    sleep 1
+    if ! umount -R "$MNT" 2>/dev/null; then
+        # Everything is written already; detach now, the reboot finishes it.
+        sync
+        umount -R -l "$MNT"
+    fi
+fi
 
 echo
 info "Installation complete."
