@@ -15,6 +15,7 @@ sudo
 man-db
 man-pages
 less
+btop
 dosfstools
 exfatprogs
 unzip

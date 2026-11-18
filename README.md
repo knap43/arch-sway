@@ -42,7 +42,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Shell | fish (autostarts sway on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |
 | Power | TLP, zram swap (zstd) |
-| Apps | Firefox, Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
+| Apps | btop, Firefox, Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
 | Dev | git, base-devel, vim, Python + PyGObject, GTK 4, libadwaita |
 | Boot | systemd-boot on UEFI (GRUB if booted in legacy/BIOS mode) |
 
@@ -78,6 +78,7 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | Alt ⇧ | switch US ⇄ RU |
 | F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume |
 
+New workspaces open in tabbed layout, and screen brightness is set to 100% at every login.
 Screenshots go to `~/Pictures/Screenshots`. Helper scripts live in `/usr/local/bin/sway-*`.
 The default wallpaper is `/usr/share/backgrounds/mbp-sway/wallpaper.jpg` (change the `output * bg` line in the sway config to use another). The fish prompt is `[$PWD]$`, set in `~/.config/fish/functions/fish_prompt.fish`.
 

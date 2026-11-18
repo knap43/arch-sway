@@ -19,6 +19,7 @@ default_border pixel 2
 default_floating_border pixel 2
 hide_edge_borders smart
 focus_follows_mouse no
+workspace_layout tabbed
 output * bg /usr/share/backgrounds/mbp-sway/wallpaper.jpg fill #1e1e1e
 
 # class                 border  bg      text    indicator child_border
@@ -51,6 +52,7 @@ exec swayidle -w \
     before-sleep 'swaylock -f -c 1e1e1e'
 
 # ---- Autostart ---------------------------------------------------------------
+exec brightnessctl set 100%
 exec mako
 exec $nightlight
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
