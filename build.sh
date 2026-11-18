@@ -11,6 +11,9 @@ OUT="$HERE/out"
 
 [[ -d $RELENG ]] || { echo "archiso is not installed: sudo pacman -S archiso" >&2; exit 1; }
 
+command -v git >/dev/null || { echo "git is needed to fetch Tether: sudo pacman -S git" >&2; exit 1; }
+TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
+
 echo ":: Preparing profile from releng"
 sudo rm -rf "$WORK"
 mkdir -p "$WORK"
@@ -26,6 +29,15 @@ mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 # Overlay our files onto the live root filesystem.
 cp -a "$HERE/overlay/." "$PROFILE/airootfs/"
 install -Dm644 "$HERE/packages.system" "$PROFILE/airootfs/usr/local/share/mbp/packages.system"
+
+# Tether (clipboard + file sharing with the phone and other computers).
+echo ":: Fetching Tether from $TETHER_REPO"
+git clone -q --depth 1 "$TETHER_REPO" "$WORK/tether"
+install -d "$PROFILE/airootfs/usr/lib/tether"
+cp -r "$WORK/tether/linux/tether" "$PROFILE/airootfs/usr/lib/tether/"
+find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
+install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
+    "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
 
 # Networking: NetworkManager instead of releng's iwd + systemd-networkd.
 UNITS="$PROFILE/airootfs/etc/systemd/system"

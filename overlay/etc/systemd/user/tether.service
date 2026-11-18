@@ -1,0 +1,10 @@
+[Unit]
+Description=Tether phone bridge (clipboard and files)
+After=network-online.target
+
+# Not enabled at login on purpose: sway starts it once the Wayland session
+# exists, so the clipboard is watched through wl-clipboard.
+[Service]
+ExecStart=/usr/local/bin/tether daemon
+Restart=on-failure
+RestartSec=3

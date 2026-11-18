@@ -70,6 +70,7 @@ firefox
 thunar
 thunar-volman
 gvfs
+gvfs-dnssd
 udisks2
 udiskie
 tumbler
@@ -87,3 +88,5 @@ python
 python-gobject
 gtk4
 libadwaita
+python-cryptography
+python-aiohttp

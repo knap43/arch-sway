@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Thunar action: send the selected files to a connected Tether device.
+With several devices connected, fuzzel asks which one."""
+import json
+import os
+import socket
+import subprocess
+import sys
+
+
+def notify(title, body=""):
+    subprocess.run(["notify-send", "-a", "Tether", "-i", "dev.tether.Tether", title, body], check=False)
+
+
+def status():
+    rt = os.environ.get("XDG_RUNTIME_DIR") or f"/tmp/tether-{os.getuid()}"
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+        s.connect(os.path.join(rt, "tether", "ctl.sock"))
+        f = s.makefile("rwb")
+        f.write(b'{"cmd": "status"}\n')
+        f.flush()
+        return json.loads(f.readline() or b"{}")
+
+
+files = sys.argv[1:]
+if not files:
+    sys.exit()
+try:
+    st = status()
+except OSError:
+    notify("Tether isn't running", "Open Tether from the launcher to start it.")
+    sys.exit(1)
+
+devices = [d for d in st.get("devices", []) if d.get("connected")]
+if not devices:
+    notify("Nothing sent", "No paired device is connected right now.")
+    sys.exit(1)
+if len(devices) == 1:
+    target = devices[0]
+else:
+    labels = {f"{d['name']}  ({d.get('type') or 'device'})": d for d in devices}
+    pick = subprocess.run(["fuzzel", "--dmenu", "--prompt", "Send to: ", "--lines", str(len(labels))],
+                          input="\n".join(labels), capture_output=True, text=True).stdout.strip()
+    if pick not in labels:
+        sys.exit()
+    target = labels[pick]
+
+os.execvp("tether", ["tether", "send", "--notify", "--device", target["id"], *files])

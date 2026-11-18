@@ -86,6 +86,22 @@ The default wallpaper is `/usr/share/backgrounds/mbp-sway/wallpaper.jpg` (change
 
 Configs live in `~/.config/{sway,foot,fuzzel,mako,i3status,fish}`.
 
+## Tether (phone and computer bridge)
+
+[Tether](https://github.com/knap43/tether) is fetched when the ISO is built and installed
+trimmed down to **clipboard sync and file sharing**. Its other features (notifications,
+phone audio/screen, remote input, commands) start switched off.
+
+- Open **Tether** from the launcher to pair your phone or another computer (same pairing as usual).
+- **Clipboard** syncs automatically (via wl-clipboard; sway starts the service after login).
+- **Send files:** right-click in Thunar → *Send with Tether*. With several devices connected,
+  a menu asks which one. Incoming files land in `~/Downloads/Tether`.
+- **Browse the phone** in Thunar (WebDAV, through `gvfs-dnssd`), and set up **folder sync** in the Tether window.
+- The window uses a light, square-cornered look from `~/.config/tether/style.css`;
+  the launcher entry starts it with `TETHER_COLOR_SCHEME=light`.
+
+To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
+
 ## Layout
 
 ```
@@ -95,5 +111,6 @@ overlay/            files copied onto the live root filesystem
   etc/skel/.config  desktop configs (also copied to the installed system)
   usr/local/bin/mbp-install       the installer
   usr/local/bin/live-user-setup   creates the live user at boot
-  usr/local/bin/sway-*            workspace, window-cycle, power-menu and screenshot helpers
+  usr/local/bin/sway-*            workspace, window-cycle, power-menu, screenshot, OSD and battery helpers
+  usr/local/bin/tether*           Tether launcher and the Thunar send action
 ```

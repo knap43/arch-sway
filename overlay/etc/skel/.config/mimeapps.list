@@ -1,0 +1,4 @@
+[Default Applications]
+inode/directory=thunar.desktop
+x-scheme-handler/dav=thunar.desktop
+x-scheme-handler/davs=thunar.desktop

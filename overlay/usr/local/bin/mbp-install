@@ -92,7 +92,13 @@ genfstab -U "$MNT" >> "$MNT/etc/fstab"
 # ---- Carry over configs from the live session --------------------------------
 info "Copying desktop configuration"
 cp -rT /etc/skel/.config "$MNT/etc/skel/.config"
-install -Dm755 -t "$MNT/usr/local/bin" /usr/local/bin/sway-*
+for f in /usr/local/bin/*; do
+    case ${f##*/} in mbp-install|live-user-setup) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
+done
+cp -a /usr/lib/tether "$MNT/usr/lib/"
+install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
+install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop
+install -Dm644 -t "$MNT/usr/share/icons/hicolor/scalable/apps" /usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg
 install -Dm644 -t "$MNT/usr/share/backgrounds/mbp-sway" /usr/share/backgrounds/mbp-sway/wallpaper.jpg
 if compgen -G '/etc/NetworkManager/system-connections/*' >/dev/null; then
     install -d -m700 "$MNT/etc/NetworkManager/system-connections"

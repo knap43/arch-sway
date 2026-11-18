@@ -63,6 +63,8 @@ exec wl-paste --watch cliphist store
 exec udiskie --smart-tray
 exec blueman-applet
 exec sway-battery-watch
+# Tether needs the Wayland session's environment to watch the clipboard
+exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK && systemctl --user restart tether.service
 # volume/brightness popup: sway-osd writes levels into this pipe
 exec rm -f $XDG_RUNTIME_DIR/wob.sock && mkfifo $XDG_RUNTIME_DIR/wob.sock && tail -f $XDG_RUNTIME_DIR/wob.sock | wob
 exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark

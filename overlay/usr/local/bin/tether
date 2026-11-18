@@ -1,0 +1,3 @@
+#!/bin/sh
+# Tether (https://github.com/knap43/tether), bundled into the ISO at build time.
+PYTHONPATH="/usr/lib/tether${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m tether "$@"

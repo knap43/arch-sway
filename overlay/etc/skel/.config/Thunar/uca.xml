@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Open Terminal Here</name>
+	<submenu></submenu>
+	<unique-id>1731900000000001-1</unique-id>
+	<command>foot --working-directory=%f</command>
+	<description>Open foot in this folder</description>
+	<range></range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+</action>
+<action>
+	<icon>dev.tether.Tether</icon>
+	<name>Send with Tether</name>
+	<submenu></submenu>
+	<unique-id>1731900000000002-2</unique-id>
+	<command>tether-send %F</command>
+	<description>Send the selected files to your phone or another computer</description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
+</actions>
