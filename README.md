@@ -41,8 +41,9 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Session | sway, swaybar + i3status, swayidle/swaylock, mako, fuzzel, foot |
 | Shell | fish (autostarts sway on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |
-| Power | TLP, zram swap (zstd) |
-| Apps | btop, Firefox, Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
+| Power | TLP, zram swap (zstd); lock at 5 min idle, screen off at 10, suspend at 15 on battery; battery warnings at 15% and 5% |
+| Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth tray (blueman) |
+| Apps | btop, fastfetch, Firefox, Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
 | Dev | git, base-devel, vim, Python + PyGObject, GTK 4, libadwaita |
 | Boot | systemd-boot on UEFI (GRUB if booted in legacy/BIOS mode) |
 
@@ -76,7 +77,8 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | ⌘ ⇧ C | reload sway config |
 | ⌘ N | night light on / off (on by default, 4000 K) |
 | Alt ⇧ | switch US ⇄ RU |
-| F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume |
+| F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume (with a popup bar) |
+| F7 / F8 / F9 | previous / play-pause / next, for any player |
 
 New workspaces open in tabbed layout, and screen brightness is set to 100% at every login.
 Screenshots go to `~/Pictures/Screenshots`. Helper scripts live in `/usr/local/bin/sway-*`.

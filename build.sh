@@ -44,11 +44,15 @@ iso_application="Arch Linux + sway for MacBookPro8,1"
 file_permissions["/usr/local/bin/mbp-install"]="0:0:755"
 file_permissions["/usr/local/bin/live-user-setup"]="0:0:755"
 file_permissions["/etc/sudoers.d/live"]="0:0:440"
-file_permissions["/usr/local/bin/sway-workspace-next"]="0:0:755"
-file_permissions["/usr/local/bin/sway-cycle-windows"]="0:0:755"
-file_permissions["/usr/local/bin/sway-power-menu"]="0:0:755"
-file_permissions["/usr/local/bin/sway-screenshot"]="0:0:755"
 EOF
+
+# Every helper in /usr/local/bin is executable.
+for f in "$HERE"/overlay/usr/local/bin/*; do
+    echo "file_permissions[\"/usr/local/bin/$(basename "$f")\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+done
+
+# Bluetooth in the live session too.
+ln -sf /usr/lib/systemd/system/bluetooth.service "$UNITS/multi-user.target.wants/bluetooth.service"
 
 echo ":: Building ISO (this takes a while)"
 mkdir -p "$OUT"

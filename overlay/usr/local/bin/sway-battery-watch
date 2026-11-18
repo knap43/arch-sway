@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Warns once at 15% and once (urgently) at 5% while discharging.
+# Warnings reset as soon as the charger is plugged in.
+warned_low=0 warned_crit=0
+while sleep 60; do
+    bat=$(compgen -G '/sys/class/power_supply/BAT*' | head -n1) || continue
+    cap=$(<"$bat/capacity") status=$(<"$bat/status")
+    if [[ $status != Discharging ]]; then
+        warned_low=0 warned_crit=0
+        continue
+    fi
+    if (( cap <= 5 && !warned_crit )); then
+        notify-send -u critical -i battery-caution "Battery at ${cap}%" "Plug in the charger now."
+        warned_crit=1 warned_low=1
+    elif (( cap <= 15 && !warned_low )); then
+        notify-send -i battery-low "Battery at ${cap}%" "Time to find the charger."
+        warned_low=1
+    fi
+done

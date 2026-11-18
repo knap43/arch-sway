@@ -16,6 +16,7 @@ man-db
 man-pages
 less
 btop
+fastfetch
 dosfstools
 exfatprogs
 unzip
@@ -35,6 +36,8 @@ wl-clipboard
 cliphist
 libnotify
 brightnessctl
+playerctl
+wob
 wlsunset
 xdg-desktop-portal-wlr
 xdg-desktop-portal-gtk
@@ -52,6 +55,7 @@ networkmanager
 network-manager-applet
 bluez
 bluez-utils
+blueman
 tlp
 zram-generator
 
@@ -66,6 +70,8 @@ firefox
 thunar
 thunar-volman
 gvfs
+udisks2
+udiskie
 tumbler
 ristretto
 zathura
