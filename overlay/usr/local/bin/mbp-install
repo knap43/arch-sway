@@ -144,6 +144,7 @@ useradd -m -G wheel -s /usr/bin/fish "$USERNAME"
 passwd -l root
 
 systemctl enable NetworkManager bluetooth tlp fstrim.timer systemd-timesyncd
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || echo "Could not add Flathub; add it later with: flatpak remote-add flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
 systemctl mask systemd-rfkill.service systemd-rfkill.socket
 EOF
 

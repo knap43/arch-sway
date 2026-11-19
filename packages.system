@@ -67,6 +67,7 @@ ttf-jetbrains-mono
 
 # --- applications ---
 firefox
+flatpak
 thunar
 thunar-volman
 gvfs
