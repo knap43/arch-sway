@@ -47,7 +47,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Audio | PipeWire + WirePlumber, pavucontrol |
 | Power | TLP, zram swap (zstd); lock at 5 min idle, screen off at 10, suspend at 15 on battery; battery warnings at 15% and 5% |
 | Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth tray (blueman) |
-| Apps | btop, fastfetch, Flatpak (Flathub added; apps show up in the launcher), Firefox, Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
+| Apps | btop, fastfetch, Flatpak (Flathub added; apps show up in the launcher), LibreWolf, Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
 | Dev | git, base-devel, vim, Python + PyGObject, GTK 4, libadwaita |
 | Boot | systemd-boot on UEFI (GRUB if booted in legacy/BIOS mode) |
 
@@ -59,7 +59,7 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 |---|---|
 | ⌘ D (or ⌘ Return) | terminal |
 | ⌘ Space / ⌘ Q | app launcher |
-| ⌘ E / ⌘ B | Thunar / Firefox |
+| ⌘ E / ⌘ B | Thunar / LibreWolf |
 | ⌘ V | clipboard history |
 | ⌘ W | close window |
 | ⌘ Tab / ⌘ ⇧ Tab | cycle through all windows, forward / back |

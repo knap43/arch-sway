@@ -77,7 +77,7 @@ bindsym --to-code {
     $mod+space   exec $menu
     $mod+q       exec $menu
     $mod+e       exec thunar
-    $mod+b       exec firefox
+    $mod+b       exec librewolf
     $mod+v       exec cliphist list | fuzzel --dmenu --prompt "Clipboard: " | cliphist decode | wl-copy
 }
 
