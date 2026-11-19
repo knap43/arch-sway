@@ -1,0 +1,6 @@
+# Hides Thunar's "Bulk Rename" from the launcher; it's still reachable from
+# inside Thunar. Overrides the entry of the same name in /usr/share.
+[Desktop Entry]
+Type=Application
+Name=Bulk Rename
+NoDisplay=true

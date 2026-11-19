@@ -1,0 +1,6 @@
+# Hides Thunar's "File Manager Settings" from the launcher; it's still reachable from
+# inside Thunar. Overrides the entry of the same name in /usr/share.
+[Desktop Entry]
+Type=Application
+Name=File Manager Settings
+NoDisplay=true
