@@ -1,0 +1,7 @@
+# Hides libxfce4ui's "About Xfce" (pulled in by Thunar, Mousepad and
+# Ristretto) from the launcher. /usr/local/share comes before /usr/share
+# in XDG_DATA_DIRS, so this file replaces the original entry.
+[Desktop Entry]
+Type=Application
+Name=About Xfce
+NoDisplay=true
