@@ -96,6 +96,10 @@ for f in /usr/local/bin/*; do
     case ${f##*/} in mbp-install|live-user-setup|live-welcome) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
+if [[ -d /usr/lib/graven ]]; then
+    cp -a /usr/lib/graven "$MNT/usr/lib/"
+    install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/graven.desktop
+fi
 install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/*.desktop
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop

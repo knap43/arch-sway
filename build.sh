@@ -13,6 +13,7 @@ OUT="$HERE/out"
 
 command -v git >/dev/null || { echo "git is needed to fetch Tether: sudo pacman -S git" >&2; exit 1; }
 TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
+GAMES_REPO=${GAMES_REPO:-https://github.com/knap43/tiny-games}
 
 echo ":: Preparing profile from releng"
 sudo rm -rf "$WORK"
@@ -39,6 +40,30 @@ cp -r "$WORK/tether/linux/tether" "$PROFILE/airootfs/usr/lib/tether/"
 find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
 install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
     "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
+
+# Graven (from tiny-games). The repo is private, so this uses your own git
+# login; if it can't be fetched, the ISO is built without it.
+echo ":: Fetching Graven from $GAMES_REPO"
+if git clone -q --depth 1 "$GAMES_REPO" "$WORK/tiny-games"; then
+    install -Dm644 "$WORK/tiny-games/graven/graven.py" "$PROFILE/airootfs/usr/lib/graven/graven.py"
+    install -Dm755 /dev/stdin "$PROFILE/airootfs/usr/local/bin/graven" <<'SH'
+#!/bin/sh
+exec python3 /usr/lib/graven/graven.py "$@"
+SH
+    install -Dm644 /dev/stdin "$PROFILE/airootfs/usr/share/applications/graven.desktop" <<'DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=Graven
+Comment=Tiny dark-fantasy top-down roguelike
+Exec=/usr/local/bin/graven
+Icon=applications-games
+Terminal=false
+Categories=Game;ActionGame;
+DESKTOP
+    echo 'file_permissions["/usr/local/bin/graven"]="0:0:755"' >> "$PROFILE/profiledef.sh"
+else
+    echo "!! Could not fetch $GAMES_REPO (private: needs your GitHub login). Building without Graven." >&2
+fi
 
 # Networking: NetworkManager instead of releng's iwd + systemd-networkd.
 UNITS="$PROFILE/airootfs/etc/systemd/system"

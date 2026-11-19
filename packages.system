@@ -90,3 +90,4 @@ gtk4
 libadwaita
 python-cryptography
 python-aiohttp
+python-pygame

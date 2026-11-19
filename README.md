@@ -105,6 +105,13 @@ phone audio/screen, remote input, commands) start switched off.
 
 To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
+## Graven
+
+[Graven](https://github.com/knap43/tiny-games/tree/main/graven), a tiny dark-fantasy roguelike, is
+fetched from `knap43/tiny-games` at build time and appears in the launcher. That repository is private,
+so the build uses your git login (HTTPS credentials or `GAMES_REPO=git@github.com:knap43/tiny-games.git ./build.sh`
+for SSH); without access the ISO is built without it. Best scores are kept in `~/.local/share/graven`.
+
 ## Layout
 
 ```
