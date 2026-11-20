@@ -41,28 +41,35 @@ find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {}
 install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
     "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
 
-# Graven (from tiny-games). The repo is private, so this uses your own git
-# login; if it can't be fetched, the ISO is built without it.
-echo ":: Fetching Graven from $GAMES_REPO"
+# Games from tiny-games. The repo is private, so this uses your own git
+# login; if it can't be fetched, the ISO is built without them.
+# Each entry: name|launcher comment
+GAMES=(
+    "graven|Tiny dark-fantasy top-down roguelike"
+    "vigil|Dark-fantasy wave survival: auto-weapons, souls, a shop between waves"
+    "litany|Dark-fantasy typing game: banish the shades closing in"
+)
+echo ":: Fetching games from $GAMES_REPO"
 if git clone -q --depth 1 "$GAMES_REPO" "$WORK/tiny-games"; then
-    install -Dm644 "$WORK/tiny-games/graven/graven.py" "$PROFILE/airootfs/usr/lib/graven/graven.py"
-    install -Dm755 /dev/stdin "$PROFILE/airootfs/usr/local/bin/graven" <<'SH'
-#!/bin/sh
-exec python3 /usr/lib/graven/graven.py "$@"
-SH
-    install -Dm644 /dev/stdin "$PROFILE/airootfs/usr/share/applications/graven.desktop" <<'DESKTOP'
-[Desktop Entry]
-Type=Application
-Name=Graven
-Comment=Tiny dark-fantasy top-down roguelike
-Exec=/usr/local/bin/graven
-Icon=applications-games
-Terminal=false
-Categories=Game;ActionGame;
-DESKTOP
-    echo 'file_permissions["/usr/local/bin/graven"]="0:0:755"' >> "$PROFILE/profiledef.sh"
+    for entry in "${GAMES[@]}"; do
+        game=${entry%%|*} comment=${entry#*|}
+        src="$WORK/tiny-games/$game/$game.py"
+        if [[ ! -f $src ]]; then
+            echo "!! $game not found in tiny-games, skipping" >&2
+            continue
+        fi
+        name="${game^}"
+        install -Dm644 "$src" "$PROFILE/airootfs/usr/lib/tiny-games/$game.py"
+        printf '#!/bin/sh\nexec python3 /usr/lib/tiny-games/%s.py "$@"\n' "$game" \
+            | install -Dm755 /dev/stdin "$PROFILE/airootfs/usr/local/bin/$game"
+        printf '[Desktop Entry]\nType=Application\nName=%s\nComment=%s\nExec=/usr/local/bin/%s\nIcon=applications-games\nTerminal=false\nCategories=Game;ActionGame;\n' \
+            "$name" "$comment" "$game" \
+            | install -Dm644 /dev/stdin "$PROFILE/airootfs/usr/share/applications/tiny-games-$game.desktop"
+        echo "file_permissions[\"/usr/local/bin/$game\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+        echo "   + $name"
+    done
 else
-    echo "!! Could not fetch $GAMES_REPO (private: needs your GitHub login). Building without Graven." >&2
+    echo "!! Could not fetch $GAMES_REPO (private: needs your GitHub login). Building without games." >&2
 fi
 
 # Networking: NetworkManager instead of releng's iwd + systemd-networkd.
