@@ -43,16 +43,18 @@ install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
 
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.
-# Each entry: name|launcher comment
+# Each entry: name|launcher comment|desktop categories
 GAMES=(
-    "graven|Tiny dark-fantasy top-down roguelike"
-    "vigil|Dark-fantasy wave survival: auto-weapons, souls, a shop between waves"
-    "litany|Dark-fantasy typing game: banish the shades closing in"
+    "graven|Tiny dark-fantasy top-down roguelike|Game;ActionGame;"
+    "vigil|Dark-fantasy wave survival: auto-weapons, souls, a shop between waves|Game;ActionGame;"
+    "litany|Dark-fantasy typing game: banish the shades closing in|Game;ActionGame;"
+    "cenotaph|Dark-fantasy turn-based tactical roguelike: every move is an attack|Game;StrategyGame;"
+    "reliquary|Dark-fantasy roguelike deck builder: three acts, cards, relics|Game;CardGame;StrategyGame;"
 )
 echo ":: Fetching games from $GAMES_REPO"
 if git clone -q --depth 1 "$GAMES_REPO" "$WORK/tiny-games"; then
     for entry in "${GAMES[@]}"; do
-        game=${entry%%|*} comment=${entry#*|}
+        IFS='|' read -r game comment categories <<< "$entry"
         src="$WORK/tiny-games/$game/$game.py"
         if [[ ! -f $src ]]; then
             echo "!! $game not found in tiny-games, skipping" >&2
@@ -62,8 +64,8 @@ if git clone -q --depth 1 "$GAMES_REPO" "$WORK/tiny-games"; then
         install -Dm644 "$src" "$PROFILE/airootfs/usr/lib/tiny-games/$game.py"
         printf '#!/bin/sh\nexec python3 /usr/lib/tiny-games/%s.py "$@"\n' "$game" \
             | install -Dm755 /dev/stdin "$PROFILE/airootfs/usr/local/bin/$game"
-        printf '[Desktop Entry]\nType=Application\nName=%s\nComment=%s\nExec=/usr/local/bin/%s\nIcon=applications-games\nTerminal=false\nCategories=Game;ActionGame;\n' \
-            "$name" "$comment" "$game" \
+        printf '[Desktop Entry]\nType=Application\nName=%s\nComment=%s\nExec=/usr/local/bin/%s\nIcon=applications-games\nTerminal=false\nCategories=%s\n' \
+            "$name" "$comment" "$game" "$categories" \
             | install -Dm644 /dev/stdin "$PROFILE/airootfs/usr/share/applications/tiny-games-$game.desktop"
         echo "file_permissions[\"/usr/local/bin/$game\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
         echo "   + $name"

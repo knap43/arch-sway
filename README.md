@@ -107,9 +107,9 @@ To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
 ## Games
 
-Three tiny dark-fantasy games from `knap43/tiny-games` are fetched at build time and appear in the launcher:
-**Graven** (top-down roguelike), **Vigil** (wave survival) and **Litany** (typing game; switch to the US
-layout first). They start fullscreen; F11 gives a window. The repository is private, so the build uses your
+Five tiny dark-fantasy games from `knap43/tiny-games` are fetched at build time and appear in the launcher:
+**Graven** (top-down roguelike), **Vigil** (wave survival), **Litany** (typing game; switch to the US
+layout first), **Cenotaph** (turn-based tactics) and **Reliquary** (deck builder). They start fullscreen; F11 gives a window. The repository is private, so the build uses your
 git login (HTTPS credentials, or `GAMES_REPO=git@github.com:knap43/tiny-games.git ./build.sh` for SSH);
 without access the ISO is built without them. Best scores are kept in `~/.local/share/<game>`.
 
