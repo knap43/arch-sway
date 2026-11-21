@@ -96,7 +96,8 @@ Configs live in `~/.config/{sway,foot,fuzzel,mako,i3status,fish}`.
 
 [Tether](https://github.com/knap43/tether) is fetched when the ISO is built and installed
 trimmed down to **clipboard sync and file sharing**. Its other features (notifications,
-phone audio/screen, remote input, commands) start switched off.
+phone audio/screen, remote input, commands) start switched off, and the window shows only the
+clipboard and file controls (`TETHER_FEATURES=clipboard,files` in its launcher entry).
 
 - Open **Tether** from the launcher to pair your phone or another computer (same pairing as usual).
 - **Clipboard** syncs automatically (via wl-clipboard; sway starts the service after login).

@@ -2,7 +2,7 @@
 Type=Application
 Name=Tether
 Comment=Your phone's files and clipboard on this computer
-Exec=env TETHER_COLOR_SCHEME=light /usr/local/bin/tether gui
+Exec=env TETHER_COLOR_SCHEME=light TETHER_FEATURES=clipboard,files /usr/local/bin/tether gui
 Icon=dev.tether.Tether
 Terminal=false
 Categories=GTK;Utility;Network;
