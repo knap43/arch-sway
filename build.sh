@@ -28,6 +28,26 @@ grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$HERE/packages.system" \
     | grep -vx 'broadcom-wl' | sort -u > "$WORK/pkgs"
 mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 
+# Offline install: every package the installed system needs (with all
+# dependencies) goes into a small repository inside the ISO, which the
+# installer uses instead of the internet. Packages are fetched into the
+# normal pacman cache, which mkarchiso reads too, so nothing downloads twice.
+echo ":: Collecting packages for offline installation"
+mapfile -t SYS_PKGS < <(grep -vhE '^\s*(#|$)' "$HERE/packages.system")
+SYS_PKGS+=(grub)                       # for installs booted in BIOS mode
+PKG_CACHE=/var/cache/pacman/pkg
+REPO="$PROFILE/airootfs/var/lib/mbp/repo"
+mkdir -p "$WORK/dbpath" "$REPO"
+pacman_args=(--config "$PROFILE/pacman.conf" --dbpath "$WORK/dbpath" --cachedir "$PKG_CACHE")
+sudo pacman -Syw --noconfirm "${pacman_args[@]}" "${SYS_PKGS[@]}"
+# The empty database means -Sp lists the complete dependency closure.
+mapfile -t PKG_FILES < <(pacman -Sp --print-format '%f' "${pacman_args[@]}" "${SYS_PKGS[@]}")
+for f in "${PKG_FILES[@]}"; do
+    cp "$PKG_CACHE/$f" "$REPO/"
+done
+repo-add -q "$REPO/mbp.db.tar.gz" "${PKG_FILES[@]/#/$REPO/}"
+echo "   ${#PKG_FILES[@]} packages, $(du -sh "$REPO" | cut -f1)"
+
 # Overlay our files onto the live root filesystem.
 cp -a "$HERE/overlay/." "$PROFILE/airootfs/"
 install -Dm644 "$HERE/packages.system" "$PROFILE/airootfs/usr/local/share/mbp/packages.system"

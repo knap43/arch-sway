@@ -10,7 +10,10 @@ sudo pacman -S --needed archiso
 ./build.sh
 ```
 
-The ISO lands in `out/`. The build needs ~10 GB free and internet access.
+The ISO lands in `out/`. The build needs ~15 GB free and internet access.
+Besides the live system, the ISO carries a small package repository with everything the
+installed system needs (~1.5 GB), so installing works offline. Those packages land in your
+normal pacman cache, which the ISO build uses anyway, so nothing is downloaded twice.
 It is layered on Arch's official `releng` profile, so it stays current with archiso.
 
 ## Write to USB
@@ -24,13 +27,13 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 
 1. Hold **Option (⌥)** at the chime, pick **EFI Boot**.
 2. sway starts automatically (user `live`, no password) and a **welcome window** opens.
-   It shows whether you're online, the essential shortcuts, and what the installer will do:
-   - **W** picks a Wi-Fi network (or use the network icon in the bar).
-     No Wi-Fi? Plug in an Android phone and turn on USB tethering — it needs no driver.
+   It shows the essential shortcuts and what the installer will do:
+   - **Installing needs no internet.** Every package is on the stick, so the installer works offline.
+   - **W** picks a Wi-Fi network (or use the network icon in the bar). Networks you join here are
+     saved in the new system **with their passwords**.
    - **K** lists every shortcut.
    - **Enter** starts the installer. It asks for disk, hostname, user, password, timezone and
-     language, then **wipes the whole disk** (macOS included) and installs. Your live Wi-Fi
-     connection is carried over.
+     language, then **wipes the whole disk** (macOS included) and installs.
    - **Q** closes the window; reopen it from the launcher as *Install mbp-sway*
      (or run `sudo mbp-install` in a terminal).
 3. When it's done, remove the stick and press Enter to reboot. Log in on the console —
@@ -41,7 +44,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Area | Choice |
 |---|---|
 | Graphics | Intel HD 3000 (i915 + Mesa crocus), early KMS, VA-API video decoding, Xwayland |
-| Wi-Fi | `broadcom-wl-dkms` (BCM4331, built for the kernel at install) via NetworkManager + nm-applet |
+| Wi-Fi | `broadcom-wl-dkms` (BCM4331, built for the kernel at install) via NetworkManager + nm-applet; `wheel` users manage networks without a password prompt, and Wi-Fi passwords are stored system-wide |
 | Session | sway, swaybar + i3status, swayidle/swaylock, mako, fuzzel, foot |
 | Shell | fish (autostarts sway on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |

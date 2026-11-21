@@ -7,19 +7,28 @@ online() {
     [[ $(nmcli -t networking connectivity 2>/dev/null) == full ]]
 }
 
+# The ISO carries every package, so the installer works without internet.
+offline_install() { [[ -f /var/lib/mbp/repo/mbp.db ]]; }
+
 page() {
     clear
     printf '%s\n\n' "${b}Welcome to mbp-sway${r}  ${d}— Arch Linux + sway for the MacBook Pro${r}"
     printf '%s\n' "This is the live system, running from the USB stick. Nothing on the"
     printf '%s\n\n' "internal disk has been touched yet."
 
-    printf '%s\n' "${b}1. Connect to the internet${r}"
+    if offline_install; then
+        printf '%s\n' "${b}1. Connect to Wi-Fi${r} ${d}(optional — installing needs no internet)${r}"
+        printf '   %s\n' "Networks you join now are saved in the new system, passwords included."
+    else
+        printf '%s\n' "${b}1. Connect to the internet${r}"
+    fi
     if online; then
         printf '   %s\n\n' "${grn}✓ Connected${r}"
     else
         printf '   %s\n' "${ylw}✗ Not connected${r}"
         printf '   %s\n' "Press ${b}W${r} to pick a Wi-Fi network, or use the network icon in the bar."
-        printf '   %s\n\n' "${d}No Wi-Fi? Plug in your phone and turn on USB tethering.${r}"
+        offline_install || printf '   %s\n' "${d}No Wi-Fi? Plug in your phone and turn on USB tethering.${r}"
+        echo
     fi
 
     printf '%s\n' "${b}2. Try things out${r} ${d}(optional)${r}"
@@ -30,7 +39,7 @@ page() {
     printf '%s\n' "${b}3. Install${r}"
     printf '   %s\n' "The installer asks for a disk, a name for this Mac, your user"
     printf '   %s\n' "and password, timezone and language, then installs the same"
-    printf '   %s\n' "system you see now. Your Wi-Fi connection is carried over."
+    printf '   %s\n' "system you see now. Saved Wi-Fi networks are carried over."
     printf '   %s\n\n' "${red}${b}The whole disk you choose is erased, macOS included.${r}"
 
     printf '%s\n' "${blu}Enter${r} install   ${blu}W${r} Wi-Fi   ${blu}K${r} shortcuts   ${blu}Q${r} close this window"
@@ -51,7 +60,7 @@ keys() {
 
 install() {
     clear
-    if ! online; then
+    if ! offline_install && ! online; then
         printf '%s\n\n' "${ylw}You're not connected yet — the installer downloads its packages.${r}"
         printf '%s' "Press W to connect, or any other key to go back. "
         read -rsn1 k

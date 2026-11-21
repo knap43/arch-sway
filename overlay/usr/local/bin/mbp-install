@@ -13,9 +13,18 @@ ask()  { local p=$1 d=${2-} r; read -rp "$p${d:+ [$d]}: " r; printf '%s' "${r:-$
 [[ $EUID -eq 0 ]] || die "Run as root: sudo mbp-install"
 [[ -f $PKG_LIST ]] || die "Package list missing: $PKG_LIST"
 
-info "Checking internet connection"
-curl -fsS --max-time 10 -o /dev/null https://archlinux.org \
-    || die "No internet. Connect with the network icon in the bar, or run: nmtui"
+# Packages come from the repository on the USB stick when the ISO has one
+# (offline install); otherwise they are downloaded.
+LOCAL_REPO=/var/lib/mbp/repo
+if [[ -f $LOCAL_REPO/mbp.db ]]; then
+    OFFLINE=1
+    info "Installing from the USB stick (no internet needed)"
+else
+    OFFLINE=0
+    info "Checking internet connection"
+    curl -fsS --max-time 10 -o /dev/null https://archlinux.org \
+        || die "No internet. Connect with the network icon in the bar, or run: nmtui"
+fi
 
 # ---- Firmware mode ----------------------------------------------------------
 if [[ -d /sys/firmware/efi ]]; then MODE=uefi; else MODE=bios; fi
@@ -58,6 +67,46 @@ CONFIRM=$(ask "Type the disk name again to continue" "")
 # ---- Partition & format -----------------------------------------------------
 part() { [[ $DISK =~ [0-9]$ ]] && echo "${DISK}p$1" || echo "${DISK}$1"; }
 
+# Copies the live session's saved networks, with their Wi-Fi passwords.
+# A password saved through the network icon can be held by the applet
+# instead of the connection file; ask NetworkManager for it (as the live
+# user, whose applet holds it) and write it into the new system's file.
+copy_wifi_connections() {
+    local src=/etc/NetworkManager/system-connections dst="$MNT/etc/NetworkManager/system-connections"
+    local f uuid name psk live_user=${SUDO_USER:-live}
+    compgen -G "$src/*" >/dev/null || return 0
+    install -d -m700 "$dst"
+    for f in "$src"/*; do
+        uuid=$(sed -n 's/^uuid=//p' "$f" | head -n1)
+        name=$(sed -n 's/^id=//p' "$f" | head -n1)
+        if grep -q '^\[wifi-security\]' "$f" && grep -q '^key-mgmt=\(wpa-psk\|sae\)' "$f" \
+            && ! grep -q '^psk=' "$f"; then
+            psk=$(runuser -u "$live_user" -- nmcli -s -e no -g 802-11-wireless-security.psk connection show "$uuid" 2>/dev/null \
+                  || nmcli -s -e no -g 802-11-wireless-security.psk connection show "$uuid" 2>/dev/null || true)
+            if [[ -n $psk ]]; then
+                # Written the way NetworkManager writes key files (GLib
+                # escapes: backslash, tab, newline, CR, leading space).
+                PSK=$psk awk 'BEGIN { v = ENVIRON["PSK"]
+                                      gsub(/\\/, "\\\\", v); gsub(/\t/, "\\t", v)
+                                      gsub(/\n/, "\\n", v);   gsub(/\r/, "\\r", v)
+                                      if (substr(v, 1, 1) == " ") v = "\\s" substr(v, 2) }
+                              /^psk(-flags)?=/ { next }
+                              { print }
+                              /^\[wifi-security\]$/ { print "psk-flags=0"; print "psk=" v }' \
+                    "$f" > "$dst/${f##*/}"
+                info "Wi-Fi \"$name\": password carried over"
+            else
+                cp -a "$f" "$dst/"
+                printf '\e[33m!!\e[0m Wi-Fi "%s": password not found; you will be asked for it once.\n' "$name"
+            fi
+            unset psk
+        else
+            cp -a "$f" "$dst/"
+        fi
+    done
+    chmod 600 "$dst"/*
+}
+
 info "Partitioning $DISK"
 umount -R "$MNT" 2>/dev/null || true
 swapoff -a 2>/dev/null || true
@@ -85,8 +134,32 @@ fi
 mapfile -t PKGS < <(grep -vE '^\s*(#|$)' "$PKG_LIST")
 [[ $MODE == bios ]] && PKGS+=(grub)
 
-info "Installing ${#PKGS[@]} packages (downloads ~1.5 GB)"
-pacstrap -K "$MNT" "${PKGS[@]}"
+if (( OFFLINE )); then
+    # Only the stick's repository. Its packages were signature-checked by
+    # pacman when the ISO was built, and repo-add doesn't sign the database.
+    cat > /tmp/pacman-offline.conf <<CONF
+[options]
+Architecture = auto
+SigLevel = Required DatabaseOptional
+LocalFileSigLevel = Optional
+
+[mbp]
+SigLevel = Never
+Server = file://$LOCAL_REPO
+CONF
+    info "Installing ${#PKGS[@]} packages from the USB stick"
+    pacstrap -C /tmp/pacman-offline.conf -K "$MNT" "${PKGS[@]}"
+    # Leave a normal system behind: no copied package files, no stick repo.
+    rm -f "$MNT"/var/cache/pacman/pkg/* "$MNT"/var/lib/pacman/sync/mbp.*
+else
+    info "Installing ${#PKGS[@]} packages (downloads ~1.5 GB)"
+    pacstrap -K "$MNT" "${PKGS[@]}"
+fi
+# pacman needs at least one mirror for updates later; the live mirrorlist is
+# copied by pacstrap, but it may be all comments if the stick was offline.
+if ! grep -q '^Server' "$MNT/etc/pacman.d/mirrorlist" 2>/dev/null; then
+    echo 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' >> "$MNT/etc/pacman.d/mirrorlist"
+fi
 genfstab -U "$MNT" >> "$MNT/etc/fstab"
 
 # ---- Carry over configs from the live session --------------------------------
@@ -108,11 +181,8 @@ install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop
 install -Dm644 -t "$MNT/usr/share/icons/hicolor/scalable/apps" /usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg
 install -Dm644 -t "$MNT/usr/share/backgrounds/mbp-sway" /usr/share/backgrounds/mbp-sway/wallpaper.jpg
-if compgen -G '/etc/NetworkManager/system-connections/*' >/dev/null; then
-    install -d -m700 "$MNT/etc/NetworkManager/system-connections"
-    cp -a /etc/NetworkManager/system-connections/. "$MNT/etc/NetworkManager/system-connections/"
-    chmod 600 "$MNT"/etc/NetworkManager/system-connections/*
-fi
+install -Dm644 -t "$MNT/etc/polkit-1/rules.d" /etc/polkit-1/rules.d/50-mbp-networkmanager.rules
+copy_wifi_connections
 
 cat > "$MNT/etc/systemd/zram-generator.conf" <<'EOF'
 [zram0]

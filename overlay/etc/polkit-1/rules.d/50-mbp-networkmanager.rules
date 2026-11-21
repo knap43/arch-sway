@@ -1,0 +1,10 @@
+// Members of wheel manage network connections without a password prompt.
+// This also makes nm-applet save Wi-Fi passwords system-wide, in the
+// connection file, instead of as a per-user secret that only the applet
+// holds (which is why they didn't survive the move to the installed system).
+polkit.addRule(function (action, subject) {
+    if (action.id.indexOf("org.freedesktop.NetworkManager.") === 0 &&
+        subject.isInGroup("wheel") && subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});
