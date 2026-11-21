@@ -1,0 +1,10 @@
+# kew is a terminal music player; this opens it in foot from the launcher.
+[Desktop Entry]
+Type=Application
+Name=kew
+Comment=Music player for the terminal
+Exec=foot --app-id=kew --title=kew kew
+Icon=multimedia-audio-player
+Terminal=false
+Categories=Audio;Music;Player;AudioVideo;
+Keywords=music;player;mp3;flac;
