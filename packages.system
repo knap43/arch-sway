@@ -92,3 +92,6 @@ libadwaita
 python-cryptography
 python-aiohttp
 python-pygame
+python-textual
+python-httpx
+llama-cpp

@@ -96,6 +96,8 @@ for f in /usr/local/bin/*; do
     case ${f##*/} in mbp-install|live-user-setup|live-welcome) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
+cp -a /usr/lib/lantern "$MNT/usr/lib/"
+install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/lantern.desktop
 if [[ -d /usr/lib/tiny-games ]]; then
     cp -a /usr/lib/tiny-games "$MNT/usr/lib/"
     install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/tiny-games-*.desktop

@@ -14,6 +14,7 @@ OUT="$HERE/out"
 command -v git >/dev/null || { echo "git is needed to fetch Tether: sudo pacman -S git" >&2; exit 1; }
 TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
 GAMES_REPO=${GAMES_REPO:-https://github.com/knap43/tiny-games}
+LANTERN_REPO=${LANTERN_REPO:-https://github.com/knap43/lantern}
 
 echo ":: Preparing profile from releng"
 sudo rm -rf "$WORK"
@@ -40,6 +41,16 @@ cp -r "$WORK/tether/linux/tether" "$PROFILE/airootfs/usr/lib/tether/"
 find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
 install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
     "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
+
+# Lantern (text RPG with a local llama.cpp Dungeon Master). Only the game and
+# its server script are bundled; the ~530 MB model downloads on first run.
+echo ":: Fetching Lantern from $LANTERN_REPO"
+git clone -q --depth 1 "$LANTERN_REPO" "$WORK/lantern"
+install -d "$PROFILE/airootfs/usr/lib/lantern/scripts"
+cp -r "$WORK/lantern/lantern" "$PROFILE/airootfs/usr/lib/lantern/"
+install -m755 "$WORK/lantern/scripts/serve.sh" "$PROFILE/airootfs/usr/lib/lantern/scripts/serve.sh"
+find "$PROFILE/airootfs/usr/lib/lantern" -name __pycache__ -prune -exec rm -rf {} +
+echo 'file_permissions["/usr/lib/lantern/scripts/serve.sh"]="0:0:755"' >> "$PROFILE/profiledef.sh"
 
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.

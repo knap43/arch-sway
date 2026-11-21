@@ -105,6 +105,14 @@ phone audio/screen, remote input, commands) start switched off.
 
 To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
+## Lantern
+
+[Lantern](https://github.com/knap43/lantern), a text RPG with a small local LLM as the Dungeon Master,
+is fetched at build time and appears in the launcher. The launcher entry opens it in a terminal and
+starts the llama.cpp server in the background (stopping it when you quit), so one click is enough.
+The fine-tuned ~530 MB model is downloaded with a progress bar on first run, into `~/.cache/lantern`;
+the server's log is in `~/.local/state/lantern/server.log`. Saves: `~/.local/share/lantern`.
+
 ## Games
 
 Five tiny dark-fantasy games from `knap43/tiny-games` are fetched at build time and appear in the launcher:
