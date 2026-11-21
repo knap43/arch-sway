@@ -96,16 +96,17 @@ Configs live in `~/.config/{sway,foot,fuzzel,mako,i3status,fish}`.
 
 [Tether](https://github.com/knap43/tether) is fetched when the ISO is built and installed
 trimmed down to **clipboard sync and file sharing**. Its other features (notifications,
-phone audio/screen, remote input, commands) start switched off, and the window shows only the
+phone audio/screen, remote input, commands) start switched off, and the interface shows only the
 clipboard and file controls (`TETHER_FEATURES=clipboard,files` in its launcher entry).
 
-- Open **Tether** from the launcher to pair your phone or another computer (same pairing as usual).
+- Open **Tether** from the launcher: it runs Tether's terminal interface (`tether tui`) in foot, showing
+  only the clipboard and file controls. Pair your phone or another computer there (same pairing as usual).
+  Tabs switch with 1–3, a device's actions are behind *Actions…*, and `q` quits.
 - **Clipboard** syncs automatically (via wl-clipboard; sway starts the service after login).
 - **Send files:** right-click in Thunar → *Send with Tether*. With several devices connected,
   a menu asks which one. Incoming files land in `~/Downloads/Tether`.
-- **Browse the phone** in Thunar (WebDAV, through `gvfs-dnssd`), and set up **folder sync** in the Tether window.
-- The window uses a light, square-cornered look from `~/.config/tether/style.css`;
-  the launcher entry starts it with `TETHER_COLOR_SCHEME=light`.
+- **Browse the phone** in Thunar (WebDAV, through `gvfs-dnssd`), and set up **folder sync** in Tether.
+- Tether's GTK window isn't included; the terminal interface does everything it did.
 
 To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
