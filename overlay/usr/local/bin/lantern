@@ -9,7 +9,15 @@ export LANTERN_URL=${LANTERN_URL:-http://127.0.0.1:$PORT}
 log=${XDG_STATE_HOME:-$HOME/.local/state}/lantern/server.log
 mkdir -p "$(dirname "$log")"
 
-# First run: download the fine-tuned DM here, with a visible progress bar,
+# The ISO ships the fine-tuned DM, so it works offline. A newer copy that
+# Lantern downloaded into ~/.cache wins; otherwise use the bundled one.
+if [[ -z ${LANTERN_MODEL:-} ]]; then
+    eval "$(grep -E '^TUNED=' "$LIB/scripts/serve.sh")"
+    bundled=/usr/share/lantern/models/$(basename "$TUNED")
+    [[ ! -f $TUNED && -f $bundled ]] && export LANTERN_MODEL=$bundled
+fi
+
+# First run without a bundled model: download the fine-tuned DM here, with a visible progress bar,
 # rather than inside the background server. The URL and checksum come from
 # serve.sh itself, so they stay in step with Lantern.
 if [[ -z ${LANTERN_MODEL:-} ]]; then

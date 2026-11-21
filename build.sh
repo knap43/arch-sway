@@ -52,6 +52,27 @@ install -m755 "$WORK/lantern/scripts/serve.sh" "$PROFILE/airootfs/usr/lib/lanter
 find "$PROFILE/airootfs/usr/lib/lantern" -name __pycache__ -prune -exec rm -rf {} +
 echo 'file_permissions["/usr/lib/lantern/scripts/serve.sh"]="0:0:755"' >> "$PROFILE/profiledef.sh"
 
+# Lantern's fine-tuned DM (~530 MB), bundled so the game works offline right
+# after installing. URL and checksum come from serve.sh. Reuses a copy in
+# ~/.cache/lantern (where Lantern itself keeps it) or in ./cache, so it's
+# downloaded at most once per machine.
+eval "$(grep -E '^TUNED(_URL|_SHA256)?=' "$WORK/lantern/scripts/serve.sh")"
+model_name=$(basename "$TUNED")
+model_ok() { [[ -f $1 ]] && echo "$TUNED_SHA256  $1" | sha256sum -c --quiet - 2>/dev/null; }
+model=""
+for candidate in "$TUNED" "$HERE/cache/$model_name"; do
+    model_ok "$candidate" && { model=$candidate; break; }
+done
+if [[ -z $model ]]; then
+    echo ":: Downloading Lantern's Dungeon Master (~530 MB, once)"
+    mkdir -p "$HERE/cache"
+    curl -fL --progress-bar -o "$HERE/cache/$model_name.part" "$TUNED_URL"
+    mv "$HERE/cache/$model_name.part" "$HERE/cache/$model_name"
+    model_ok "$HERE/cache/$model_name" || { rm -f "$HERE/cache/$model_name"; echo "!! Lantern model checksum mismatch" >&2; exit 1; }
+    model="$HERE/cache/$model_name"
+fi
+install -Dm644 "$model" "$PROFILE/airootfs/usr/share/lantern/models/$model_name"
+
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.
 # Each entry: name|launcher comment|desktop categories

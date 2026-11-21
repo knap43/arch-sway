@@ -97,6 +97,7 @@ for f in /usr/local/bin/*; do
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
 cp -a /usr/lib/lantern "$MNT/usr/lib/"
+[[ -d /usr/share/lantern ]] && cp -a /usr/share/lantern "$MNT/usr/share/"
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/lantern.desktop
 if [[ -d /usr/lib/tiny-games ]]; then
     cp -a /usr/lib/tiny-games "$MNT/usr/lib/"

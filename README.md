@@ -110,8 +110,10 @@ To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 [Lantern](https://github.com/knap43/lantern), a text RPG with a small local LLM as the Dungeon Master,
 is fetched at build time and appears in the launcher. The launcher entry opens it in a terminal and
 starts the llama.cpp server in the background (stopping it when you quit), so one click is enough.
-The fine-tuned ~530 MB model is downloaded with a progress bar on first run, into `~/.cache/lantern`;
-the server's log is in `~/.local/state/lantern/server.log`. Saves: `~/.local/share/lantern`.
+The fine-tuned ~530 MB model is bundled in the ISO (`/usr/share/lantern/models`), so it plays offline
+right after installing. `build.sh` downloads it once, reusing `~/.cache/lantern` or `./cache` when it's
+already there, and checks its checksum. The server's log is in `~/.local/state/lantern/server.log`.
+Saves: `~/.local/share/lantern`.
 
 ## Games
 
