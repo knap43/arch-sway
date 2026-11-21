@@ -2,9 +2,10 @@
 Type=Application
 Name=Tether
 Comment=Your phone's files and clipboard on this computer
-Exec=env TETHER_FEATURES=clipboard,files foot --app-id=dev.tether.Tether --title=Tether /usr/local/bin/tether tui
+Exec=env TETHER_COLOR_SCHEME=light TETHER_FEATURES=clipboard,files /usr/local/bin/tether gui
 Icon=dev.tether.Tether
 Terminal=false
-Categories=Utility;Network;
+Categories=GTK;Utility;Network;
 Keywords=phone;android;clipboard;sync;transfer;
+StartupNotify=true
 StartupWMClass=dev.tether.Tether

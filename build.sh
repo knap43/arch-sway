@@ -59,8 +59,6 @@ git clone -q --depth 1 "$TETHER_REPO" "$WORK/tether"
 install -d "$PROFILE/airootfs/usr/lib/tether"
 cp -r "$WORK/tether/linux/tether" "$PROFILE/airootfs/usr/lib/tether/"
 find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
-# The MacBook uses Tether's terminal interface (tether tui), not its GTK window.
-rm -f "$PROFILE/airootfs/usr/lib/tether/tether/gui.py"
 install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
     "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
 
