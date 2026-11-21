@@ -68,6 +68,7 @@ ttf-jetbrains-mono
 # --- applications ---
 librewolf
 mpv
+mpv-mpris
 kew
 flatpak
 thunar
