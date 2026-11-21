@@ -1,0 +1,6 @@
+# Hides "Foot Client" from the launcher (foot's client for server mode, which this setup doesn't use).
+# Overrides the entry of the same name in /usr/share/applications.
+[Desktop Entry]
+Type=Application
+Name=Foot Client
+NoDisplay=true

@@ -1,0 +1,6 @@
+# Hides "Qt V4L2 video capture utility" from the launcher (v4l-utils, pulled in by the video stack; a capture-device test tool).
+# Overrides the entry of the same name in /usr/share/applications.
+[Desktop Entry]
+Type=Application
+Name=Qt V4L2 video capture utility
+NoDisplay=true

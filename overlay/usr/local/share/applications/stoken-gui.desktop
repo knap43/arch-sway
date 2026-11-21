@@ -1,0 +1,6 @@
+# Hides "Software Token" from the launcher (live session only: Arch's rescue tools).
+# Overrides the entry of the same name in /usr/share/applications.
+[Desktop Entry]
+Type=Application
+Name=Software Token
+NoDisplay=true

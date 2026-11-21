@@ -1,0 +1,6 @@
+# Hides "Foot Server" from the launcher (foot's server mode, which this setup doesn't use).
+# Overrides the entry of the same name in /usr/share/applications.
+[Desktop Entry]
+Type=Application
+Name=Foot Server
+NoDisplay=true

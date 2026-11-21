@@ -1,0 +1,6 @@
+# Hides "lftp" from the launcher (live session only: Arch's rescue tools).
+# Overrides the entry of the same name in /usr/share/applications.
+[Desktop Entry]
+Type=Application
+Name=lftp
+NoDisplay=true

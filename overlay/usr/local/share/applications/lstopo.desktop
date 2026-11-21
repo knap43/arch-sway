@@ -1,0 +1,6 @@
+# Hides "Hardware Locality lstopo" from the launcher (hwloc, pulled in as a dependency; a developer tool).
+# Overrides the entry of the same name in /usr/share/applications.
+[Desktop Entry]
+Type=Application
+Name=Hardware Locality lstopo
+NoDisplay=true
