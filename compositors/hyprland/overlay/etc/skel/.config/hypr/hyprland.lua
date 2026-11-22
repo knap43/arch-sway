@@ -24,7 +24,7 @@ hl.config({
             inactive_border = "rgb(2a2a2a)",
         },
         resize_on_border = false,
-        layout = "dwindle",                  -- tiled by default
+        layout = "dwindle",                  -- tiles inside, but windows open tabbed (see "Tabbed by default")
     },
     decoration = {
         rounding = 0,
@@ -34,6 +34,8 @@ hl.config({
     animations = { enabled = false },
     dwindle = { preserve_split = true },
     group = {
+        auto_group = true,                   -- new windows join the focused tab group
+        group_on_movetoworkspace = true,     -- and so do windows sent to another workspace
         col = { border_active = "rgb(5e81ac)", border_inactive = "rgb(2a2a2a)" },
         groupbar = {
             font_size = 10,
@@ -170,6 +172,62 @@ local function tab_or_window(forward)
     end
 end
 
+-- ---- Tabbed by default -------------------------------------------------------
+-- Like the sway flavour, new workspaces start tabbed. Hyprland's tabs are
+-- window groups: the first tiled window on a workspace becomes a group, later
+-- ones join the focused group (auto_group), and windows sent to a workspace
+-- join its group (group_on_movetoworkspace). After Mod+. (tiled), new windows
+-- tile alongside as usual; Mod+, makes the workspace tabbed again.
+local function first_tiled_on_workspace(w)
+    if not w or w.floating or w.group or not w.workspace or w.workspace.special then return false end
+    for _, other in ipairs(hl.get_windows()) do
+        if other.mapped and not other.floating and other.workspace
+            and other.workspace.id == w.workspace.id and other.stable_id ~= w.stable_id then
+            return false
+        end
+    end
+    return true
+end
+
+-- Checked a moment later, once auto_group / group_on_movetoworkspace have had
+-- their say, so a window is never wrapped in a group beside the one it joined.
+local function tab_if_first(w)
+    hl.timer(function()
+        local cur = hl.get_window(w)
+        if first_tiled_on_workspace(cur) then hl.dispatch(hl.dsp.group.toggle({ window = cur })) end
+    end, { timeout = 50, type = "oneshot" })
+end
+hl.on("window.open", tab_if_first)
+hl.on("window.move_to_workspace", tab_if_first)   -- e.g. sent to an empty workspace
+
+-- Mod+, / Mod+T: the whole workspace as tabs (sway's "layout tabbed").
+local function tab_workspace()
+    local w = hl.get_active_window()
+    if not w or w.floating or not w.workspace then return end
+    if not w.group then
+        hl.dispatch(hl.dsp.group.toggle({ window = w }))
+        w = hl.get_active_window()
+        if not w or not w.group then return end
+    end
+    for _, other in ipairs(hl.get_windows()) do
+        if other.mapped and not other.floating and not other.group and other.workspace
+            and other.workspace.id == w.workspace.id and other.stable_id ~= w.stable_id then
+            w.group:add(other)
+        end
+    end
+end
+
+-- Mod+.: tiled (sway's "layout toggle split"): break the tabs apart, or, when
+-- the windows are already tiled, flip the split direction.
+local function tile_or_flip()
+    local w = hl.get_active_window()
+    if w and w.group then
+        hl.dispatch(hl.dsp.group.toggle({ window = w }))
+    else
+        hl.dispatch(hl.dsp.layout("togglesplit"))
+    end
+end
+
 local function bind(keys, action, opts) hl.bind(mod .. " + " .. keys, action, opts) end
 local function run(cmd) return hl.dsp.exec_cmd(cmd) end
 
@@ -231,9 +289,9 @@ end
 
 bind("backslash", hl.dsp.layout("preselect r"))   -- next window opens to the right
 bind("minus",     hl.dsp.layout("preselect d"))   -- next window opens below
-bind("period",    hl.dsp.layout("togglesplit"))   -- tiling: flip the split
-bind("comma",     hl.dsp.group.toggle())          -- tabbed (a window group)
-bind("T",         hl.dsp.group.toggle())          -- (no stacked layout: tabs too)
+bind("period",    tile_or_flip)                   -- tiled (again: flip the split)
+bind("comma",     tab_workspace)                  -- tabbed
+bind("T",         tab_workspace)                  -- (no stacked layout: tabs too)
 bind("grave",         hl.dsp.workspace.toggle_special("scratch"))
 bind("SHIFT + grave", hl.dsp.window.move({ workspace = "special:scratch", follow = false }))
 

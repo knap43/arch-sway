@@ -9,7 +9,7 @@ There are three flavours. Each has the same apps, keys and look; only the compos
 | Flavour | Compositor | New workspaces open | Bar |
 |---|---|---|---|
 | `sway` (default) | sway | tabbed | swaybar + i3status |
-| `hyprland` | Hyprland 0.57 (Lua config) | tiled | Waybar |
+| `hyprland` | Hyprland 0.57 (Lua config) | tabbed | Waybar |
 | `mango` | Mango (mangowm) 0.18 | tiled | Waybar |
 
 ## Build (on your Arch machine)
@@ -118,8 +118,8 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ ⇧ Space | switch focus between floating and tiled |
 | ⌘ \\ / ⌘ - | open the next window to the right / below |
-| ⌘ . | flip the split direction |
-| ⌘ , or ⌘ T | tabs on / off (a window group; Hyprland has no stacked layout) |
+| ⌘ . | tiled: break the tabs apart (press again to flip the split direction) |
+| ⌘ , or ⌘ T | tabbed: the whole workspace as tabs (Hyprland has no stacked layout) |
 | ⌘ [ / ⌘ ] | in tabs: previous / next tab (or click a tab) |
 
 ### Mango
