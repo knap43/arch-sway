@@ -192,4 +192,10 @@ class Settings(App):
 
 
 if __name__ == "__main__":
-    Settings().run()
+    try:
+        Settings().run()
+    except Exception:
+        # Opened from the launcher, the window would just vanish: show why.
+        import traceback
+        traceback.print_exc()
+        input("\nDesktop settings failed to start (details above). Press Enter to close. ")

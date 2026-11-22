@@ -2,7 +2,7 @@
 Type=Application
 Name=Desktop Settings
 Comment=Keyboard, display, look & behaviour, power & idle
-Exec=foot --app-id=mbp-settings --title="Desktop settings" mbp-settings
+Exec=foot --app-id=mbp-settings --title=Settings mbp-settings
 Icon=preferences-desktop
 Terminal=false
 Categories=Settings;
