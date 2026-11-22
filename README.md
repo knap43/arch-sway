@@ -132,7 +132,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
 | ⌘ , / ⌘ T | tabbed / stacked (press ⌘ . to go back to tiled) |
 
-Screen brightness is set to 100% at every login. Screenshots go to `~/Pictures/Screenshots`.
+Focus follows the mouse pointer. Screen brightness is set to 100% at every login. Screenshots go to `~/Pictures/Screenshots`.
 Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
 `/usr/share/backgrounds/mbp/wallpaper.jpg`. The fish prompt is `[$PWD]$`, set in
 `~/.config/fish/functions/fish_prompt.fish`.

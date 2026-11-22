@@ -78,7 +78,7 @@ hl.config({
         resolve_binds_by_sym = false,
         repeat_delay = 300,
         repeat_rate = 35,
-        follow_mouse = 0,                    -- focus follows clicks, not the pointer
+        follow_mouse = 1,                    -- focus follows the pointer
         touchpad = {
             tap_to_click = true,
             natural_scroll = true,
