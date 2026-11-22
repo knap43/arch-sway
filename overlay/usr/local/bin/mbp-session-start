@@ -16,8 +16,13 @@ dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 systemctl --user restart tether.service 2>/dev/null
 
 brightnessctl set 100% >/dev/null 2>&1
+# Dark everywhere: GTK 4 / libadwaita apps follow color-scheme. GTK 3 apps
+# (Thunar, Mousepad...) use the built-in Adwaita theme, made dark by
+# gtk-application-prefer-dark-theme in ~/.config/gtk-3.0/settings.ini. (Naming
+# "Adwaita-dark" here would make GTK 3 fall back to plain, light Adwaita, since
+# no theme of that name is installed.)
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null
-gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark 2>/dev/null
+gsettings set org.gnome.desktop.interface gtk-theme Adwaita 2>/dev/null
 
 bg mako
 bg /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
