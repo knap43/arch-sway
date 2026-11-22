@@ -9,18 +9,22 @@ set $up k
 set $right l
 set $term foot
 set $menu fuzzel
+# Accent colour, border width and gaps from the desktop settings (mbp-settings)
+include ~/.config/mbp/generated/sway-vars.conf
 
 # ---- Look: no gaps, thin borders, nothing that animates ----------------------
 font pango:Noto Sans 10
-default_border pixel 2
-default_floating_border pixel 2
+default_border pixel $border
+default_floating_border pixel $border
+gaps inner $gaps_inner
+gaps outer $gaps_outer
 hide_edge_borders smart
 focus_follows_mouse yes
 workspace_layout tabbed
 output * bg /usr/share/backgrounds/mbp/wallpaper.jpg fill #1e1e1e
 
 # class                 border  bg      text    indicator child_border
-client.focused          #5e81ac #5e81ac #ffffff #81a1c1   #5e81ac
+client.focused          $accent $accent $accent_text #81a1c1   $accent
 client.focused_inactive #3b3b3b #3b3b3b #cccccc #3b3b3b   #3b3b3b
 client.unfocused        #2a2a2a #2a2a2a #888888 #2a2a2a   #2a2a2a
 client.urgent           #bf616a #bf616a #ffffff #bf616a   #bf616a
@@ -202,7 +206,7 @@ bar {
         background #1e1e1e
         statusline #cccccc
         separator  #444444
-        focused_workspace  #5e81ac #5e81ac #ffffff
+        focused_workspace  $accent $accent $accent_text
         active_workspace   #3b3b3b #3b3b3b #ffffff
         inactive_workspace #1e1e1e #1e1e1e #888888
         urgent_workspace   #bf616a #bf616a #ffffff

@@ -24,6 +24,14 @@ GENERATED = os.path.join(CONF_DIR, "generated")
 SYSFS = os.environ.get("MBP_SYSFS", "/sys")          # tests point this elsewhere
 
 SCALES = ["auto", "1", "1.25", "1.5", "1.75", "2"]
+# Accent colours (focused borders, tabs, the bar's current workspace) and the
+# text colour that reads on each.
+ACCENTS = {
+    "blue": ("5e81ac", "ffffff"), "teal": ("88c0d0", "1e1e1e"), "green": ("a3be8c", "1e1e1e"),
+    "yellow": ("ebcb8b", "1e1e1e"), "orange": ("d08770", "1e1e1e"), "red": ("bf616a", "ffffff"),
+    "purple": ("b48ead", "1e1e1e"), "grey": ("6b6b6b", "ffffff"),
+}
+FX = "Hyprland and Mango only (sway has no such effects). Costs GPU time on older laptops."
 
 # key, section, label, kind, default, extra (choices or (min, max)), help
 SCHEMA = [
@@ -47,6 +55,17 @@ SCHEMA = [
     ("FOCUS_FOLLOWS_MOUSE", "Look & behaviour", "Focus follows the mouse", "bool", "on", None, ""),
     ("NATURAL_SCROLL", "Look & behaviour", "Natural scrolling (touchpad)", "bool", "on", None, ""),
     ("TAP_TO_CLICK", "Look & behaviour", "Tap to click (touchpad)", "bool", "on", None, ""),
+    ("ACCENT", "Appearance", "Accent colour", "choice", "blue", list(ACCENTS),
+     "Focused window borders, the active tab and the bar's current workspace."),
+    ("BORDER_WIDTH", "Appearance", "Border width (px)", "int", "2", (0, 10), ""),
+    ("GAPS_INNER", "Appearance", "Gaps between windows (px)", "int", "0", (0, 40), ""),
+    ("GAPS_OUTER", "Appearance", "Gaps at the screen edges (px)", "int", "0", (0, 40), ""),
+    ("ROUNDING", "Appearance", "Rounded corners (px)", "int", "0", (0, 20), FX.split(" Costs")[0]),
+    ("ANIMATIONS", "Appearance", "Animations", "bool", "off", None, FX),
+    ("BLUR", "Appearance", "Blur behind transparent windows", "bool", "off", None, FX),
+    ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
+    ("INACTIVE_OPACITY", "Appearance", "Opacity of unfocused windows", "choice", "1",
+     ["1", "0.95", "0.9", "0.85", "0.8"], FX.split(" Costs")[0]),
     ("LOCK_MIN", "Power & idle", "Lock after (minutes, 0 = never)", "int", "5", (0, 240), ""),
     ("SCREEN_OFF_MIN", "Power & idle", "Screen off after (minutes, 0 = never)", "int", "10", (0, 240), ""),
     ("SUSPEND_MIN", "Power & idle", "Suspend after (minutes, 0 = never)", "int", "15", (0, 240), ""),
@@ -162,6 +181,22 @@ def fmt(x):
     return f"{x:g}"
 
 
+def accent(v):
+    return ACCENTS[v["ACCENT"]]
+
+
+def sway_vars(v):
+    bg, fg = accent(v)
+    return "\n".join([
+        f"# {HEADER}",
+        f"set $accent #{bg}",
+        f"set $accent_text #{fg}",
+        f"set $border {v['BORDER_WIDTH']}",
+        f"set $gaps_inner {v['GAPS_INNER']}",
+        f"set $gaps_outer {v['GAPS_OUTER']}",
+    ]) + "\n"
+
+
 def sway_conf(v):
     lines = [f"# {HEADER}",
              "input type:keyboard {",
@@ -200,6 +235,16 @@ def hyprland_lua(v):
         f"    tap_to_click = {str(on(v, 'TAP_TO_CLICK')).lower()},",
         f"    tabbed = {str(v['DEFAULT_LAYOUT'] == 'tabbed').lower()},",
         f"    monitors = {{ {mons} }},",
+        f"    accent = {lua_str(accent(v)[0])},",
+        f"    accent_text = {lua_str(accent(v)[1])},",
+        f"    border_size = {v['BORDER_WIDTH']},",
+        f"    gaps_in = {v['GAPS_INNER']},",
+        f"    gaps_out = {v['GAPS_OUTER']},",
+        f"    rounding = {v['ROUNDING']},",
+        f"    animations = {str(on(v, 'ANIMATIONS')).lower()},",
+        f"    blur = {str(on(v, 'BLUR')).lower()},",
+        f"    shadows = {str(on(v, 'SHADOWS')).lower()},",
+        f"    inactive_opacity = {v['INACTIVE_OPACITY']},",
         "}",
     ]) + "\n"
 
@@ -219,16 +264,38 @@ def mango_conf(v):
              f"sloppy_focus={1 if on(v, 'FOCUS_FOLLOWS_MOUSE') else 0}",
              f"trackpad_natural_scrolling={1 if on(v, 'NATURAL_SCROLL') else 0}",
              f"tap_to_click={1 if on(v, 'TAP_TO_CLICK') else 0}"]
+    bg, fg = accent(v)
+    lines += [f"border_px={v['BORDER_WIDTH']}",
+              f"gap_inner_horizontal={v['GAPS_INNER']}", f"gap_inner_vertical={v['GAPS_INNER']}",
+              f"gap_outer_horizontal={v['GAPS_OUTER']}", f"gap_outer_vertical={v['GAPS_OUTER']}",
+              f"border_radius={v['ROUNDING']}",
+              f"animations={1 if on(v, 'ANIMATIONS') else 0}",
+              f"layer_animations={1 if on(v, 'ANIMATIONS') else 0}",
+              f"blur={1 if on(v, 'BLUR') else 0}",
+              f"shadows={1 if on(v, 'SHADOWS') else 0}",
+              f"unfocused_opacity={v['INACTIVE_OPACITY']}",
+              f"focus_color=0x{bg}ff", f"scratchpad_color=0x{bg}ff",
+              f"tab_bar_decorate_focus_bg_color=0x{bg}ff",
+              f"tab_bar_decorate_focus_fg_color=0x{fg}ff"]
     lines += [f"tag_rule=id:{i},layout_name:{layout}" for i in range(1, 10)]
     lines += [f"monitor_rule=name:^{regex_literal(n)}$,scale:{fmt(s)}" for n, s in scales(v)]
     return "\n".join(lines) + "\n"
 
 
+def waybar_css(v):
+    bg, fg = accent(v)
+    return (f"/* {HEADER} */\n"
+            "window#waybar #workspaces button.active,\n"
+            "window#waybar #workspaces button.focused {\n"
+            f"    background: #{bg};\n    color: #{fg};\n}}\n")
+
+
 def generate(v=None):
     v = v or load()
     os.makedirs(GENERATED, exist_ok=True)
-    for name, text in (("sway.conf", sway_conf(v)), ("hyprland.lua", hyprland_lua(v)),
-                       ("mango.conf", mango_conf(v))):
+    for name, text in (("sway-vars.conf", sway_vars(v)), ("sway.conf", sway_conf(v)),
+                       ("hyprland.lua", hyprland_lua(v)), ("mango.conf", mango_conf(v)),
+                       ("waybar.css", waybar_css(v))):
         path = os.path.join(GENERATED, name)
         with open(path + ".tmp", "w") as f:
             f.write(text)
@@ -273,6 +340,8 @@ def apply():
     elif wm == "mango":
         quiet("mmsg", "dispatch", "reload_config")
         wallpaper(v)
+    if wm in ("hyprland", "mango"):
+        quiet("pkill", "-SIGUSR2", "-x", "waybar")     # reload its style (accent)
     if wm:
         quiet("pkill", "-x", "wlsunset")
         detach("mbp-nightlight", "start")

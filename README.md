@@ -157,12 +157,13 @@ all three flavours, with the keyboard or the mouse:
 | Keyboard | Alt ⇄ Win swap (automatic / on / off), layouts (e.g. `us,ru`), Caps Lock ⇄ Escape, key repeat |
 | Display | scale (automatic, 1–2), night light on/off and temperature, brightness at login |
 | Look & behaviour | wallpaper, whether new workspaces open tabbed or tiled, focus follows mouse, natural scrolling, tap to click |
+| Appearance | accent colour (borders, active tab, the bar's current workspace), border width, gaps; and, in Hyprland and Mango only (sway has no such effects): rounded corners, animations, blur, shadows, opacity of unfocused windows |
 | Power & idle | minutes until lock, screen off and suspend (0 = never); suspend always, on battery only or never |
 
 **Ctrl+S** saves and applies: the compositor reloads its config, and the wallpaper, night light and idle timers
 restart. A few things only show up in new workspaces (the default layout). The settings live in
 `~/.config/mbp/settings.conf`; `mbp-conf` turns them into `~/.config/mbp/generated/{sway.conf,hyprland.lua,mango.conf}`,
-which each compositor's config loads after its own defaults (and again at every login, for the machine it runs on).
+which each compositor's config loads after its own defaults (sway also loads `sway-vars.conf` first, and Waybar imports `waybar.css`) (and again at every login, for the machine it runs on).
 Edit the file by hand if you like, then run `mbp-conf apply`.
 
 ## Tether (phone and computer bridge)

@@ -31,32 +31,35 @@ end
 
 hl.config({
     general = {
-        gaps_in = 0,
-        gaps_out = 0,
-        border_size = 2,
+        gaps_in = setting("gaps_in", 0),
+        gaps_out = setting("gaps_out", 0),
+        border_size = setting("border_size", 2),
         col = {
-            active_border = "rgb(5e81ac)",
+            active_border = "rgb(" .. setting("accent", "5e81ac") .. ")",
             inactive_border = "rgb(2a2a2a)",
         },
         resize_on_border = false,
         layout = "dwindle",                  -- tiles inside, but windows open tabbed (see "Tabbed by default")
     },
     decoration = {
-        rounding = 0,
-        shadow = { enabled = false },
-        blur = { enabled = false },
+        rounding = setting("rounding", 0),
+        inactive_opacity = setting("inactive_opacity", 1),
+        shadow = { enabled = setting("shadows", false) },
+        blur = { enabled = setting("blur", false) },
     },
-    animations = { enabled = false },
+    animations = { enabled = setting("animations", false) },
     -- New windows always open to the right (or below), not on the cursor's side
     dwindle = { preserve_split = true, force_split = 2 },
     group = {
         auto_group = true,                   -- new windows join the focused tab group
         group_on_movetoworkspace = true,     -- and so do windows sent to another workspace
-        col = { border_active = "rgb(5e81ac)", border_inactive = "rgb(2a2a2a)" },
+        col = { border_active = "rgb(" .. setting("accent", "5e81ac") .. ")", border_inactive = "rgb(2a2a2a)" },
         groupbar = {
             font_size = 10,
             height = 18,
-            col = { active = "rgb(5e81ac)", inactive = "rgb(2a2a2a)" },
+            col = { active = "rgb(" .. setting("accent", "5e81ac") .. ")", inactive = "rgb(2a2a2a)" },
+            text_color = "rgb(" .. setting("accent_text", "ffffff") .. ")",
+            text_color_inactive = "rgb(888888)",
         },
     },
     misc = {

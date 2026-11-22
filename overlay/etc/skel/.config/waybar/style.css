@@ -1,3 +1,6 @@
+/* The accent colour from the desktop settings (mbp-settings) */
+@import url("../mbp/generated/waybar.css");
+
 /* Waybar (Hyprland and Mango flavours), styled like the sway flavour's bar. */
 * {
     font-family: "JetBrains Mono", monospace;
