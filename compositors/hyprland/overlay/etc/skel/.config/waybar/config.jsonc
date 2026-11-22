@@ -43,7 +43,7 @@
         "interval": 5
     },
     "clock": {
-        "format": "{:%a %d %b  %H:%M}",
+        "format": "{:%H:%M}",                 // the date is in the tooltip
         "tooltip-format": "{:%A %d %B %Y}"
     },
     "tray": {

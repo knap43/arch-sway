@@ -30,5 +30,5 @@ memory {
     format = "RAM %used"
 }
 tztime local {
-    format = "%a %d %b  %H:%M"
+    format = "%H:%M"
 }
