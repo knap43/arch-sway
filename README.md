@@ -103,7 +103,8 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ Tab / ⌘ ⇧ Tab | cycle through all windows, forward / back |
+| ⌘ Tab | switch between tabbed and tiled |
+| ⌘ ⇧ Tab | cycle through all windows |
 | ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
 | ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ ⇧ Space | switch focus between floating and tiled |
@@ -115,7 +116,8 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ Tab / ⌘ ⇧ Tab | cycle through all windows, forward / back |
+| ⌘ Tab | switch between tabbed and tiled |
+| ⌘ ⇧ Tab | cycle through all windows |
 | ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
 | ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ ⇧ Space | switch focus between floating and tiled |

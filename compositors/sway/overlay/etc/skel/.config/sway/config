@@ -68,8 +68,10 @@ bindsym --to-code {
 # ---- Windows -----------------------------------------------------------------
 bindsym --to-code {
     $mod+w             kill
-    $mod+Tab           exec sway-cycle-windows
-    $mod+Shift+Tab     exec sway-cycle-windows --reverse
+    # Mod+Tab: switch this container between tabbed and tiled
+    $mod+Tab           layout toggle tabbed split
+    # Mod+Shift+Tab: cycle through every window on every workspace
+    $mod+Shift+Tab     exec sway-cycle-windows
     $mod+bracketleft   focus prev
     $mod+bracketright  focus next
     $mod+f             fullscreen

@@ -145,7 +145,7 @@ local function workspace_next(move)
     end
 end
 
--- Mod+Tab: cycle through every window on every workspace (like Alt+Tab).
+-- Mod+Shift+Tab: cycle through every window on every workspace (like Alt+Tab).
 local function cycle_all(step)
     local wins = {}
     for _, w in ipairs(hl.get_windows()) do
@@ -301,6 +301,16 @@ local function to_left_half()
     end)
 end
 
+-- Mod+Tab: switch the workspace between tabbed and tiled.
+local function tabs_or_tiles()
+    local w = hl.get_active_window()
+    if w and w.group then
+        hl.dispatch(hl.dsp.group.toggle({ window = w }))
+    else
+        tab_workspace()
+    end
+end
+
 local function bind(keys, action, opts) hl.bind(mod .. " + " .. keys, action, opts) end
 local function run(cmd) return hl.dsp.exec_cmd(cmd) end
 
@@ -320,8 +330,8 @@ bind("V",      run('cliphist list | fuzzel --dmenu --prompt "Clipboard: " | clip
 -------------------------------------------------------------------------------
 
 bind("W",            hl.dsp.window.close())
-bind("Tab",          function() cycle_all(1) end)
-bind("SHIFT + Tab",  function() cycle_all(-1) end)
+bind("Tab",          tabs_or_tiles)                -- tabbed <-> tiled
+bind("SHIFT + Tab",  function() cycle_all(1) end)  -- every window, everywhere
 bind("bracketleft",  function() tab_or_window(false) end)
 bind("bracketright", function() tab_or_window(true) end)
 bind("F",            hl.dsp.window.fullscreen())
