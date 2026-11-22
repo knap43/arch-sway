@@ -45,6 +45,23 @@ DISK=$(ask "Install to which disk" "${DISKS[0]}")
 [[ -b $DISK ]] || die "$DISK is not a block device"
 [[ $DISK != "$LIVE_DEV" ]] || die "That is the USB stick you booted from"
 
+# A hostname suggestion from the firmware's model name: "macbook" on a Mac,
+# "thinkpad-t460s" on that ThinkPad, the model elsewhere, "arch" as a last resort.
+default_hostname() {
+    local vendor product version name
+    vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || true)
+    product=$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)
+    version=$(cat /sys/class/dmi/id/product_version 2>/dev/null || true)
+    case $vendor in
+        Apple*)  name=$product; [[ $name == MacBook* ]] && name=macbook ;;
+        LENOVO)  name=$version ;;          # product_name is a type code like 20F9...
+        *)       name=$product ;;
+    esac
+    name=$(tr '[:upper:]' '[:lower:]' <<<"$name" | tr -cs 'a-z0-9' '-' | sed 's/^-*//; s/-*$//' | cut -c1-30)
+    [[ -z $name || $name =~ (system-product-name|to-be-filled|default-string|^none$) ]] && name=arch
+    echo "$name"
+}
+
 # ---- Questions --------------------------------------------------------------
 HOSTNAME_=$(ask "Hostname" "$(default_hostname)")
 USERNAME=$(ask "Username" "")
@@ -65,23 +82,6 @@ CONFIRM=$(ask "Type the disk name again to continue" "")
 [[ $CONFIRM == "$DISK" ]] || die "Aborted"
 
 # ---- Partition & format -----------------------------------------------------
-# A hostname suggestion from the firmware's model name: "macbook" on a Mac,
-# "thinkpad-t460s" on that ThinkPad, the model elsewhere, "arch" as a last resort.
-default_hostname() {
-    local vendor product version name
-    vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null)
-    product=$(cat /sys/class/dmi/id/product_name 2>/dev/null)
-    version=$(cat /sys/class/dmi/id/product_version 2>/dev/null)
-    case $vendor in
-        Apple*)  name=$product; [[ $name == MacBook* ]] && name=macbook ;;
-        LENOVO)  name=$version ;;          # product_name is a type code like 20F9...
-        *)       name=$product ;;
-    esac
-    name=$(tr '[:upper:]' '[:lower:]' <<<"$name" | tr -cs 'a-z0-9' '-' | sed 's/^-*//; s/-*$//' | cut -c1-30)
-    [[ -z $name || $name =~ (system-product-name|to-be-filled|default-string|^none$) ]] && name=arch
-    echo "$name"
-}
-
 part() { [[ $DISK =~ [0-9]$ ]] && echo "${DISK}p$1" || echo "${DISK}$1"; }
 
 # Copies the live session's saved networks, with their Wi-Fi passwords.
