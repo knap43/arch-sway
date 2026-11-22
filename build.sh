@@ -24,8 +24,47 @@ WMAI_REPO=${WMAI_REPO:-https://github.com/knap43/wm-config-llm}
 WMAI_MODEL_URL=${WMAI_MODEL_URL:-https://github.com/knap43/wm-config-llm/releases/download/v3/wmcfg-Q4_K_M.gguf}
 WMAI_MODEL_SHA256=${WMAI_MODEL_SHA256:-234589dd0132dfa648ba2e4bb4436cd1e2e5fbec36a27cb34300150a5ae3f923}
 
+
+# ---- Never pack or delete through a leftover mount --------------------------
+# pacstrap (inside mkarchiso) mounts /proc, /sys and /dev in the image root and
+# unmounts them afterwards, but if a program it started is still running there
+# the unmount fails with only a warning; mksquashfs then packs the host's live
+# /proc (endless "Failed to read file .../proc/..."), and the next build's rm
+# would delete through /dev. release_work stops such programs and unmounts.
+# Mount points at or below $1, deepest first (mountinfo escapes spaces etc.).
+mounts_below() {
+    awk -v p="$1/" '{ m = $5; gsub(/\\040/, " ", m); gsub(/\\011/, "\t", m); gsub(/\\012/, "\n", m)
+                      gsub(/\\134/, "\\", m); if (index(m, p) == 1) print m }' /proc/self/mountinfo | sort -r
+}
+release_work() {
+    local dir=$1 pid root killed=0 m
+    for pid in /proc/[0-9]*; do
+        root=$(readlink "$pid/root" 2>/dev/null) || continue
+        [[ $root == "$dir" || $root == "$dir"/* ]] || continue
+        echo ":: Stopping $(cat "$pid/comm" 2>/dev/null) (pid ${pid#/proc/}), left running inside the image" >&2
+        kill "${pid#/proc/}" 2>/dev/null && killed=1
+    done
+    if (( killed )); then
+        sleep 2
+        for pid in /proc/[0-9]*; do
+            root=$(readlink "$pid/root" 2>/dev/null) || continue
+            [[ $root == "$dir" || $root == "$dir"/* ]] && kill -9 "${pid#/proc/}" 2>/dev/null
+        done
+    fi
+    while IFS= read -r m; do
+        echo ":: Unmounting leftover $m" >&2
+        umount "$m" 2>/dev/null || umount -l "$m"
+    done < <(mounts_below "$dir")
+    [[ -z $(mounts_below "$dir") ]]
+}
+release() { sudo bash -c "$(declare -f mounts_below release_work); release_work \"\$1\"" _ "$1"; }
+clean_work() {
+    release "$WORK" || { echo "!! Something is still mounted under $WORK; not deleting it" >&2; exit 1; }
+    sudo rm -rf --one-file-system "$WORK"
+}
+
 echo ":: Preparing the $FLAVOUR profile from releng"
-sudo rm -rf "$WORK"
+clean_work
 mkdir -p "$WORK"
 cp -a "$RELENG" "$PROFILE"
 
@@ -197,8 +236,23 @@ ln -sf /usr/lib/systemd/system/bluetooth.service "$UNITS/multi-user.target.wants
 
 echo ":: Building ISO (this takes a while)"
 mkdir -p "$OUT"
+# Watch for the case described at release_work: once package installation is
+# over (no pacstrap/arch-chroot running) nothing may stay mounted in the image.
+# The few steps between it and mksquashfs give the watcher time to step in.
+sudo -v     # one root watcher for the whole build, so it never asks for a password
+watch_image() {
+    while sleep 1; do
+        pgrep -x mksquashfs >/dev/null && break
+        { pgrep -x pacstrap || pgrep -x arch-chroot; } >/dev/null && continue
+        [[ -n $(mounts_below "$1") ]] && release_work "$1"
+    done
+}
+sudo bash -c "$(declare -f mounts_below release_work watch_image); watch_image \"\$1\"" _ "$WORK/tmp" &
+watcher=$!
+trap 'sudo kill "$watcher" 2>/dev/null' EXIT
 sudo mkarchiso -v -w "$WORK/tmp" -o "$OUT" "$PROFILE"
-sudo rm -rf "$WORK"
+sudo kill "$watcher" 2>/dev/null
+clean_work
 
 echo
 echo ":: Done:"
