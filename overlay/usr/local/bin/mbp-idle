@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# (Re)starts swayidle with the times from the desktop settings (mbp-settings,
+# "Power & idle"): lock, screen off and suspend, each 0 = never. Suspend can
+# happen always, only on battery (mbp-suspend-if-battery) or never.
+pkill -x swayidle
+
+get() { mbp-conf get "$1" 2>/dev/null; }
+lock=$(get LOCK_MIN) off=$(get SCREEN_OFF_MIN) susp=$(get SUSPEND_MIN) when=$(get SUSPEND_WHEN)
+
+if [[ -n ${SWAYSOCK-} ]]; then
+    screen_off='swaymsg "output * power off"' screen_on='swaymsg "output * power on"'
+else
+    screen_off="wlopm --off '*'" screen_on="wlopm --on '*'"
+fi
+
+args=(-w)
+(( ${lock:-5} > 0 ))  && args+=(timeout $((lock * 60)) 'swaylock -f -c 1e1e1e')
+(( ${off:-10} > 0 ))  && args+=(timeout $((off * 60)) "$screen_off" resume "$screen_on")
+if (( ${susp:-15} > 0 )); then
+    case ${when:-battery} in
+        always)  args+=(timeout $((susp * 60)) 'systemctl suspend') ;;
+        battery) args+=(timeout $((susp * 60)) mbp-suspend-if-battery) ;;
+    esac
+fi
+args+=(before-sleep 'swaylock -f -c 1e1e1e')
+exec swayidle "${args[@]}"

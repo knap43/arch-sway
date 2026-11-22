@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Desktop Settings
+Comment=Keyboard, display, look & behaviour, power & idle
+Exec=foot --app-id=mbp-settings --title="Desktop settings" mbp-settings
+Icon=preferences-desktop
+Terminal=false
+Categories=Settings;
+Keywords=keyboard;layout;scale;wallpaper;night light;idle;suspend;touchpad;

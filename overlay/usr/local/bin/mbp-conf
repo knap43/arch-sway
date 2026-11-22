@@ -1,0 +1,316 @@
+#!/usr/bin/env python3
+"""Desktop settings shared by the sway, Hyprland and Mango flavours.
+
+The settings live in ~/.config/mbp/settings.conf (KEY=value lines). mbp-conf
+turns them into a snippet each compositor loads -- ~/.config/mbp/generated/
+sway.conf, hyprland.lua and mango.conf -- and the session scripts (idle,
+night light, brightness, wallpaper) read them with `mbp-conf get`.
+mbp-settings is the friendly way to change them.
+
+  mbp-conf get KEY              print a setting (its default if unset)
+  mbp-conf set KEY=VALUE ...    change settings (validated)
+  mbp-conf schema               every setting with its current value, as JSON
+  mbp-conf generate             write the compositor snippets
+  mbp-conf apply                generate, then reload the running compositor
+                                and restart wallpaper, night light and idle
+  mbp-conf wallpaper            (re)start the wallpaper (Hyprland, Mango)
+"""
+import glob, json, os, re, shlex, subprocess, sys
+
+HOME = os.path.expanduser("~")
+CONF_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.join(HOME, ".config")), "mbp")
+SETTINGS = os.path.join(CONF_DIR, "settings.conf")
+GENERATED = os.path.join(CONF_DIR, "generated")
+SYSFS = os.environ.get("MBP_SYSFS", "/sys")          # tests point this elsewhere
+
+SCALES = ["auto", "1", "1.25", "1.5", "1.75", "2"]
+
+# key, section, label, kind, default, extra (choices or (min, max)), help
+SCHEMA = [
+    ("SWAP_ALT_WIN", "Keyboard", "Swap Alt and Win", "choice", "auto", ["auto", "on", "off"],
+     "auto: on for PC keyboards, off on a Mac. Puts ⌘ (Super) next to the space bar."),
+    ("LAYOUTS", "Keyboard", "Keyboard layouts", "text", "us,ru", r"^[a-z]{2,3}(,[a-z]{2,3})*$",
+     "Comma-separated XKB layouts, e.g. us,ru or us,de. The key just left of ⌘ + Shift switches."),
+    ("SWAP_CAPS_ESC", "Keyboard", "Swap Caps Lock and Escape", "bool", "on", None, ""),
+    ("REPEAT_DELAY", "Keyboard", "Key repeat delay (ms)", "int", "300", (100, 1500), ""),
+    ("REPEAT_RATE", "Keyboard", "Key repeat rate (per second)", "int", "35", (5, 100), ""),
+    ("SCALE", "Display", "Scale", "choice", "auto", SCALES,
+     "auto: 1.5 on displays 1080p or taller, 1 otherwise. A number applies to every display."),
+    ("NIGHTLIGHT", "Display", "Night light", "bool", "on", None, "Mod+N still toggles it for the session."),
+    ("NIGHTLIGHT_TEMP", "Display", "Night light temperature (K)", "int", "4000", (1900, 6500), ""),
+    ("BRIGHTNESS", "Display", "Brightness at login", "choice", "100", ["keep", "30", "50", "70", "100"],
+     "keep: leave it where it was."),
+    ("WALLPAPER", "Look & behaviour", "Wallpaper", "path", "/usr/share/backgrounds/mbp/wallpaper.jpg", None,
+     "An image file."),
+    ("DEFAULT_LAYOUT", "Look & behaviour", "New workspaces open", "choice", "tabbed", ["tabbed", "tiled"],
+     "Mod+Tab still switches each workspace."),
+    ("FOCUS_FOLLOWS_MOUSE", "Look & behaviour", "Focus follows the mouse", "bool", "on", None, ""),
+    ("NATURAL_SCROLL", "Look & behaviour", "Natural scrolling (touchpad)", "bool", "on", None, ""),
+    ("TAP_TO_CLICK", "Look & behaviour", "Tap to click (touchpad)", "bool", "on", None, ""),
+    ("LOCK_MIN", "Power & idle", "Lock after (minutes, 0 = never)", "int", "5", (0, 240), ""),
+    ("SCREEN_OFF_MIN", "Power & idle", "Screen off after (minutes, 0 = never)", "int", "10", (0, 240), ""),
+    ("SUSPEND_MIN", "Power & idle", "Suspend after (minutes, 0 = never)", "int", "15", (0, 240), ""),
+    ("SUSPEND_WHEN", "Power & idle", "Suspend when idle", "choice", "battery", ["battery", "always", "never"],
+     "battery: only when the charger is unplugged."),
+]
+BY_KEY = {s[0]: s for s in SCHEMA}
+
+
+# ---- reading and writing ----------------------------------------------------
+def load():
+    values = {key: s[4] for key, s in BY_KEY.items()}
+    try:
+        with open(SETTINGS) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key, value = key.strip(), value.strip()
+                if key in BY_KEY and validate(key, value) is None:
+                    values[key] = value
+    except FileNotFoundError:
+        pass
+    return values
+
+
+def validate(key, value):
+    """None if fine, otherwise a message."""
+    if key not in BY_KEY:
+        return f"unknown setting {key}"
+    _, _, label, kind, _, extra, _ = BY_KEY[key]
+    if kind == "choice" and value not in extra:
+        return f"{label}: one of {', '.join(extra)}"
+    if kind == "bool" and value not in ("on", "off"):
+        return f"{label}: on or off"
+    if kind == "int":
+        if not re.fullmatch(r"\d+", value) or not extra[0] <= int(value) <= extra[1]:
+            return f"{label}: a whole number from {extra[0]} to {extra[1]}"
+    if kind == "text" and not re.fullmatch(extra, value):
+        return f"{label}: not in the expected form"
+    if kind == "path" and (not value or "\n" in value):
+        return f"{label}: a file path"
+    return None
+
+
+def save(values):
+    os.makedirs(CONF_DIR, exist_ok=True)
+    lines = ["# Desktop settings; change them with mbp-settings (or edit, then: mbp-conf apply)."]
+    section = None
+    for key, sec, label, *_ in SCHEMA:
+        if sec != section:
+            lines += ["", f"# {sec}"]
+            section = sec
+        lines.append(f"{key}={values[key]}")
+    tmp = SETTINGS + ".tmp"
+    with open(tmp, "w") as f:
+        f.write("\n".join(lines) + "\n")
+    os.replace(tmp, SETTINGS)
+
+
+# ---- values that depend on the machine ----------------------------------------
+def read(path):
+    try:
+        with open(path) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+def swap_alt_win(v):
+    if v["SWAP_ALT_WIN"] != "auto":
+        return v["SWAP_ALT_WIN"] == "on"
+    return not read(f"{SYSFS}/class/dmi/id/sys_vendor").startswith("Apple")
+
+
+def xkb_options(v):
+    opts = ["mbp:swap_alt_win"] if swap_alt_win(v) else ["grp:alt_shift_toggle"]
+    if v["SWAP_CAPS_ESC"] == "on":
+        opts.insert(0, "caps:swapescape")
+    return ",".join(opts)
+
+
+def outputs():
+    """[(name, preferred height)] for every connected display."""
+    found = []
+    for d in sorted(glob.glob(f"{SYSFS}/class/drm/card*-*")):
+        if read(f"{d}/status") != "connected":
+            continue
+        m = re.match(r"(\d+)x(\d+)", read(f"{d}/modes").split("\n")[0])
+        name = re.sub(r"^card\d+-", "", os.path.basename(d))
+        found.append((name, int(m.group(2)) if m else 0))
+    return found
+
+
+def scales(v):
+    """[(output, scale)] for displays that shouldn't be at 1."""
+    if v["SCALE"] == "auto":
+        return [(name, 1.5) for name, height in outputs() if height >= 1080]
+    s = float(v["SCALE"])
+    return [] if s == 1 else [(name, s) for name, _ in outputs()]
+
+
+# ---- the compositor snippets -------------------------------------------------
+HEADER = "Generated by mbp-conf from ~/.config/mbp/settings.conf: change it with mbp-settings."
+
+
+def on(v, key):
+    return v[key] == "on"
+
+
+def fmt(x):
+    return f"{x:g}"
+
+
+def sway_conf(v):
+    lines = [f"# {HEADER}",
+             "input type:keyboard {",
+             f"    xkb_layout {v['LAYOUTS']}",
+             f"    xkb_options {xkb_options(v)}",
+             f"    repeat_delay {v['REPEAT_DELAY']}",
+             f"    repeat_rate {v['REPEAT_RATE']}",
+             "}",
+             "input type:touchpad {",
+             f"    natural_scroll {'enabled' if on(v, 'NATURAL_SCROLL') else 'disabled'}",
+             f"    tap {'enabled' if on(v, 'TAP_TO_CLICK') else 'disabled'}",
+             "}",
+             f"focus_follows_mouse {'yes' if on(v, 'FOCUS_FOLLOWS_MOUSE') else 'no'}",
+             f"workspace_layout {'tabbed' if v['DEFAULT_LAYOUT'] == 'tabbed' else 'default'}",
+             f"output * bg {shlex.quote(v['WALLPAPER'])} fill #1e1e1e",
+             "output * scale 1"]
+    lines += [f"output {name} scale {fmt(s)}" for name, s in scales(v)]
+    return "\n".join(lines) + "\n"
+
+
+def lua_str(s):
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
+
+
+def hyprland_lua(v):
+    mons = ", ".join(f"{{ output = {lua_str(n)}, scale = {fmt(s)} }}" for n, s in scales(v))
+    return "\n".join([
+        f"-- {HEADER}",
+        "return {",
+        f"    kb_layout = {lua_str(v['LAYOUTS'])},",
+        f"    kb_options = {lua_str(xkb_options(v))},",
+        f"    repeat_delay = {v['REPEAT_DELAY']},",
+        f"    repeat_rate = {v['REPEAT_RATE']},",
+        f"    follow_mouse = {1 if on(v, 'FOCUS_FOLLOWS_MOUSE') else 0},",
+        f"    natural_scroll = {str(on(v, 'NATURAL_SCROLL')).lower()},",
+        f"    tap_to_click = {str(on(v, 'TAP_TO_CLICK')).lower()},",
+        f"    tabbed = {str(v['DEFAULT_LAYOUT'] == 'tabbed').lower()},",
+        f"    monitors = {{ {mons} }},",
+        "}",
+    ]) + "\n"
+
+
+def regex_literal(s):
+    """Escape regex characters, but not "-" (eDP-1 stays eDP-1)."""
+    return re.sub(r"([.^$*+?()\[\]{}|\\])", r"\\\1", s)
+
+
+def mango_conf(v):
+    layout = "monocle" if v["DEFAULT_LAYOUT"] == "tabbed" else "tile"
+    lines = [f"# {HEADER}",
+             f"xkb_rules_layout={v['LAYOUTS']}",
+             f"xkb_rules_options={xkb_options(v)}",
+             f"repeat_delay={v['REPEAT_DELAY']}",
+             f"repeat_rate={v['REPEAT_RATE']}",
+             f"sloppy_focus={1 if on(v, 'FOCUS_FOLLOWS_MOUSE') else 0}",
+             f"trackpad_natural_scrolling={1 if on(v, 'NATURAL_SCROLL') else 0}",
+             f"tap_to_click={1 if on(v, 'TAP_TO_CLICK') else 0}"]
+    lines += [f"tag_rule=id:{i},layout_name:{layout}" for i in range(1, 10)]
+    lines += [f"monitor_rule=name:^{regex_literal(n)}$,scale:{fmt(s)}" for n, s in scales(v)]
+    return "\n".join(lines) + "\n"
+
+
+def generate(v=None):
+    v = v or load()
+    os.makedirs(GENERATED, exist_ok=True)
+    for name, text in (("sway.conf", sway_conf(v)), ("hyprland.lua", hyprland_lua(v)),
+                       ("mango.conf", mango_conf(v))):
+        path = os.path.join(GENERATED, name)
+        with open(path + ".tmp", "w") as f:
+            f.write(text)
+        os.replace(path + ".tmp", path)
+
+
+# ---- applying to the running session -----------------------------------------
+def compositor():
+    if os.environ.get("SWAYSOCK"):
+        return "sway"
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        return "hyprland"
+    if subprocess.run(["pgrep", "-x", "mango"], capture_output=True).returncode == 0:
+        return "mango"
+    return None
+
+
+def detach(*cmd):
+    subprocess.Popen(cmd, start_new_session=True, stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def quiet(*cmd):
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def wallpaper(v=None):
+    v = v or load()
+    quiet("pkill", "-x", "swaybg")
+    detach("swaybg", "-i", v["WALLPAPER"], "-m", "fill", "-c", "1e1e1e")
+
+
+def apply():
+    v = load()
+    generate(v)
+    wm = compositor()
+    if wm == "sway":
+        quiet("swaymsg", "reload")                     # also sets the wallpaper
+    elif wm == "hyprland":
+        quiet("hyprctl", "reload")
+        wallpaper(v)
+    elif wm == "mango":
+        quiet("mmsg", "dispatch", "reload_config")
+        wallpaper(v)
+    if wm:
+        quiet("pkill", "-x", "wlsunset")
+        detach("mbp-nightlight", "start")
+        detach("mbp-idle")
+    return wm
+
+
+# ---- command line ------------------------------------------------------------
+def main(argv):
+    cmd, args = (argv[0], argv[1:]) if argv else ("", [])
+    if cmd == "get" and len(args) == 1 and args[0] in BY_KEY:
+        print(load()[args[0]])
+    elif cmd == "set" and args:
+        v = load()
+        for arg in args:
+            key, _, value = arg.partition("=")
+            err = validate(key, value)
+            if err:
+                sys.exit(f"mbp-conf: {err}")
+            v[key] = value
+        save(v)
+    elif cmd == "schema":
+        v = load()
+        print(json.dumps([{"key": k, "section": sec, "label": label, "kind": kind, "default": d,
+                           "choices": extra if kind == "choice" else None,
+                           "range": list(extra) if kind == "int" else None,
+                           "help": help_, "value": v[k]}
+                          for k, sec, label, kind, d, extra, help_ in SCHEMA]))
+    elif cmd == "generate":
+        generate()
+    elif cmd == "apply":
+        wm = apply()
+        print(f"Applied to {wm}." if wm else "Saved; applies from the next login.")
+    elif cmd == "wallpaper":
+        wallpaper()
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

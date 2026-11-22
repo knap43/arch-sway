@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Night light, always 4000 K. wlsunset needs a day and a night value, so day
-# is 1 K higher than night, which keeps the tint constant.
-#   mbp-nightlight start | toggle
-start() { exec wlsunset -t 4000 -T 4001 -S 06:00 -s 18:00; }
+# Night light at the temperature from the desktop settings (default 4000 K).
+# wlsunset needs a day and a night value, so day is 1 K higher than night,
+# which keeps the tint constant.
+#   mbp-nightlight start    start it, unless switched off in the settings
+#   mbp-nightlight toggle   on/off for this session (Mod+N)
+temp=$(mbp-conf get NIGHTLIGHT_TEMP 2>/dev/null); temp=${temp:-4000}
+run() { exec wlsunset -t "$temp" -T $((temp + 1)) -S 06:00 -s 18:00; }
 case ${1:-start} in
-    start)  pgrep -x wlsunset >/dev/null || start ;;
-    toggle) pkill -x wlsunset || start ;;
+    start)  [[ $(mbp-conf get NIGHTLIGHT 2>/dev/null) == off ]] && exit 0
+            pgrep -x wlsunset >/dev/null || run ;;
+    toggle) pkill -x wlsunset || run ;;
 esac

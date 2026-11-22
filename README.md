@@ -72,8 +72,8 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 
 ⌘ is the Command key on the MacBook. On a PC keyboard such as the ThinkPad's, Alt and the Windows key
 trade places, so ⌘ is the key next to the space bar there too (the Alt key), and Alt moves to the
-Windows key, so the layout switch is **Win ⇧** there (Option ⇧ on the MacBook: the same spot, just left of ⌘). The choice is made per machine (anything but a Mac swaps);
-`set -Ux MBP_SWAP_ALT_WIN 0` (or `1`) in fish overrides it from the next login. All shortcuts work in
+Windows key, so the layout switch is **Win ⇧** there (Option ⇧ on the MacBook: the same spot, just left of ⌘). The choice is made per machine (anything but a Mac swaps); *Desktop Settings* →
+Keyboard can turn it on or off for good. All shortcuts work in
 both the US and Russian layouts. Caps Lock and Escape are swapped. These are the same in every flavour:
 
 | Keys | Action |
@@ -137,7 +137,8 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
 | ⌘ , / ⌘ T | tabbed / stacked (press ⌘ . to go back to tiled) |
 
-Focus follows the mouse pointer. Displays 1080p or taller are scaled 1.5× (`set -Ux MBP_SCALE 1` turns it off, or sets another factor, from the next login). Screen brightness is set to 100% at every login. Screenshots go to `~/Pictures/Screenshots`.
+Focus follows the mouse pointer, displays 1080p or taller are scaled 1.5× and brightness is set to
+100% at every login; all of that can be changed in *Desktop Settings* (below). Screenshots go to `~/Pictures/Screenshots`.
 Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
 `/usr/share/backgrounds/mbp/wallpaper.jpg`. The fish prompt is `[$PWD]$`, set in
 `~/.config/fish/functions/fish_prompt.fish`.
@@ -145,6 +146,24 @@ Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
 Configs live in `~/.config/`: `sway` + `i3status`, `hypr/hyprland.lua` + `waybar`, or
 `mango/config.conf` + `waybar`; plus `foot`, `fuzzel`, `mako` and `fish` in every flavour.
 Autostart, idle and night light are shared by all three, in `/usr/local/bin/mbp-session-start`.
+
+## Desktop Settings
+
+**Desktop Settings** in the launcher (or `mbp-settings` in a terminal) changes the basics the same way in
+all three flavours, with the keyboard or the mouse:
+
+| Tab | Settings |
+|---|---|
+| Keyboard | Alt ⇄ Win swap (automatic / on / off), layouts (e.g. `us,ru`), Caps Lock ⇄ Escape, key repeat |
+| Display | scale (automatic, 1–2), night light on/off and temperature, brightness at login |
+| Look & behaviour | wallpaper, whether new workspaces open tabbed or tiled, focus follows mouse, natural scrolling, tap to click |
+| Power & idle | minutes until lock, screen off and suspend (0 = never); suspend always, on battery only or never |
+
+**Ctrl+S** saves and applies: the compositor reloads its config, and the wallpaper, night light and idle timers
+restart. A few things only show up in new workspaces (the default layout). The settings live in
+`~/.config/mbp/settings.conf`; `mbp-conf` turns them into `~/.config/mbp/generated/{sway.conf,hyprland.lua,mango.conf}`,
+which each compositor's config loads after its own defaults (and again at every login, for the machine it runs on).
+Edit the file by hand if you like, then run `mbp-conf apply`.
 
 ## Tether (phone and computer bridge)
 
@@ -210,7 +229,9 @@ overlay/                 files copied onto every flavour's root filesystem
   etc/skel/.config       shared desktop configs (also copied to the installed system)
   usr/local/bin/mbp-install         the installer
   usr/local/bin/mbp-session-start   autostart, idle/lock, night light (all compositors)
-  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery, night-light, keyboard and display-scale helpers
+  usr/local/bin/mbp-settings        the Desktop Settings window (Textual)
+  usr/local/bin/mbp-conf            its backend: settings.conf -> each compositor's snippet, apply
+  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery, night-light and idle helpers
   etc/xkb/                          the mbp:swap_alt_win keyboard option (Alt ⇄ Win on PC keyboards)
   usr/local/bin/live-user-setup     creates the live user at boot
   usr/local/bin/live-welcome        the live session's walkthrough (live ISO only)

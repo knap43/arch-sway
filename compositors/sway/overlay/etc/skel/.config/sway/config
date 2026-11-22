@@ -18,8 +18,6 @@ hide_edge_borders smart
 focus_follows_mouse yes
 workspace_layout tabbed
 output * bg /usr/share/backgrounds/mbp/wallpaper.jpg fill #1e1e1e
-# Displays 1080p or taller are scaled 1.5x (MBP_SCALE overrides, 1 = off)
-exec_always mbp-display-scale --sway
 
 # class                 border  bg      text    indicator child_border
 client.focused          #5e81ac #5e81ac #ffffff #81a1c1   #5e81ac
@@ -37,10 +35,6 @@ input type:keyboard {
     repeat_rate 35
 }
 
-# On a PC keyboard Alt and Win trade places, so ⌘ (Super) is the key next to
-# the space bar there too; mbp-xkb-options picks the options for this machine.
-exec_always swaymsg "input type:keyboard xkb_options $(mbp-xkb-options)"
-
 input type:touchpad {
     tap enabled
     natural_scroll enabled
@@ -48,6 +42,11 @@ input type:touchpad {
     click_method clickfinger
     scroll_method two_finger
 }
+
+# Desktop settings (mbp-settings): keyboard layouts and options (Alt and Win
+# trade places on a PC keyboard), key repeat, touchpad, focus follows mouse,
+# default layout, wallpaper and display scale. Overrides the values above.
+include ~/.config/mbp/generated/sway.conf
 
 # ---- Autostart ---------------------------------------------------------------
 # Notifications, tray icons, clipboard history, night light, popups, idle
@@ -191,6 +190,7 @@ for_window [window_type="dialog"] floating enable
 for_window [app_id="pavucontrol"] floating enable
 for_window [app_id="nm-connection-editor"] floating enable
 for_window [app_id="live-welcome"] floating enable, resize set 780 560, move position center
+for_window [app_id="mbp-settings"] floating enable, resize set 900 640, move position center
 
 # ---- Bar ---------------------------------------------------------------------
 bar {

@@ -12,20 +12,21 @@ local menu = "fuzzel"
 -- Monitor, look
 -------------------------------------------------------------------------------
 
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
--- Displays 1080p or taller are scaled 1.5x; mbp-display-scale lists them from
--- the kernel (MBP_SCALE overrides the factor, 1 = off).
+-- Desktop settings (mbp-settings), written for this machine by mbp-conf:
+-- keyboard, touchpad, focus follows mouse, default layout and display scale.
+local S = {}
 do
-    local p = io.popen("mbp-display-scale 2>/dev/null")
-    if p then
-        for line in p:lines() do
-            local out, s = line:match("^(%S+) (%S+)$")
-            if out and tonumber(s) then
-                hl.monitor({ output = out, mode = "preferred", position = "auto", scale = tonumber(s) })
-            end
-        end
-        p:close()
-    end
+    local ok, t = pcall(dofile, (os.getenv("HOME") or "") .. "/.config/mbp/generated/hyprland.lua")
+    if ok and type(t) == "table" then S = t end
+end
+local function setting(key, default)
+    if S[key] == nil then return default end
+    return S[key]
+end
+
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+for _, m in ipairs(setting("monitors", {})) do
+    hl.monitor({ output = m.output, mode = "preferred", position = "auto", scale = m.scale })
 end
 
 hl.config({
@@ -70,34 +71,21 @@ hl.config({
 -- Input
 -------------------------------------------------------------------------------
 
--- On a PC keyboard (anything but a Mac) Alt and Win trade places, so Super is
--- the key next to the space bar, as ⌘ is on the MacBook; Alt+Shift still
--- switches layout. mbp:swap_alt_win is defined in /etc/xkb, and this is the
--- same choice /usr/local/bin/mbp-xkb-options makes (MBP_SWAP_ALT_WIN=0|1 overrides).
-local function swap_alt_win()
-    local force = os.getenv("MBP_SWAP_ALT_WIN")
-    if force == "0" or force == "1" then return force == "1" end
-    local f = io.open("/sys/class/dmi/id/sys_vendor")
-    local vendor = f and f:read("*l") or ""
-    if f then f:close() end
-    return vendor:sub(1, 5) ~= "Apple"
-end
-
 hl.config({
     input = {
-        kb_layout = "us,ru",
-        -- Alt+Shift switches layout (on a PC: the Win key, which now sends Alt;
-        -- on a Mac: Option); Caps Lock and Escape are swapped.
-        kb_options = swap_alt_win() and "caps:swapescape,mbp:swap_alt_win"
-                                     or "grp:alt_shift_toggle,caps:swapescape",
+        kb_layout = setting("kb_layout", "us,ru"),
+        -- Alt+Shift switches layout (on a PC: the Win key, which sends Alt, as
+        -- Alt and Win trade places there; on a Mac: Option); Caps Lock and
+        -- Escape are swapped. mbp:swap_alt_win is defined in /etc/xkb.
+        kb_options = setting("kb_options", "grp:alt_shift_toggle,caps:swapescape"),
         -- Binds follow the first layout (US), so they also work in Russian.
         resolve_binds_by_sym = false,
-        repeat_delay = 300,
-        repeat_rate = 35,
-        follow_mouse = 1,                    -- focus follows the pointer
+        repeat_delay = setting("repeat_delay", 300),
+        repeat_rate = setting("repeat_rate", 35),
+        follow_mouse = setting("follow_mouse", 1),   -- focus follows the pointer
         touchpad = {
-            tap_to_click = true,
-            natural_scroll = true,
+            tap_to_click = setting("tap_to_click", true),
+            natural_scroll = setting("natural_scroll", true),
             disable_while_typing = true,
             clickfinger_behavior = true,
         },
@@ -110,7 +98,7 @@ hl.config({
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("waybar")
-    hl.exec_cmd("swaybg -i /usr/share/backgrounds/mbp/wallpaper.jpg -m fill -c 1e1e1e")
+    hl.exec_cmd("mbp-conf wallpaper")
     -- Notifications, tray icons, clipboard history, night light, popups, idle
     -- lock/suspend, Tether and (on the live USB) the walkthrough: shared by
     -- every compositor flavour, see /usr/local/bin/mbp-session-start.
@@ -210,7 +198,7 @@ end
 local function tab_if_first(w)
     hl.timer(function()
         local cur = hl.get_window(w)
-        if first_tiled_on_workspace(cur) then hl.dispatch(hl.dsp.group.toggle({ window = cur })) end
+        if setting("tabbed", true) and first_tiled_on_workspace(cur) then hl.dispatch(hl.dsp.group.toggle({ window = cur })) end
     end, { timeout = 50, type = "oneshot" })
 end
 hl.on("window.open", tab_if_first)
@@ -423,6 +411,8 @@ hl.window_rule({ name = "float-pavucontrol", match = { class = "^(org.pulseaudio
 hl.window_rule({ name = "float-nm-editor", match = { class = "^nm-connection-editor$" }, float = true })
 hl.window_rule({ name = "live-welcome", match = { class = "^live-welcome$" },
                  float = true, size = "780 560", center = true })
+hl.window_rule({ name = "mbp-settings", match = { class = "^mbp-settings$" },
+                 float = true, size = "900 640", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
 
 -- Managed by wmai (keep this last so its settings win)
