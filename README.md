@@ -78,7 +78,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ D (or ⌘ Return) | terminal |
+| ⌘ D | terminal |
 | ⌘ Space / ⌘ Q | app launcher |
 | ⌘ E / ⌘ B | Thunar / LibreWolf |
 | ⌘ V | clipboard history |
@@ -87,6 +87,8 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ H J K L or arrows | focus; add ⇧ to move the window |
 | ⌘ ⇧ A / ⌘ ⇧ S | take the window to the previous / next workspace |
 | ⌘ F / ⌘ ⇧ F | fullscreen / floating |
+| ⌘ Return | tiled: this window takes the left half, the others share the right (Mango: swaps it into the master area) |
+| ⌘ / | float every window on this workspace, or tile them all again (none of the three has a true floating layout) |
 | ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
 | ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
 | ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |

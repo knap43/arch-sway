@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Layout helpers sway lacks, matching the Hyprland and Mango flavours.
+
+  sway-layout float-all   float every window on this workspace, or, if they
+                          all float already, tile them again (Mod+/)
+  sway-layout left-half   in a tiled workspace, the focused window takes the
+                          left half and the rest share the right (Mod+Return)
+"""
+import json, subprocess, sys
+
+MARK = "_mbp_rest"
+
+
+def msg(*cmds):
+    if cmds:
+        subprocess.run(["swaymsg", "; ".join(cmds)], stdout=subprocess.DEVNULL)
+
+
+def tree():
+    return json.loads(subprocess.run(["swaymsg", "-t", "get_tree"],
+                                     capture_output=True, text=True).stdout)
+
+
+def walk(node, parents=()):
+    yield node, parents
+    for child in node.get("nodes", []) + node.get("floating_nodes", []):
+        yield from walk(child, parents + (node,))
+
+
+def focused():
+    """(focused window, its workspace, its parent) or (None, None, None)."""
+    for node, parents in walk(tree()):
+        if node.get("focused") and node["type"] in ("con", "floating_con"):
+            ws = next((p for p in reversed(parents) if p["type"] == "workspace"), None)
+            return node, ws, parents[-1]
+    for node, _ in walk(tree()):
+        if node.get("focused") and node["type"] == "workspace":
+            return None, node, None
+    return None, None, None
+
+
+def leaves(node):
+    kids = node.get("nodes", [])
+    if not kids:
+        return [node]
+    return [leaf for kid in kids for leaf in leaves(kid)]
+
+
+def float_all():
+    _, ws, _ = focused()
+    if ws is None:
+        return
+    tiled = [w for kid in ws.get("nodes", []) for w in leaves(kid)]
+    if tiled:
+        msg(*(f"[con_id={w['id']}] floating enable" for w in tiled))
+    else:
+        msg(*(f"[con_id={w['id']}] floating disable" for w in ws.get("floating_nodes", [])))
+
+
+def left_half():
+    win, ws, parent = focused()
+    if win is None or win["type"] != "con" or ws["layout"] in ("tabbed", "stacked"):
+        return
+    wid = win["id"]
+    # 1. Bring the window up to the workspace's top level ("move left" steps
+    #    out of nested containers), then to its first position. It never moves
+    #    left from the first position, so it can't jump to another output.
+    for _ in range(30):
+        win, ws, parent = focused()
+        if win is None or win["id"] != wid:
+            return
+        top = [n["id"] for n in ws["nodes"]]
+        if parent["id"] == ws["id"] and top.index(wid) == 0:
+            break
+        msg(f"[con_id={wid}] move left")
+    else:
+        return
+    # 2. Side by side, and everything else gathered into one container on the
+    #    right: wrap the first other window, then move the rest next to it.
+    if ws["layout"] != "splith":
+        msg(f"[con_id={wid}] layout splith")
+    rest = [n["id"] for n in ws["nodes"] if n["id"] != wid]
+    if len(rest) > 1:
+        msg(f"[con_id={rest[0]}] mark --add {MARK}", f"[con_id={rest[0]}] splitv")
+        msg(*(f"[con_id={c}] move container to mark {MARK}" for c in rest[1:]))
+        msg(f"unmark {MARK}")
+    # 3. Exactly half, and keep the focus on it.
+    if rest:
+        msg(f"[con_id={wid}] resize set width 50 ppt", f"[con_id={wid}] focus")
+
+
+if __name__ == "__main__":
+    {"float-all": float_all, "left-half": left_half}.get(
+        sys.argv[1] if len(sys.argv) > 1 else "", lambda: sys.exit(__doc__))()

@@ -58,7 +58,6 @@ exec mbp-session-start
 # ---- Apps --------------------------------------------------------------------
 bindsym --to-code {
     $mod+d       exec $term
-    $mod+Return  exec $term
     $mod+space   exec $menu
     $mod+q       exec $menu
     $mod+e       exec thunar
@@ -138,6 +137,10 @@ bindsym --to-code {
     $mod+period     layout toggle split
     $mod+comma      layout tabbed
     $mod+t          layout stacking
+    # Tiled: this window takes the left half, the rest share the right
+    $mod+Return     exec sway-layout left-half
+    # Float every window on this workspace, or tile them all again
+    $mod+slash      exec sway-layout float-all
     $mod+r          mode "resize"
     $mod+Shift+grave  move scratchpad
     $mod+grave        scratchpad show

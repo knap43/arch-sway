@@ -244,6 +244,63 @@ local function tile_or_flip()
     end
 end
 
+-- Mod+/: float every window on this workspace, or, if they all float already,
+-- tile them again (Mango's toggle_all_floating; none of the three has a
+-- floating layout as such). Tab groups are broken up first.
+local function toggle_all_floating()
+    local ws = hl.get_active_workspace()
+    if not ws or not ws.id then return end
+    local wins, any_tiled = {}, false
+    for _, w in ipairs(hl.get_windows()) do
+        if w.mapped and w.workspace and w.workspace.id == ws.id then
+            wins[#wins + 1] = w
+            any_tiled = any_tiled or not w.floating
+        end
+    end
+    if any_tiled then
+        for _, w in ipairs(wins) do
+            local cur = hl.get_window(w)
+            if cur and cur.group then hl.dispatch(hl.dsp.group.toggle({ window = cur })) end
+        end
+    end
+    for _, w in ipairs(wins) do
+        hl.dispatch(hl.dsp.window.float({ action = any_tiled and "set" or "unset", window = w }))
+    end
+end
+
+-- Mod+Return (tiled): the window takes the left half of the screen and the
+-- rest share the right half. movetoroot makes it one side of the top split;
+-- then it's turned side by side, put on the left and set to 50/50.
+local function xy(v)
+    if type(v) ~= "table" then return nil end
+    return v.x or v[1], v.y or v[2]
+end
+local function to_left_half()
+    local w = hl.get_active_window()
+    if not w or w.floating then return end
+    hl.dispatch(hl.dsp.layout("movetoroot"))
+    local function step(fn) hl.timer(fn, { timeout = 30, type = "oneshot" }) end
+    step(function()
+        local cur = hl.get_window(w)
+        local mon = cur and cur.monitor
+        if not cur or not mon then return end
+        local mw = mon.width / (mon.scale or 1)
+        local sw = xy(cur.size)
+        if sw and sw > mw * 0.75 then                  -- top/bottom split: make it side by side
+            hl.dispatch(hl.dsp.layout("togglesplit"))
+        end
+        step(function()
+            cur = hl.get_window(w)
+            local x = cur and xy(cur.at)
+            local mx = mon.x or (mon.position and mon.position.x) or 0
+            if x and x > mx + mw / 4 then              -- it ended up on the right
+                hl.dispatch(hl.dsp.layout("swapsplit"))
+            end
+            hl.dispatch(hl.dsp.layout("splitratio 1 exact"))
+        end)
+    end)
+end
+
 local function bind(keys, action, opts) hl.bind(mod .. " + " .. keys, action, opts) end
 local function run(cmd) return hl.dsp.exec_cmd(cmd) end
 
@@ -252,7 +309,6 @@ local function run(cmd) return hl.dsp.exec_cmd(cmd) end
 -------------------------------------------------------------------------------
 
 bind("D",      run(term))
-bind("Return", run(term))
 bind("space",  run(menu))
 bind("Q",      run(menu))
 bind("E",      run("thunar"))
@@ -308,6 +364,8 @@ bind("minus",     hl.dsp.layout("preselect d"))   -- next window opens below
 bind("period",    tile_or_flip)                   -- tiled (again: flip the split)
 bind("comma",     tab_workspace)                  -- tabbed
 bind("T",         tab_workspace)                  -- (no stacked layout: tabs too)
+bind("Return",    to_left_half)                   -- tiled: this window takes the left half
+bind("slash",     toggle_all_floating)            -- float / tile every window here
 bind("grave",         hl.dsp.workspace.toggle_special("scratch"))
 bind("SHIFT + grave", hl.dsp.window.move({ workspace = "special:scratch", follow = false }))
 
