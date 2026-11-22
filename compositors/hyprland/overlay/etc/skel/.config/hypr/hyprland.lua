@@ -159,6 +159,17 @@ local function focus_mode_toggle()
     end
 end
 
+-- Mod+[ / Mod+]: in a tab group (Mod+, or Mod+T) the previous / next tab, as
+-- in sway; otherwise the previous / next window on this workspace.
+local function tab_or_window(forward)
+    local w = hl.get_active_window()
+    if w and w.group and (w.group.size or 0) > 1 then
+        hl.dispatch(forward and hl.dsp.group.next() or hl.dsp.group.prev())
+    else
+        hl.dispatch(hl.dsp.window.cycle_next({ next = forward }))
+    end
+end
+
 local function bind(keys, action, opts) hl.bind(mod .. " + " .. keys, action, opts) end
 local function run(cmd) return hl.dsp.exec_cmd(cmd) end
 
@@ -181,8 +192,8 @@ bind("V",      run('cliphist list | fuzzel --dmenu --prompt "Clipboard: " | clip
 bind("W",            hl.dsp.window.close())
 bind("Tab",          function() cycle_all(1) end)
 bind("SHIFT + Tab",  function() cycle_all(-1) end)
-bind("bracketleft",  hl.dsp.window.cycle_next({ next = false }))
-bind("bracketright", hl.dsp.window.cycle_next())
+bind("bracketleft",  function() tab_or_window(false) end)
+bind("bracketright", function() tab_or_window(true) end)
 bind("F",            hl.dsp.window.fullscreen())
 bind("SHIFT + F",    hl.dsp.window.float({ action = "toggle" }))
 bind("SHIFT + space", focus_mode_toggle)

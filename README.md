@@ -120,6 +120,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ \\ / ⌘ - | open the next window to the right / below |
 | ⌘ . | flip the split direction |
 | ⌘ , or ⌘ T | tabs on / off (a window group; Hyprland has no stacked layout) |
+| ⌘ [ / ⌘ ] | in tabs: previous / next tab (or click a tab) |
 
 ### Mango
 
