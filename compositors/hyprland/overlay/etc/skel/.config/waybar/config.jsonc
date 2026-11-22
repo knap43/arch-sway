@@ -9,8 +9,6 @@
     ],
     "modules-center": [],
     "modules-right": [
-        "hyprland/language",
-        "network",
         "wireplumber",
         "battery",
         "cpu",
@@ -21,15 +19,6 @@
     "hyprland/workspaces": {
         "format": "{name}",
         "on-click": "activate"
-    },
-    "hyprland/language": {
-        "format": "{short}"
-    },
-    "network": {
-        "format-wifi": "W: {essid} {signalStrength}%",
-        "format-ethernet": "E: {ipaddr}",
-        "format-disconnected": "W: down",
-        "tooltip-format": "{ifname} {ipaddr}"
     },
     "wireplumber": {
         "format": "♪ {volume}%",

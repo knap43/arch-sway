@@ -29,11 +29,11 @@ window#waybar {
     background: #bf616a;
 }
 
-#language, #network, #wireplumber, #battery, #cpu, #memory, #clock, #tray, #keymode {
+#wireplumber, #battery, #cpu, #memory, #clock, #tray, #keymode {
     padding: 0 8px;
 }
 
-#network.disconnected, #wireplumber.muted { color: #888888; }
+#wireplumber.muted { color: #888888; }
 #battery.warning:not(.charging) { color: #ebcb8b; }
 #battery.critical:not(.charging) { color: #bf616a; }
 #keymode { background: #5e81ac; color: #ffffff; }

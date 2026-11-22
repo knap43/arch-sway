@@ -10,8 +10,6 @@
     ],
     "modules-center": [],
     "modules-right": [
-        "mango/language",
-        "network",
         "wireplumber",
         "battery",
         "cpu",
@@ -24,15 +22,8 @@
         "hide-empty": true,
         "on-click": "activate"
     },
-    "mango/language": {},
     "mango/keymode": {
         "format-default": ""          // shown only in other modes, e.g. resize
-    },
-    "network": {
-        "format-wifi": "W: {essid} {signalStrength}%",
-        "format-ethernet": "E: {ipaddr}",
-        "format-disconnected": "W: down",
-        "tooltip-format": "{ifname} {ipaddr}"
     },
     "wireplumber": {
         "format": "♪ {volume}%",
