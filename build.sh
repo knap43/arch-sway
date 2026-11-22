@@ -20,9 +20,10 @@ TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
 GAMES_REPO=${GAMES_REPO:-https://github.com/knap43/tiny-games}
 LANTERN_REPO=${LANTERN_REPO:-https://github.com/knap43/lantern}
 WMAI_REPO=${WMAI_REPO:-https://github.com/knap43/wm-config-llm}
-# wmai's model: the v3 release asset, checked against this checksum.
-WMAI_MODEL_URL=${WMAI_MODEL_URL:-https://github.com/knap43/wm-config-llm/releases/download/v3/wmcfg-Q4_K_M.gguf}
-WMAI_MODEL_SHA256=${WMAI_MODEL_SHA256:-234589dd0132dfa648ba2e4bb4436cd1e2e5fbec36a27cb34300150a5ae3f923}
+# wmai's model comes from the latest wm-config-llm release (see below); set
+# both of these to bundle a specific file instead.
+WMAI_MODEL_URL=${WMAI_MODEL_URL-}
+WMAI_MODEL_SHA256=${WMAI_MODEL_SHA256-}
 
 
 # ---- Never pack or delete through a leftover mount --------------------------
@@ -155,21 +156,48 @@ install -Dm644 -t "$PROFILE/airootfs/usr/lib/wmai/wmllm" \
     "$WORK"/wmai/wmllm/{__init__.py,context.py,validate.py,mango.py,flatten_hypr.lua}
 install -Dm644 "$WORK/wmai/cli/wmai.py" "$PROFILE/airootfs/usr/lib/wmai/cli/wmai.py"
 
-# Its model (~660 MB), bundled so wmai works offline. Reuses a copy wmai's own
-# installer put in ~/.local/share/wmai, or one in ./cache; downloads at most once.
+# Its model (~660 MB), bundled so wmai works offline: the .gguf attached to the
+# latest release, verified against the SHA-256 digest GitHub publishes for it.
+# If GitHub's API can't be reached, the release known when this was written.
+if [[ -z $WMAI_MODEL_URL ]]; then
+    wmai_slug=$(sed -nE 's#^(https://|git@)github\.com[:/]([^/]+/[^/.]+)(\.git)?/?$#\2#p' <<<"$WMAI_REPO")
+    if [[ -n $wmai_slug ]] && command -v python3 >/dev/null; then
+        read -r WMAI_MODEL_URL WMAI_MODEL_SHA256 wmai_tag < <(
+            curl -fsSL "https://api.github.com/repos/$wmai_slug/releases/latest" 2>/dev/null | python3 -c '
+import json, sys
+release = json.load(sys.stdin)
+for asset in release.get("assets", []):
+    if asset["name"].endswith(".gguf") and (asset.get("digest") or "").startswith("sha256:"):
+        print(asset["browser_download_url"], asset["digest"][7:], release["tag_name"])
+        break' 2>/dev/null) || true
+    fi
+    if [[ -n $WMAI_MODEL_URL ]]; then
+        echo ":: wmai model: latest release, $wmai_tag"
+    else
+        echo ":: wmai model: couldn't ask GitHub for the latest release; using v4"
+        WMAI_MODEL_URL=https://github.com/knap43/wm-config-llm/releases/download/v4/wmcfg-Q4_K_M.gguf
+        WMAI_MODEL_SHA256=3ef23ea4233036dc016d36d0006a52283dbb5f6a160b28647ca5a2e3f3d96356
+    fi
+fi
+# Reuses a matching copy wmai's own installer put in ~/.local/share/wmai, or
+# one in ./cache, so each release is downloaded at most once.
 wmai_name=$(basename "$WMAI_MODEL_URL")
 wmai_ok() { [[ -f $1 ]] && echo "$WMAI_MODEL_SHA256  $1" | sha256sum -c --quiet - 2>/dev/null; }
 wmai_model=""
-for candidate in "${XDG_DATA_HOME:-$HOME/.local/share}/wmai/$wmai_name" "$HERE/cache/$wmai_name"; do
+wmai_cached="$HERE/cache/${WMAI_MODEL_SHA256:0:12}-$wmai_name"
+for candidate in "${XDG_DATA_HOME:-$HOME/.local/share}/wmai/$wmai_name" "$wmai_cached"; do
     wmai_ok "$candidate" && { wmai_model=$candidate; break; }
 done
 if [[ -z $wmai_model ]]; then
     echo ":: Downloading wmai's model (~660 MB, once)"
     mkdir -p "$HERE/cache"
-    curl -fL --progress-bar -o "$HERE/cache/$wmai_name.part" "$WMAI_MODEL_URL"
-    mv "$HERE/cache/$wmai_name.part" "$HERE/cache/$wmai_name"
-    wmai_ok "$HERE/cache/$wmai_name" || { rm -f "$HERE/cache/$wmai_name"; echo "!! wmai model checksum mismatch" >&2; exit 1; }
-    wmai_model="$HERE/cache/$wmai_name"
+    curl -fL --progress-bar -o "$wmai_cached.part" "$WMAI_MODEL_URL"
+    mv "$wmai_cached.part" "$wmai_cached"
+    wmai_ok "$wmai_cached" || { rm -f "$wmai_cached"; echo "!! wmai model checksum mismatch" >&2; exit 1; }
+    for stale in "$HERE/cache/$wmai_name" "$HERE"/cache/*-"$wmai_name"; do   # older releases' copies
+        [[ $stale == "$wmai_cached" ]] || rm -f "$stale"
+    done
+    wmai_model="$wmai_cached"
 fi
 install -Dm644 "$wmai_model" "$PROFILE/airootfs/usr/share/wmai/wmcfg-Q4_K_M.gguf"
 
