@@ -30,7 +30,8 @@ client.urgent           #bf616a #bf616a #ffffff #bf616a   #bf616a
 # ---- Input -------------------------------------------------------------------
 input type:keyboard {
     xkb_layout us,ru
-    # Alt+Shift switches layout; Caps Lock and Escape are swapped
+    # Alt+Shift switches layout (Option+Shift on a Mac; on a PC keyboard the Win
+    # key, which sends Alt after the swap below); Caps Lock and Escape are swapped
     xkb_options grp:alt_shift_toggle,caps:swapescape
     repeat_delay 300
     repeat_rate 35

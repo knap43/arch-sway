@@ -72,7 +72,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 
 ⌘ is the Command key on the MacBook. On a PC keyboard such as the ThinkPad's, Alt and the Windows key
 trade places, so ⌘ is the key next to the space bar there too (the Alt key), and Alt moves to the
-Windows key; Alt ⇧ still switches layout. The choice is made per machine (anything but a Mac swaps);
+Windows key, so the layout switch is **Win ⇧** there (Option ⇧ on the MacBook: the same spot, just left of ⌘). The choice is made per machine (anything but a Mac swaps);
 `set -Ux MBP_SWAP_ALT_WIN 0` (or `1`) in fish overrides it from the next login. All shortcuts work in
 both the US and Russian layouts. Caps Lock and Escape are swapped. These are the same in every flavour:
 
@@ -93,7 +93,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ ⇧ Q or ⌘ Esc | power menu (lock, suspend, log out, reboot, power off) |
 | ⌘ ⇧ C | reload the config |
 | ⌘ N | night light on / off (on by default, 4000 K) |
-| Alt ⇧ | switch US ⇄ RU |
+| Win ⇧ (Mac: Option ⇧) | switch US ⇄ RU (the key just left of ⌘, plus Shift) |
 | F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume (with a popup bar) |
 | F7 / F8 / F9 | previous / play-pause / next, for any player |
 

@@ -86,7 +86,8 @@ end
 hl.config({
     input = {
         kb_layout = "us,ru",
-        -- Alt+Shift switches layout; Caps Lock and Escape are swapped.
+        -- Alt+Shift switches layout (on a PC: the Win key, which now sends Alt;
+        -- on a Mac: Option); Caps Lock and Escape are swapped.
         kb_options = swap_alt_win() and "caps:swapescape,mbp:swap_alt_win"
                                      or "grp:alt_shift_toggle,caps:swapescape",
         -- Binds follow the first layout (US), so they also work in Russian.
