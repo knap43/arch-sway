@@ -60,7 +60,7 @@ TIMEZONE=$(ask "Timezone" "Europe/Moscow")
 LANG_=$(ask "System language (en_US.UTF-8 or ru_RU.UTF-8)" "en_US.UTF-8")
 
 echo
-printf '\e[31mEVERYTHING on %s will be erased (including macOS).\e[0m\n' "$DISK"
+printf '\e[31mEVERYTHING on %s will be erased (macOS or Windows included).\e[0m\n' "$DISK"
 CONFIRM=$(ask "Type the disk name again to continue" "")
 [[ $CONFIRM == "$DISK" ]] || die "Aborted"
 
@@ -180,7 +180,7 @@ install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applicati
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop
 install -Dm644 -t "$MNT/usr/share/icons/hicolor/scalable/apps" /usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg
-install -Dm644 -t "$MNT/usr/share/backgrounds/mbp-sway" /usr/share/backgrounds/mbp-sway/wallpaper.jpg
+install -Dm644 -t "$MNT/usr/share/backgrounds/mbp" /usr/share/backgrounds/mbp/wallpaper.jpg
 install -Dm644 -t "$MNT/etc/polkit-1/rules.d" /etc/polkit-1/rules.d/50-mbp-networkmanager.rules
 copy_wifi_connections
 

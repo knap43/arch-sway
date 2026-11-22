@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# sway-screenshot          select a region (click a window's area or drag)
-# sway-screenshot --full   whole screen
+# mbp-screenshot          select a region (click a window's area or drag)
+# mbp-screenshot --full   whole screen
 # Saves to ~/Pictures/Screenshots and copies the image to the clipboard.
 set -e
 dir="$HOME/Pictures/Screenshots"

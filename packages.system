@@ -1,7 +1,7 @@
 # Packages installed both in the live ISO and on the installed system.
 # One per line; '#' starts a comment.
 
-# --- base & hardware (MacBookPro8,1: i5-2435M, Intel HD 3000, BCM4331) ---
+# --- base & hardware (MacBook Pro 2011: Intel HD 3000, BCM4331; ThinkPad T460s: HD 520, Intel Wi-Fi) ---
 base
 linux
 linux-firmware
@@ -10,6 +10,7 @@ broadcom-wl-dkms
 linux-headers
 mesa
 libva-intel-driver
+intel-media-driver
 xorg-xwayland
 sudo
 man-db
@@ -21,12 +22,11 @@ dosfstools
 exfatprogs
 unzip
 
-# --- sway session ---
-sway
+# --- Wayland session (shared by every compositor) ---
 swaybg
 swayidle
 swaylock
-i3status
+wlopm
 foot
 fuzzel
 mako

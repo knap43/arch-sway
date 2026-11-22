@@ -5,7 +5,11 @@ choice=$(printf '%s\n' Lock Suspend "Log out" Reboot "Power off" \
 case $choice in
     Lock)        swaylock -f -c 1e1e1e ;;
     Suspend)     systemctl suspend ;;
-    "Log out")   swaymsg exit ;;
+    "Log out")
+        if   [[ -n ${SWAYSOCK-} ]];                    then swaymsg exit
+        elif [[ -n ${HYPRLAND_INSTANCE_SIGNATURE-} ]]; then hyprctl dispatch 'hl.dsp.exit()'
+        else loginctl terminate-session "${XDG_SESSION_ID:-self}"
+        fi ;;
     Reboot)      systemctl reboot ;;
     "Power off") systemctl poweroff ;;
 esac

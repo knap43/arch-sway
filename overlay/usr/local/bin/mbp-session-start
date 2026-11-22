@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Starts everything a desktop session needs, the same way under sway,
+# Hyprland and Mango. Each compositor's config runs this once at startup.
+
+if   [[ -n ${SWAYSOCK-} ]];                    then wm=sway
+elif [[ -n ${HYPRLAND_INSTANCE_SIGNATURE-} ]]; then wm=hyprland
+else                                                wm=mango
+fi
+
+bg() { "$@" >/dev/null 2>&1 & }
+
+# User services (Tether, portals) need the Wayland session's environment.
+systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE \
+    SWAYSOCK HYPRLAND_INSTANCE_SIGNATURE 2>/dev/null
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP 2>/dev/null
+systemctl --user restart tether.service 2>/dev/null
+
+brightnessctl set 100% >/dev/null 2>&1
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null
+gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark 2>/dev/null
+
+bg mako
+bg /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+bg nm-applet --indicator
+bg wl-paste --watch cliphist store
+bg udiskie --smart-tray
+bg blueman-applet
+bg mbp-battery-watch
+bg mbp-nightlight start
+
+# Volume/brightness popup: mbp-osd writes levels into this pipe.
+sock="${XDG_RUNTIME_DIR:-/tmp}/wob.sock"
+rm -f "$sock" && mkfifo "$sock" && { tail -f "$sock" | wob >/dev/null 2>&1 & }
+
+# Lock after 5 min, screen off after 10, suspend after 15 (only on battery).
+if [[ $wm == sway ]]; then
+    screen_off='swaymsg "output * power off"' screen_on='swaymsg "output * power on"'
+else
+    screen_off="wlopm --off '*'" screen_on="wlopm --on '*'"
+fi
+bg swayidle -w \
+    timeout 300 'swaylock -f -c 1e1e1e' \
+    timeout 600 "$screen_off" resume "$screen_on" \
+    timeout 900 mbp-suspend-if-battery \
+    before-sleep 'swaylock -f -c 1e1e1e'
+
+# Live USB only: the installation walkthrough.
+if [[ -e /etc/mbp-live ]]; then
+    bg foot --app-id=live-welcome --title=Install live-welcome
+fi

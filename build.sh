@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Builds the MacBook Pro sway ISO on top of Arch's official "releng" profile.
-# Usage: ./build.sh          (needs the 'archiso' package; asks for sudo)
+# Builds the ISO on top of Arch's official "releng" profile.
+# Usage: ./build.sh [sway|hyprland|mango]     (default: sway)
+#        needs the 'archiso' package; asks for sudo
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FLAVOUR=${1:-sway}
+FLAVOUR_DIR="$HERE/compositors/$FLAVOUR"
+[[ -d $FLAVOUR_DIR ]] || { echo "Unknown flavour '$FLAVOUR'. Choose one of: $(ls "$HERE/compositors" | tr '\n' ' ')" >&2; exit 1; }
 RELENG=/usr/share/archiso/configs/releng
 WORK="$HERE/work"
 PROFILE="$WORK/profile"
@@ -16,15 +20,18 @@ TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
 GAMES_REPO=${GAMES_REPO:-https://github.com/knap43/tiny-games}
 LANTERN_REPO=${LANTERN_REPO:-https://github.com/knap43/lantern}
 
-echo ":: Preparing profile from releng"
+echo ":: Preparing the $FLAVOUR profile from releng"
 sudo rm -rf "$WORK"
 mkdir -p "$WORK"
 cp -a "$RELENG" "$PROFILE"
 
+# The installed system's packages: shared ones + this flavour's.
+grep -vhE '^\s*(#|$)' "$HERE/packages.system" "$FLAVOUR_DIR/packages" > "$WORK/system-pkgs"
+
 # Packages: releng's list + ours, deduplicated.
 # (releng still lists the prebuilt broadcom-wl, which Arch has dropped
 #  in favour of broadcom-wl-dkms, so filter it out.)
-grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$HERE/packages.system" \
+grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$WORK/system-pkgs" \
     | grep -vx 'broadcom-wl' | sort -u > "$WORK/pkgs"
 mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 
@@ -33,7 +40,7 @@ mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 # installer uses instead of the internet. Packages are fetched into the
 # normal pacman cache, which mkarchiso reads too, so nothing downloads twice.
 echo ":: Collecting packages for offline installation"
-mapfile -t SYS_PKGS < <(grep -vhE '^\s*(#|$)' "$HERE/packages.system")
+mapfile -t SYS_PKGS < "$WORK/system-pkgs"
 SYS_PKGS+=(grub)                       # for installs booted in BIOS mode
 PKG_CACHE=/var/cache/pacman/pkg
 REPO="$PROFILE/airootfs/var/lib/mbp/repo"
@@ -50,7 +57,10 @@ echo "   ${#PKG_FILES[@]} packages, $(du -sh "$REPO" | cut -f1)"
 
 # Overlay our files onto the live root filesystem.
 cp -a "$HERE/overlay/." "$PROFILE/airootfs/"
-install -Dm644 "$HERE/packages.system" "$PROFILE/airootfs/usr/local/share/mbp/packages.system"
+cp -a "$FLAVOUR_DIR/overlay/." "$PROFILE/airootfs/"
+install -Dm644 "$WORK/system-pkgs" "$PROFILE/airootfs/usr/local/share/mbp/packages.system"
+# Marks the live system (the installer doesn't copy it); holds the flavour.
+echo "$FLAVOUR" > "$PROFILE/airootfs/etc/mbp-live"
 install -Dm644 "$HERE/README.md" "$PROFILE/airootfs/usr/local/share/mbp/README.md"
 
 # Tether (clipboard + file sharing with the phone and other computers).
@@ -134,19 +144,20 @@ ln -sf /usr/lib/systemd/system/NetworkManager.service "$UNITS/multi-user.target.
 ln -sf /etc/systemd/system/live-user.service          "$UNITS/multi-user.target.wants/live-user.service"
 
 # Name and permissions (profiledef.sh is plain bash, later assignments win).
-cat >> "$PROFILE/profiledef.sh" <<'EOF'
+cat >> "$PROFILE/profiledef.sh" <<EOF
 
-# --- mbp-sway overrides ---
-iso_name="mbp-sway"
-iso_publisher="mbp-sway <local build>"
-iso_application="Arch Linux + sway for MacBookPro8,1"
+# --- mbp overrides ---
+iso_name="mbp-$FLAVOUR"
+iso_publisher="mbp-$FLAVOUR <local build>"
+iso_application="Arch Linux + $FLAVOUR (MacBook Pro 2011, ThinkPad T460s)"
 file_permissions["/usr/local/bin/mbp-install"]="0:0:755"
 file_permissions["/usr/local/bin/live-user-setup"]="0:0:755"
 file_permissions["/etc/sudoers.d/live"]="0:0:440"
 EOF
 
 # Every helper in /usr/local/bin is executable.
-for f in "$HERE"/overlay/usr/local/bin/*; do
+for f in "$HERE"/overlay/usr/local/bin/* "$FLAVOUR_DIR"/overlay/usr/local/bin/*; do
+    [[ -e $f ]] || continue
     echo "file_permissions[\"/usr/local/bin/$(basename "$f")\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
 done
 

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Night light, always 4000 K. wlsunset needs a day and a night value, so day
+# is 1 K higher than night, which keeps the tint constant.
+#   mbp-nightlight start | toggle
+start() { exec wlsunset -t 4000 -T 4001 -S 06:00 -s 18:00; }
+case ${1:-start} in
+    start)  pgrep -x wlsunset >/dev/null || start ;;
+    toggle) pkill -x wlsunset || start ;;
+esac

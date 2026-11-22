@@ -3,6 +3,8 @@
 
 b=$'\e[1m' d=$'\e[2m' r=$'\e[0m' red=$'\e[31m' grn=$'\e[32m' ylw=$'\e[33m' blu=$'\e[34m'
 
+flavour=$(cat /etc/mbp-live 2>/dev/null || echo sway)
+
 online() {
     [[ $(nmcli -t networking connectivity 2>/dev/null) == full ]]
 }
@@ -12,7 +14,7 @@ offline_install() { [[ -f /var/lib/mbp/repo/mbp.db ]]; }
 
 page() {
     clear
-    printf '%s\n\n' "${b}Welcome to mbp-sway${r}  ${d}— Arch Linux + sway for the MacBook Pro${r}"
+    printf '%s\n\n' "${b}Welcome to mbp-$flavour${r}  ${d}— Arch Linux + $flavour${r}"
     printf '%s\n' "This is the live system, running from the USB stick. Nothing on the"
     printf '%s\n\n' "internal disk has been touched yet."
 
@@ -32,15 +34,15 @@ page() {
     fi
 
     printf '%s\n' "${b}2. Try things out${r} ${d}(optional)${r}"
-    printf '   %s\n' "⌘ = Command key.  ⌘D terminal · ⌘Space launcher · ⌘W close"
+    printf '   %s\n' "⌘ = Command key (Windows key on a PC).  ⌘D terminal · ⌘Space launcher · ⌘W close"
     printf '   %s\n' "⌘A / ⌘S workspaces · ⌘⇧Q or ⌘Esc power menu · Alt+Shift US ⇄ RU"
     printf '   %s\n\n' "Caps Lock and Escape are swapped. Press ${b}K${r} for every shortcut."
 
     printf '%s\n' "${b}3. Install${r}"
-    printf '   %s\n' "The installer asks for a disk, a name for this Mac, your user"
+    printf '   %s\n' "The installer asks for a disk, a name for this computer, your user"
     printf '   %s\n' "and password, timezone and language, then installs the same"
     printf '   %s\n' "system you see now. Saved Wi-Fi networks are carried over."
-    printf '   %s\n\n' "${red}${b}The whole disk you choose is erased, macOS included.${r}"
+    printf '   %s\n\n' "${red}${b}The whole disk you choose is erased, macOS or Windows included.${r}"
 
     printf '%s\n' "${blu}Enter${r} install   ${blu}W${r} Wi-Fi   ${blu}K${r} shortcuts   ${blu}Q${r} close this window"
 }
@@ -49,7 +51,12 @@ keys() {
     clear
     local readme=/usr/local/share/mbp/README.md
     if [[ -f $readme ]]; then
-        sed -n '/^## Keys/,/^Screenshots go to/p' "$readme" | grep '^|' | grep -v -- '---' \
+        # The shared table, then the one under "### <this flavour>".
+        awk -v fl="$flavour" '
+            /^## /  { inkeys = ($0 ~ /^## Keys/); keep = inkeys; next }
+            /^### / { keep = inkeys && tolower($2) == fl; next }
+            keep' "$readme" \
+            | grep '^|' | grep -v -- '---' | grep -v '^| Keys |' \
             | sed 's/^| //; s/ |$//; s/ | /\t/; s/\\\(.\)/\1/g' | column -t -s $'\t'
     else
         echo "Shortcut list not found."

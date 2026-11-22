@@ -1,19 +1,30 @@
-# mbp-sway — Arch + sway ISO for the 2011 MacBook Pro 13″ (A1278 / MacBookPro8,1)
+# mbp — Arch Linux ISOs with sway, Hyprland or Mango
 
-A live USB that boots straight into a configured sway session, plus a one-shot
-installer that puts the same system on the internal disk.
+Live USBs that boot straight into a configured tiling session, plus a one-shot installer
+that puts the same system on the internal disk. Made for the 2011 MacBook Pro 13″
+(A1278 / MacBookPro8,1) and the ThinkPad T460s, and fine on most Intel laptops.
+
+There are three flavours. Each has the same apps, keys and look; only the compositor differs.
+
+| Flavour | Compositor | New workspaces open | Bar |
+|---|---|---|---|
+| `sway` (default) | sway | tabbed | swaybar + i3status |
+| `hyprland` | Hyprland 0.57 (Lua config) | tiled | Waybar |
+| `mango` | Mango (mangowm) 0.18 | tiled | Waybar |
 
 ## Build (on your Arch machine)
 
 ```sh
 sudo pacman -S --needed archiso
-./build.sh
+./build.sh              # sway
+./build.sh hyprland
+./build.sh mango
 ```
 
-The ISO lands in `out/`. The build needs ~15 GB free and internet access.
-Besides the live system, the ISO carries a small package repository with everything the
-installed system needs (~1.5 GB), so installing works offline. Those packages land in your
-normal pacman cache, which the ISO build uses anyway, so nothing is downloaded twice.
+The ISO lands in `out/` as `mbp-<flavour>-<date>-x86_64.iso`. The build needs ~15 GB free and
+internet access. Besides the live system, the ISO carries a small package repository with
+everything the installed system needs (~1.5 GB), so installing works offline. Those packages land
+in your normal pacman cache, which the ISO build uses anyway, so nothing is downloaded twice.
 It is layered on Arch's official `releng` profile, so it stays current with archiso.
 
 ## Write to USB
@@ -25,38 +36,41 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 
 ## Boot & install
 
-1. Hold **Option (⌥)** at the chime, pick **EFI Boot**.
-2. sway starts automatically (user `live`, no password) and a **welcome window** opens.
+1. **MacBook:** hold **Option (⌥)** at the chime and pick **EFI Boot**.
+   **ThinkPad:** press **F12** at the red logo and pick the USB stick. If it refuses to boot,
+   turn off *Secure Boot* in the setup (Enter, then F1).
+2. The session starts automatically (user `live`, no password) and a **welcome window** opens.
    It shows the essential shortcuts and what the installer will do:
    - **Installing needs no internet.** Every package is on the stick, so the installer works offline.
    - **W** picks a Wi-Fi network (or use the network icon in the bar). Networks you join here are
      saved in the new system **with their passwords**.
-   - **K** lists every shortcut.
+   - **K** lists every shortcut for this flavour.
    - **Enter** starts the installer. It asks for disk, hostname, user, password, timezone and
-     language, then **wipes the whole disk** (macOS included) and installs.
-   - **Q** closes the window; reopen it from the launcher as *Install mbp-sway*
+     language, then **wipes the whole disk** (macOS or Windows included) and installs.
+   - **Q** closes the window; reopen it from the launcher as *Install to Disk*
      (or run `sudo mbp-install` in a terminal).
 3. When it's done, remove the stick and press Enter to reboot. Log in on the console —
-   sway starts by itself.
+   the compositor starts by itself.
 
 ## What's in it
 
 | Area | Choice |
 |---|---|
-| Graphics | Intel HD 3000 (i915 + Mesa crocus), early KMS, VA-API video decoding, Xwayland |
-| Wi-Fi | `broadcom-wl-dkms` (BCM4331, built for the kernel at install) via NetworkManager + nm-applet; `wheel` users manage networks without a password prompt, and Wi-Fi passwords are stored system-wide |
-| Session | sway, swaybar + i3status, swayidle/swaylock, mako, fuzzel, foot |
-| Shell | fish (autostarts sway on tty1) |
+| Graphics | Intel HD 3000 (MacBook, Mesa crocus) and HD 520 (ThinkPad, Mesa iris), early KMS, VA-API video decoding, Xwayland |
+| Wi-Fi | NetworkManager + nm-applet. MacBook: `broadcom-wl-dkms` (BCM4331, built for the kernel at install); ThinkPad: iwlwifi from `linux-firmware`. `wheel` users manage networks without a password prompt, and Wi-Fi passwords are stored system-wide |
+| Session | sway, Hyprland or Mango; swayidle/swaylock, mako, fuzzel, foot, wob popups |
+| Shell | fish (starts the compositor on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |
 | Power | TLP, zram swap (zstd); lock at 5 min idle, screen off at 10, suspend at 15 on battery; battery warnings at 15% and 5% |
-| Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth tray (blueman) |
+| Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth tray (blueman), touchpad tap-to-click, TrackPoint |
 | Apps | btop, fastfetch, Flatpak (Flathub added; apps show up in the launcher), LibreWolf, mpv (hardware decoding on; F7–F9 control it via mpv-mpris), kew (terminal music player; F7–F9 control it), Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
 | Dev | git, base-devel, vim, Python + PyGObject, GTK 4, libadwaita |
 | Boot | systemd-boot on UEFI (GRUB if booted in legacy/BIOS mode) |
 
 ## Keys (⌘ = Mod)
 
-All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are swapped.
+⌘ is the Command key on the MacBook and the Windows key on the ThinkPad. All shortcuts work in
+both the US and Russian layouts. Caps Lock and Escape are swapped. These are the same in every flavour:
 
 | Keys | Action |
 |---|---|
@@ -65,32 +79,62 @@ All shortcuts work in both the US and Russian layouts. Caps Lock and Escape are 
 | ⌘ E / ⌘ B | Thunar / LibreWolf |
 | ⌘ V | clipboard history |
 | ⌘ W | close window |
-| ⌘ Tab / ⌘ ⇧ Tab | cycle through all windows, forward / back |
 | ⌘ [ / ⌘ ] | previous / next window on this workspace |
 | ⌘ H J K L or arrows | focus; add ⇧ to move the window |
-| ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
 | ⌘ ⇧ A / ⌘ ⇧ S | take the window to the previous / next workspace |
-| ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ F / ⌘ ⇧ F | fullscreen / floating |
-| ⌘ ⇧ Space | switch focus between floating and tiled |
-| ⌘ \\ / ⌘ - | split side by side / top and bottom |
-| ⌘ . / ⌘ , / ⌘ T | tiling (press again to flip split direction) / tabbed / stacked |
-| ⌘ P | focus parent container |
 | ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
 | ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
 | ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |
 | ⌘ ⇧ Q or ⌘ Esc | power menu (lock, suspend, log out, reboot, power off) |
-| ⌘ ⇧ C | reload sway config |
+| ⌘ ⇧ C | reload the config |
 | ⌘ N | night light on / off (on by default, 4000 K) |
 | Alt ⇧ | switch US ⇄ RU |
 | F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume (with a popup bar) |
 | F7 / F8 / F9 | previous / play-pause / next, for any player |
 
-New workspaces open in tabbed layout, and screen brightness is set to 100% at every login.
-Screenshots go to `~/Pictures/Screenshots`. Helper scripts live in `/usr/local/bin/sway-*`.
-The default wallpaper is `/usr/share/backgrounds/mbp-sway/wallpaper.jpg` (change the `output * bg` line in the sway config to use another). The fish prompt is `[$PWD]$`, set in `~/.config/fish/functions/fish_prompt.fish`.
+### sway
 
-Configs live in `~/.config/{sway,foot,fuzzel,mako,i3status,fish}`.
+| Keys | Action |
+|---|---|
+| ⌘ Tab / ⌘ ⇧ Tab | cycle through all windows, forward / back |
+| ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
+| ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
+| ⌘ ⇧ Space | switch focus between floating and tiled |
+| ⌘ \\ / ⌘ - | split side by side / top and bottom |
+| ⌘ . / ⌘ , / ⌘ T | tiling (press again to flip split direction) / tabbed / stacked |
+| ⌘ P | focus parent container |
+
+### Hyprland
+
+| Keys | Action |
+|---|---|
+| ⌘ Tab / ⌘ ⇧ Tab | cycle through all windows, forward / back |
+| ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
+| ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
+| ⌘ ⇧ Space | switch focus between floating and tiled |
+| ⌘ \\ / ⌘ - | open the next window to the right / below |
+| ⌘ . | flip the split direction |
+| ⌘ , or ⌘ T | tabs on / off (a window group; Hyprland has no stacked layout) |
+
+### Mango
+
+| Keys | Action |
+|---|---|
+| ⌘ Tab | overview of every window (pick one, or ⌘ Tab again to leave) |
+| ⌘ A / ⌘ S | tag (workspace) to the left / right |
+| ⌘ 1…9 / ⌘ ⇧ 1…9 | go to / send window to tag (Mango has nine) |
+| ⌘ . | tiled: switch between side-by-side and top-and-bottom |
+| ⌘ , / ⌘ T | tabbed / stacked (press ⌘ . to go back to tiled) |
+
+Screen brightness is set to 100% at every login. Screenshots go to `~/Pictures/Screenshots`.
+Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
+`/usr/share/backgrounds/mbp/wallpaper.jpg`. The fish prompt is `[$PWD]$`, set in
+`~/.config/fish/functions/fish_prompt.fish`.
+
+Configs live in `~/.config/`: `sway` + `i3status`, `hypr/hyprland.lua` + `waybar`, or
+`mango/config.conf` + `waybar`; plus `foot`, `fuzzel`, `mako` and `fish` in every flavour.
+Autostart, idle and night light are shared by all three, in `/usr/local/bin/mbp-session-start`.
 
 ## Tether (phone and computer bridge)
 
@@ -100,7 +144,7 @@ phone audio/screen, remote input, commands) start switched off, and the window s
 clipboard and file controls (`TETHER_FEATURES=clipboard,files` in its launcher entry).
 
 - Open **Tether** from the launcher to pair your phone or another computer (same pairing as usual).
-- **Clipboard** syncs automatically (via wl-clipboard; sway starts the service after login).
+- **Clipboard** syncs automatically (via wl-clipboard; the service starts after login).
 - **Send files:** right-click in Thunar → *Send with Tether*. With several devices connected,
   a menu asks which one. Incoming files land in `~/Downloads/Tether`.
 - **Browse the phone** in Thunar (WebDAV, through `gvfs-dnssd`), and set up **folder sync** in the Tether window.
@@ -130,13 +174,17 @@ without access the ISO is built without them. Best scores are kept in `~/.local/
 ## Layout
 
 ```
-build.sh            builds the ISO (releng + this overlay)
-packages.system     packages for both live ISO and installed system
-overlay/            files copied onto the live root filesystem
-  etc/skel/.config  desktop configs (also copied to the installed system)
-  usr/local/bin/mbp-install       the installer
-  usr/local/bin/live-user-setup   creates the live user at boot
-  usr/local/bin/live-welcome      the live session's walkthrough (live ISO only)
-  usr/local/bin/sway-*            workspace, window-cycle, power-menu, screenshot, OSD and battery helpers
-  usr/local/bin/tether*           Tether launcher and the Thunar send action
+build.sh                 builds the ISO: ./build.sh [sway|hyprland|mango]
+packages.system          packages shared by every flavour (live ISO and installed system)
+overlay/                 files copied onto every flavour's root filesystem
+  etc/skel/.config       shared desktop configs (also copied to the installed system)
+  usr/local/bin/mbp-install         the installer
+  usr/local/bin/mbp-session-start   autostart, idle/lock, night light (all compositors)
+  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery and night-light helpers
+  usr/local/bin/live-user-setup     creates the live user at boot
+  usr/local/bin/live-welcome        the live session's walkthrough (live ISO only)
+  usr/local/bin/tether*             Tether launcher and the Thunar send action
+compositors/<flavour>/
+  packages               the compositor and its bar
+  overlay/               its config, fish autostart and (sway) workspace/window helpers
 ```

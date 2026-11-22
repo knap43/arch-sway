@@ -1,0 +1,63 @@
+// Waybar for the hyprland flavour; shared look in ~/.config/waybar/style.css
+{
+    "layer": "top",
+    "position": "top",
+    "height": 22,
+    "spacing": 0,
+    "modules-left": [
+        "hyprland/workspaces"
+    ],
+    "modules-center": [],
+    "modules-right": [
+        "hyprland/language",
+        "network",
+        "wireplumber",
+        "battery",
+        "cpu",
+        "memory",
+        "clock",
+        "tray"
+    ],
+    "hyprland/workspaces": {
+        "format": "{name}",
+        "on-click": "activate"
+    },
+    "hyprland/language": {
+        "format": "{short}"
+    },
+    "network": {
+        "format-wifi": "W: {essid} {signalStrength}%",
+        "format-ethernet": "E: {ipaddr}",
+        "format-disconnected": "W: down",
+        "tooltip-format": "{ifname} {ipaddr}"
+    },
+    "wireplumber": {
+        "format": "♪ {volume}%",
+        "format-muted": "♪ muted",
+        "on-click": "pavucontrol"
+    },
+    "battery": {
+        "format": "BAT {capacity}%",
+        "format-charging": "CHR {capacity}%",
+        "format-full": "FULL",
+        "states": {
+            "warning": 15,
+            "critical": 5
+        }
+    },
+    "cpu": {
+        "format": "CPU {usage}%",
+        "interval": 5
+    },
+    "memory": {
+        "format": "RAM {used:0.1f}G",
+        "interval": 5
+    },
+    "clock": {
+        "format": "{:%a %d %b  %H:%M}",
+        "tooltip-format": "{:%A %d %B %Y}"
+    },
+    "tray": {
+        "spacing": 6
+    }
+}

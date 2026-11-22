@@ -1,0 +1,3 @@
+# Packages only the sway flavour needs (on top of packages.system).
+sway
+i3status
