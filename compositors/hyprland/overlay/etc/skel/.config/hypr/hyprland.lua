@@ -13,6 +13,20 @@ local menu = "fuzzel"
 -------------------------------------------------------------------------------
 
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+-- Displays 1080p or taller are scaled 1.5x; mbp-display-scale lists them from
+-- the kernel (MBP_SCALE overrides the factor, 1 = off).
+do
+    local p = io.popen("mbp-display-scale 2>/dev/null")
+    if p then
+        for line in p:lines() do
+            local out, s = line:match("^(%S+) (%S+)$")
+            if out and tonumber(s) then
+                hl.monitor({ output = out, mode = "preferred", position = "auto", scale = tonumber(s) })
+            end
+        end
+        p:close()
+    end
+end
 
 hl.config({
     general = {

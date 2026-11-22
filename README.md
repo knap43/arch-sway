@@ -132,7 +132,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
 | ⌘ , / ⌘ T | tabbed / stacked (press ⌘ . to go back to tiled) |
 
-Focus follows the mouse pointer. Screen brightness is set to 100% at every login. Screenshots go to `~/Pictures/Screenshots`.
+Focus follows the mouse pointer. Displays 1080p or taller are scaled 1.5× (`set -Ux MBP_SCALE 1` turns it off, or sets another factor, from the next login). Screen brightness is set to 100% at every login. Screenshots go to `~/Pictures/Screenshots`.
 Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
 `/usr/share/backgrounds/mbp/wallpaper.jpg`. The fish prompt is `[$PWD]$`, set in
 `~/.config/fish/functions/fish_prompt.fish`.
@@ -204,7 +204,7 @@ overlay/                 files copied onto every flavour's root filesystem
   etc/skel/.config       shared desktop configs (also copied to the installed system)
   usr/local/bin/mbp-install         the installer
   usr/local/bin/mbp-session-start   autostart, idle/lock, night light (all compositors)
-  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery, night-light and keyboard helpers
+  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery, night-light, keyboard and display-scale helpers
   etc/xkb/                          the mbp:swap_alt_win keyboard option (Alt ⇄ Win on PC keyboards)
   usr/local/bin/live-user-setup     creates the live user at boot
   usr/local/bin/live-welcome        the live session's walkthrough (live ISO only)

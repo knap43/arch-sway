@@ -18,6 +18,8 @@ hide_edge_borders smart
 focus_follows_mouse yes
 workspace_layout tabbed
 output * bg /usr/share/backgrounds/mbp/wallpaper.jpg fill #1e1e1e
+# Displays 1080p or taller are scaled 1.5x (MBP_SCALE overrides, 1 = off)
+exec_always mbp-display-scale --sway
 
 # class                 border  bg      text    indicator child_border
 client.focused          #5e81ac #5e81ac #ffffff #81a1c1   #5e81ac
