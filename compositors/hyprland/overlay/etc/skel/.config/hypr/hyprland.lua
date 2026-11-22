@@ -46,7 +46,8 @@ hl.config({
         blur = { enabled = false },
     },
     animations = { enabled = false },
-    dwindle = { preserve_split = true },
+    -- New windows always open to the right (or below), not on the cursor's side
+    dwindle = { preserve_split = true, force_split = 2 },
     group = {
         auto_group = true,                   -- new windows join the focused tab group
         group_on_movetoworkspace = true,     -- and so do windows sent to another workspace
