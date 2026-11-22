@@ -1,0 +1,7 @@
+[Unit]
+Description=llama-server for wmai (started on demand by the wmai command)
+
+[Service]
+ExecStart=/usr/local/bin/wmai serve
+Restart=on-failure
+Nice=10

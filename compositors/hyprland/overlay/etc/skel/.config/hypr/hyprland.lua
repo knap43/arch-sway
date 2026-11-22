@@ -256,3 +256,6 @@ hl.window_rule({ name = "float-nm-editor", match = { class = "^nm-connection-edi
 hl.window_rule({ name = "live-welcome", match = { class = "^live-welcome$" },
                  float = true, size = "780 560", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
+
+-- Managed by wmai (keep this last so its settings win)
+require("ai")

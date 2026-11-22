@@ -19,6 +19,10 @@ command -v git >/dev/null || { echo "git is needed to fetch Tether: sudo pacman 
 TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
 GAMES_REPO=${GAMES_REPO:-https://github.com/knap43/tiny-games}
 LANTERN_REPO=${LANTERN_REPO:-https://github.com/knap43/lantern}
+WMAI_REPO=${WMAI_REPO:-https://github.com/knap43/wm-config-llm}
+# wmai's model: the v3 release asset, checked against this checksum.
+WMAI_MODEL_URL=${WMAI_MODEL_URL:-https://github.com/knap43/wm-config-llm/releases/download/v3/wmcfg-Q4_K_M.gguf}
+WMAI_MODEL_SHA256=${WMAI_MODEL_SHA256:-234589dd0132dfa648ba2e4bb4436cd1e2e5fbec36a27cb34300150a5ae3f923}
 
 echo ":: Preparing the $FLAVOUR profile from releng"
 sudo rm -rf "$WORK"
@@ -102,6 +106,33 @@ if [[ -z $model ]]; then
     model="$HERE/cache/$model_name"
 fi
 install -Dm644 "$model" "$PROFILE/airootfs/usr/share/lantern/models/$model_name"
+
+# wmai (wm-config-llm): edits the compositor config from plain-language
+# requests with a small local model. Only the CLI is bundled, the same files
+# its install.sh copies; it needs nothing beyond the standard library.
+echo ":: Fetching wmai from $WMAI_REPO"
+git clone -q --depth 1 "$WMAI_REPO" "$WORK/wmai"
+install -Dm644 -t "$PROFILE/airootfs/usr/lib/wmai/wmllm" \
+    "$WORK"/wmai/wmllm/{__init__.py,context.py,validate.py,mango.py,flatten_hypr.lua}
+install -Dm644 "$WORK/wmai/cli/wmai.py" "$PROFILE/airootfs/usr/lib/wmai/cli/wmai.py"
+
+# Its model (~660 MB), bundled so wmai works offline. Reuses a copy wmai's own
+# installer put in ~/.local/share/wmai, or one in ./cache; downloads at most once.
+wmai_name=$(basename "$WMAI_MODEL_URL")
+wmai_ok() { [[ -f $1 ]] && echo "$WMAI_MODEL_SHA256  $1" | sha256sum -c --quiet - 2>/dev/null; }
+wmai_model=""
+for candidate in "${XDG_DATA_HOME:-$HOME/.local/share}/wmai/$wmai_name" "$HERE/cache/$wmai_name"; do
+    wmai_ok "$candidate" && { wmai_model=$candidate; break; }
+done
+if [[ -z $wmai_model ]]; then
+    echo ":: Downloading wmai's model (~660 MB, once)"
+    mkdir -p "$HERE/cache"
+    curl -fL --progress-bar -o "$HERE/cache/$wmai_name.part" "$WMAI_MODEL_URL"
+    mv "$HERE/cache/$wmai_name.part" "$HERE/cache/$wmai_name"
+    wmai_ok "$HERE/cache/$wmai_name" || { rm -f "$HERE/cache/$wmai_name"; echo "!! wmai model checksum mismatch" >&2; exit 1; }
+    wmai_model="$HERE/cache/$wmai_name"
+fi
+install -Dm644 "$wmai_model" "$PROFILE/airootfs/usr/share/wmai/wmcfg-Q4_K_M.gguf"
 
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.

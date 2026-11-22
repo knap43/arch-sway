@@ -198,3 +198,6 @@ bar {
 }
 
 include /etc/sway/config.d/*
+
+# Managed by wmai (keep this last so its settings win)
+include ~/.config/sway/ai.conf

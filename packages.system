@@ -97,3 +97,5 @@ python-pygame
 python-textual
 python-httpx
 llama-cpp
+# wmai reads hyprland.lua with a standalone Lua
+lua

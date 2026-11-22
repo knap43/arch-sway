@@ -163,6 +163,25 @@ right after installing. `build.sh` downloads it once, reusing `~/.cache/lantern`
 already there, and checks its checksum. The server's log is in `~/.local/state/lantern/server.log`.
 Saves: `~/.local/share/lantern`.
 
+## wmai (change the config by asking)
+
+[wm-config-llm](https://github.com/knap43/wm-config-llm)'s `wmai` is installed with its v3 model
+(~660 MB, bundled, so it works offline). It edits whichever compositor you're running from a
+plain-language request, checks the result with `sway -C`, `Hyprland --verify-config` or `mango -p`,
+and asks before applying:
+
+```fish
+wmai "make the borders thicker"
+wmai "bind super+m to kew in a terminal"
+wmai undo
+```
+
+It never rewrites your config: its changes go to `~/.config/sway/ai.conf`, `~/.config/hypr/ai.lua`
+or `~/.config/mango/ai.conf`, which the configs on this ISO already load last (`wmai init` is done
+for you). The first request starts the model's server (`wmai-server`, a user service), which takes a
+few seconds and then stays up; `systemctl --user stop wmai-server` frees its memory (~1 GB).
+To build with a different copy: `WMAI_REPO=/path/or/url ./build.sh`.
+
 ## Games
 
 Five tiny dark-fantasy games from `knap43/tiny-games` are fetched at build time and appear in the launcher:
@@ -184,6 +203,7 @@ overlay/                 files copied onto every flavour's root filesystem
   usr/local/bin/live-user-setup     creates the live user at boot
   usr/local/bin/live-welcome        the live session's walkthrough (live ISO only)
   usr/local/bin/tether*             Tether launcher and the Thunar send action
+  usr/local/bin/wmai                wmai wrapper (bundled model, starts its server on demand)
 compositors/<flavour>/
   packages               the compositor and its bar
   overlay/               its config, fish autostart and (sway) workspace/window helpers

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# wmai: edit the compositor config in plain language with a small local model
+# (https://github.com/knap43/wm-config-llm). This wrapper points it at the
+# bundled model and starts the model's server the first time it's needed.
+export WMAI_MODEL=${WMAI_MODEL:-/usr/share/wmai/wmcfg-Q4_K_M.gguf}
+export WMAI_SERVER=${WMAI_SERVER:-http://127.0.0.1:8089}
+cli=(python3 /usr/lib/wmai/cli/wmai.py)
+
+up() { curl -fs -o /dev/null --max-time 2 "$WMAI_SERVER/health"; }
+
+case ${1-} in
+    ""|-h|--help|init|undo|show|serve) exec "${cli[@]}" "$@" ;;
+esac
+
+if ! up && [[ $WMAI_SERVER == http://127.0.0.1:* ]]; then
+    systemctl --user start wmai-server.service
+    printf 'Loading the model (stops with: systemctl --user stop wmai-server)' >&2
+    for _ in $(seq 120); do
+        up && break
+        printf '.' >&2
+        sleep 1
+    done
+    echo >&2
+    up || { echo "wmai: the model server didn't start; see: journalctl --user -u wmai-server" >&2; exit 1; }
+fi
+exec "${cli[@]}" "$@"
