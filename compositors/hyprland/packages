@@ -1,4 +1,5 @@
 # Packages only the Hyprland flavour needs (on top of packages.system).
 hyprland
+hyprshutdown
 waybar
 xdg-desktop-portal-hyprland

@@ -1,7 +1,7 @@
 -- Hyprland (0.57+, Lua config): the same keymap and conventions as the sway
 -- flavour. Mod = Super (⌘ on the MacBook, the Windows key on the ThinkPad).
 -- Effects (blur, shadows, animations, rounding) are off: light on old GPUs.
--- Reference: https://wiki.hypr.land/configuring/
+-- Reference: https://wiki.hypr.land/configuring/ (checked against the wiki, Nov 2026)
 
 local mod  = "SUPER"
 local term = "foot"

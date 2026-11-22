@@ -2,14 +2,26 @@
 # Lock / suspend / log out / reboot / power off, picked from fuzzel.
 choice=$(printf '%s\n' Lock Suspend "Log out" Reboot "Power off" \
     | fuzzel --dmenu --prompt "Power: " --lines 5 --width 20) || exit 0
+
+# Under Hyprland, hyprshutdown asks every app to close first (so LibreWolf and
+# friends exit cleanly instead of being killed), then quits and runs $1.
+hypr_quit() {
+    if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE-} ]] && command -v hyprshutdown >/dev/null; then
+        hyprshutdown -t "$2" ${1:+--post-cmd "$1"}
+        return 0
+    fi
+    return 1
+}
+
 case $choice in
     Lock)        swaylock -f -c 1e1e1e ;;
     Suspend)     systemctl suspend ;;
     "Log out")
-        if   [[ -n ${SWAYSOCK-} ]];                    then swaymsg exit
+        if   [[ -n ${SWAYSOCK-} ]]; then swaymsg exit
+        elif hypr_quit "" "Logging out..."; then :
         elif [[ -n ${HYPRLAND_INSTANCE_SIGNATURE-} ]]; then hyprctl dispatch 'hl.dsp.exit()'
         else loginctl terminate-session "${XDG_SESSION_ID:-self}"
         fi ;;
-    Reboot)      systemctl reboot ;;
-    "Power off") systemctl poweroff ;;
+    Reboot)      hypr_quit "systemctl reboot" "Restarting..." || systemctl reboot ;;
+    "Power off") hypr_quit "systemctl poweroff" "Shutting down..." || systemctl poweroff ;;
 esac
