@@ -130,7 +130,8 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ Tab | overview of every window (pick one, or ⌘ Tab again to leave) |
+| ⌘ Tab | switch between tabbed and tiled |
+| ⌘ ⇧ Tab | overview of every window (pick one, or ⌘ ⇧ Tab again to leave) |
 | ⌘ A / ⌘ S | tag (workspace) to the left / right |
 | ⌘ 1…9 / ⌘ ⇧ 1…9 | go to / send window to tag (Mango has nine) |
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
