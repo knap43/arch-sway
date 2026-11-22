@@ -34,6 +34,10 @@ input type:keyboard {
     repeat_rate 35
 }
 
+# On a PC keyboard Alt and Win trade places, so ⌘ (Super) is the key next to
+# the space bar there too; mbp-xkb-options picks the options for this machine.
+exec_always swaymsg "input type:keyboard xkb_options $(mbp-xkb-options)"
+
 input type:touchpad {
     tap enabled
     natural_scroll enabled

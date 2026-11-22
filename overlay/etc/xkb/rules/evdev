@@ -1,0 +1,5 @@
+// Adds mbp:swap_alt_win to the system rules (libxkbcommon reads /etc/xkb).
+! include %S/evdev
+
+! option = symbols
+  mbp:swap_alt_win = +altwin(swap_alt_win)+mbp(win_shift_toggle)

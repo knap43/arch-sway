@@ -184,6 +184,7 @@ install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop
 install -Dm644 -t "$MNT/usr/share/icons/hicolor/scalable/apps" /usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg
 install -Dm644 -t "$MNT/usr/share/backgrounds/mbp" /usr/share/backgrounds/mbp/wallpaper.jpg
+cp -rT /etc/xkb "$MNT/etc/xkb"     # mbp:swap_alt_win (see mbp-xkb-options)
 install -Dm644 -t "$MNT/etc/polkit-1/rules.d" /etc/polkit-1/rules.d/50-mbp-networkmanager.rules
 copy_wifi_connections
 

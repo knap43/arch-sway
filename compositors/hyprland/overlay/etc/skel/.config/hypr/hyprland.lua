@@ -1,5 +1,6 @@
 -- Hyprland (0.57+, Lua config): the same keymap and conventions as the sway
--- flavour. Mod = Super (⌘ on the MacBook, the Windows key on the ThinkPad).
+-- flavour. Mod = Super: ⌘ on the MacBook; on a PC keyboard Alt and Win trade
+-- places, so it is the Alt key there (see "Input").
 -- Effects (blur, shadows, animations, rounding) are off: light on old GPUs.
 -- Reference: https://wiki.hypr.land/configuring/ (checked against the wiki, Nov 2026)
 
@@ -52,11 +53,25 @@ hl.config({
 -- Input
 -------------------------------------------------------------------------------
 
+-- On a PC keyboard (anything but a Mac) Alt and Win trade places, so Super is
+-- the key next to the space bar, as ⌘ is on the MacBook; Alt+Shift still
+-- switches layout. mbp:swap_alt_win is defined in /etc/xkb, and this is the
+-- same choice /usr/local/bin/mbp-xkb-options makes (MBP_SWAP_ALT_WIN=0|1 overrides).
+local function swap_alt_win()
+    local force = os.getenv("MBP_SWAP_ALT_WIN")
+    if force == "0" or force == "1" then return force == "1" end
+    local f = io.open("/sys/class/dmi/id/sys_vendor")
+    local vendor = f and f:read("*l") or ""
+    if f then f:close() end
+    return vendor:sub(1, 5) ~= "Apple"
+end
+
 hl.config({
     input = {
         kb_layout = "us,ru",
         -- Alt+Shift switches layout; Caps Lock and Escape are swapped.
-        kb_options = "grp:alt_shift_toggle,caps:swapescape",
+        kb_options = swap_alt_win() and "caps:swapescape,mbp:swap_alt_win"
+                                     or "grp:alt_shift_toggle,caps:swapescape",
         -- Binds follow the first layout (US), so they also work in Russian.
         resolve_binds_by_sym = false,
         repeat_delay = 300,

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Prints the keyboard (XKB) options for this machine. Every flavour uses
+# Super as its modifier: on a Mac that's ⌘, right next to the space bar. On a
+# PC keyboard it's the Windows key, so there Alt and Win trade places (Alt
+# becomes ⌘, Win becomes Alt), with Alt+Shift still switching US ⇄ RU.
+# mbp:swap_alt_win is defined in /etc/xkb. Override with MBP_SWAP_ALT_WIN=0|1.
+swap=${MBP_SWAP_ALT_WIN-}
+if [[ -z $swap ]]; then
+    vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null)
+    [[ $vendor == Apple* ]] && swap=0 || swap=1
+fi
+if [[ $swap == 1 ]]; then
+    echo "caps:swapescape,mbp:swap_alt_win"
+else
+    echo "grp:alt_shift_toggle,caps:swapescape"
+fi

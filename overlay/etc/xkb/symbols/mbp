@@ -1,0 +1,11 @@
+// mbp: Alt and Win trade places (for PC keyboards, where Super is the
+// compositor's modifier), keeping Alt+Shift as the layout switch. The stock
+// grp:alt_shift_toggle is tied to the physical Alt key, which after the swap
+// is Super, so this puts the toggle on the keys that now send Alt instead.
+partial modifier_keys
+xkb_symbols "win_shift_toggle" {
+    key <LWIN> {[ Alt_L, ISO_Next_Group ], type[group1] = "TWO_LEVEL" };
+    key <RWIN> {[ Alt_R, ISO_Next_Group ], type[group1] = "TWO_LEVEL" };
+    key <LFSH> {[ Shift_L, ISO_Next_Group ], type[group1] = "PC_ALT_LEVEL2" };
+    key <RTSH> {[ Shift_R, ISO_Next_Group ], type[group1] = "PC_ALT_LEVEL2" };
+};

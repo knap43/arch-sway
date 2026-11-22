@@ -69,7 +69,10 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 
 ## Keys (⌘ = Mod)
 
-⌘ is the Command key on the MacBook and the Windows key on the ThinkPad. All shortcuts work in
+⌘ is the Command key on the MacBook. On a PC keyboard such as the ThinkPad's, Alt and the Windows key
+trade places, so ⌘ is the key next to the space bar there too (the Alt key), and Alt moves to the
+Windows key; Alt ⇧ still switches layout. The choice is made per machine (anything but a Mac swaps);
+`set -Ux MBP_SWAP_ALT_WIN 0` (or `1`) in fish overrides it from the next login. All shortcuts work in
 both the US and Russian layouts. Caps Lock and Escape are swapped. These are the same in every flavour:
 
 | Keys | Action |
@@ -199,7 +202,8 @@ overlay/                 files copied onto every flavour's root filesystem
   etc/skel/.config       shared desktop configs (also copied to the installed system)
   usr/local/bin/mbp-install         the installer
   usr/local/bin/mbp-session-start   autostart, idle/lock, night light (all compositors)
-  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery and night-light helpers
+  usr/local/bin/mbp-*               power menu, screenshot, OSD, battery, night-light and keyboard helpers
+  etc/xkb/                          the mbp:swap_alt_win keyboard option (Alt ⇄ Win on PC keyboards)
   usr/local/bin/live-user-setup     creates the live user at boot
   usr/local/bin/live-welcome        the live session's walkthrough (live ISO only)
   usr/local/bin/tether*             Tether launcher and the Thunar send action
