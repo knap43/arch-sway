@@ -294,5 +294,6 @@ fi
 
 echo
 info "Installation complete."
-echo "   Remove the USB stick and reboot:  sudo reboot"
-echo "   Log in as '$USERNAME' on the console — sway starts by itself."
+echo "   Power off (sudo poweroff), and only once the machine is off remove the USB stick:"
+echo "   the live system runs from it until the very end. Then turn it back on."
+echo "   Log in as '$USERNAME' on the console — the desktop starts by itself."
