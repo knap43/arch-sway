@@ -10,7 +10,7 @@ There are three flavours. Each has the same apps, keys and look; only the compos
 |---|---|---|---|
 | `sway` (default) | sway | tabbed | swaybar + i3status |
 | `hyprland` | Hyprland 0.57 (Lua config) | tabbed | Waybar |
-| `mango` | Mango (mangowm) 0.18 | tiled | Waybar |
+| `mango` | Mango (mangowm) 0.18 | tabbed | Waybar |
 
 ## Build (on your Arch machine)
 
