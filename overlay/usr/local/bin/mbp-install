@@ -68,6 +68,9 @@ CONFIRM=$(ask "Type the disk name again to continue" "")
 part() { [[ $DISK =~ [0-9]$ ]] && echo "${DISK}p$1" || echo "${DISK}$1"; }
 
 # Copies the live session's saved networks, with their Wi-Fi passwords.
+# "permissions=user:live;" lines are dropped: a network saved from the
+# network icon can be limited to the user who saved it, and the installed
+# system has no user called live, so it would never connect.
 # A password saved through the network icon can be held by the applet
 # instead of the connection file; ask NetworkManager for it (as the live
 # user, whose applet holds it) and write it into the new system's file.
@@ -90,18 +93,18 @@ copy_wifi_connections() {
                                       gsub(/\\/, "\\\\", v); gsub(/\t/, "\\t", v)
                                       gsub(/\n/, "\\n", v);   gsub(/\r/, "\\r", v)
                                       if (substr(v, 1, 1) == " ") v = "\\s" substr(v, 2) }
-                              /^psk(-flags)?=/ { next }
+                              /^psk(-flags)?=/ || /^permissions=/ { next }
                               { print }
                               /^\[wifi-security\]$/ { print "psk-flags=0"; print "psk=" v }' \
                     "$f" > "$dst/${f##*/}"
                 info "Wi-Fi \"$name\": password carried over"
             else
-                cp -a "$f" "$dst/"
+                grep -v '^permissions=' "$f" > "$dst/${f##*/}"
                 printf '\e[33m!!\e[0m Wi-Fi "%s": password not found; you will be asked for it once.\n' "$name"
             fi
             unset psk
         else
-            cp -a "$f" "$dst/"
+            grep -v '^permissions=' "$f" > "$dst/${f##*/}"
         fi
     done
     chmod 600 "$dst"/*
