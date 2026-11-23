@@ -1,0 +1,3 @@
+#!/bin/sh
+# Hearth (https://github.com/knap43/hearth), bundled into the ISO at build time.
+PYTHONPATH=/usr/lib/hearth exec python3 -m hearth "$@"

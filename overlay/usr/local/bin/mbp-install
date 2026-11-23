@@ -172,9 +172,12 @@ CONF
     # Leave a normal system behind: no copied package files, no stick repo.
     rm -f "$MNT"/var/cache/pacman/pkg/* "$MNT"/var/lib/pacman/sync/mbp.*
 else
-    info "Installing ${#PKGS[@]} packages (downloads ~1.5 GB)"
+    sed -i '/^#\[multilib\]$/{s/^#//;n;s/^#//}' /etc/pacman.conf    # umu-launcher and lib32-* live in multilib
+    info "Installing ${#PKGS[@]} packages (downloads ~2 GB)"
     pacstrap -K "$MNT" "${PKGS[@]}"
 fi
+# Keep multilib on, so the lib32-* packages and umu-launcher get updates.
+sed -i '/^#\[multilib\]$/{s/^#//;n;s/^#//}' "$MNT/etc/pacman.conf"
 # pacman needs at least one mirror for updates later; the live mirrorlist is
 # copied by pacstrap, but it may be all comments if the stick was offline.
 if ! grep -q '^Server' "$MNT/etc/pacman.d/mirrorlist" 2>/dev/null; then
@@ -190,6 +193,9 @@ for f in /usr/local/bin/*; do
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
 cp -a /usr/lib/lantern "$MNT/usr/lib/"
+cp -a /usr/lib/hearth "$MNT/usr/lib/"
+install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/hearth.desktop
+install -Dm644 -t "$MNT/usr/share/fish/vendor_completions.d" /usr/share/fish/vendor_completions.d/hearth.fish
 [[ -d /usr/share/lantern ]] && cp -a /usr/share/lantern "$MNT/usr/share/"
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/lantern.desktop
 cp -a /usr/lib/wmai "$MNT/usr/lib/"
@@ -247,7 +253,7 @@ HOSTS
 sed -i 's/^MODULES=(\(.*\))/MODULES=(\1 i915)/; s/^MODULES=( /MODULES=(/' /etc/mkinitcpio.conf
 mkinitcpio -P
 
-useradd -m -G wheel -s /usr/bin/fish "$USERNAME"
+useradd -m -G wheel,gamemode -s /usr/bin/fish "$USERNAME"
 passwd -l root
 
 systemctl enable NetworkManager bluetooth tlp fstrim.timer systemd-timesyncd

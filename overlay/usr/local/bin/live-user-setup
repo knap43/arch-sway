@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 # Live ISO only: passwordless user "live" with fish and sudo.
 set -e
-id live &>/dev/null || useradd -m -G wheel -s /usr/bin/fish live
+id live &>/dev/null || useradd -m -G wheel,gamemode -s /usr/bin/fish live
 passwd -d live >/dev/null

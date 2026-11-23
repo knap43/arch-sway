@@ -18,6 +18,7 @@ OUT="$HERE/out"
 command -v git >/dev/null || { echo "git is needed to fetch Tether: sudo pacman -S git" >&2; exit 1; }
 TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
 GAMES_REPO=${GAMES_REPO:-https://github.com/knap43/tiny-games}
+HEARTH_REPO=${HEARTH_REPO:-https://github.com/knap43/hearth}
 LANTERN_REPO=${LANTERN_REPO:-https://github.com/knap43/lantern}
 WMAI_REPO=${WMAI_REPO:-https://github.com/knap43/wm-config-llm}
 # wmai's model comes from the latest wm-config-llm release (see below); set
@@ -68,6 +69,9 @@ echo ":: Preparing the $FLAVOUR profile from releng"
 clean_work
 mkdir -p "$WORK"
 cp -a "$RELENG" "$PROFILE"
+# multilib, for umu-launcher and the 32-bit Vulkan driver it needs (Hearth)
+sed -i '/^#\[multilib\]$/{s/^#//;n;s/^#//}' "$PROFILE/pacman.conf"
+grep -q '^\[multilib\]' "$PROFILE/pacman.conf" || printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> "$PROFILE/pacman.conf"
 
 # The installed system's packages: shared ones + this flavour's.
 grep -vhE '^\s*(#|$)' "$HERE/packages.system" "$FLAVOUR_DIR/packages" > "$WORK/system-pkgs"
@@ -115,6 +119,15 @@ cp -r "$WORK/tether/linux/tether" "$PROFILE/airootfs/usr/lib/tether/"
 find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
 install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
     "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
+
+# Hearth (terminal game launcher: Proton through umu-launcher, Wine, native).
+echo ":: Fetching Hearth from $HEARTH_REPO"
+git clone -q --depth 1 "$HEARTH_REPO" "$WORK/hearth"
+install -d "$PROFILE/airootfs/usr/lib/hearth"
+cp -r "$WORK/hearth/src/hearth" "$PROFILE/airootfs/usr/lib/hearth/"
+find "$PROFILE/airootfs/usr/lib/hearth" -name __pycache__ -prune -exec rm -rf {} +
+install -Dm644 "$WORK/hearth/packaging/hearth.fish" \
+    "$PROFILE/airootfs/usr/share/fish/vendor_completions.d/hearth.fish"
 
 # Lantern (text RPG with a local llama.cpp Dungeon Master). Only the game and
 # its server script are bundled; the ~530 MB model downloads on first run.

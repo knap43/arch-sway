@@ -22,8 +22,8 @@ case ${1-} in
         id "$name" >/dev/null 2>&1 && die "$name already exists"
         IFS= read -r password || true
         [[ -n $password ]] || die "Empty password"
-        groups=()
-        [[ $admin == 1 ]] && groups=(-G wheel)
+        groups=(-G gamemode)
+        [[ $admin == 1 ]] && groups=(-G wheel,gamemode)
         useradd -m "${groups[@]}" -c "$full" -s /usr/bin/fish "$name"
         printf '%s:%s\n' "$name" "$password" | chpasswd
         ;;

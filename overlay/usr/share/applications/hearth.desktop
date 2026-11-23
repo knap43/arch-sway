@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Hearth
+Comment=Game launcher: Windows games through Proton or Wine, and native ports
+Exec=foot --app-id=hearth --title=Hearth /usr/local/bin/hearth
+Icon=applications-games
+Terminal=false
+Categories=Game;
+Keywords=games;proton;wine;umu;steam;launcher;

@@ -197,6 +197,22 @@ remote shell start switched off, as Tether ships them (remote control needs GNOM
 
 To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
+## Hearth (game launcher)
+
+[Hearth](https://github.com/knap43/hearth) is a terminal game launcher, fetched when the ISO is built.
+It scans `~/Games` (`Windows/` and `Linux/` inside it), runs Windows games through Proton via
+umu-launcher, falls back to Wine, and starts native Linux ports directly. Open it from the launcher
+or run `hearth` (fish completions included); `hearth doctor` shows the paths and runners.
+
+- **Proton needs Vulkan**, so it works on the ThinkPad (HD 520) but not on the MacBook (HD 3000 has
+  no Vulkan driver). There, set a game's runner to *Wine* with `e`, or rely on native ports.
+- umu downloads UMU-Proton (or GE-Proton) on the first Windows launch, so that needs a connection.
+- `winetricks`, `gamemode` (`gamemoderun %command%`) and `mangohud` (`MANGOHUD=1 %command%`) are
+  installed; users are in the `gamemode` group.
+- The multilib repository is enabled on the installed system for umu-launcher and the 32-bit drivers.
+
+To build with a different copy: `HEARTH_REPO=/path/or/url ./build.sh`.
+
 ## Lantern
 
 [Lantern](https://github.com/knap43/lantern), a text RPG with a small local LLM as the Dungeon Master,

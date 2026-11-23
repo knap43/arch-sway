@@ -11,6 +11,10 @@ linux-headers
 mesa
 libva-intel-driver
 intel-media-driver
+# Vulkan for the T460s's HD 520 (the MacBook's HD 3000 has none), 64- and 32-bit
+vulkan-intel
+lib32-vulkan-intel
+lib32-mesa
 xorg-xwayland
 sudo
 man-db
@@ -110,3 +114,12 @@ lua
 # Settings: display layout and the graphics card's name
 wlr-randr
 pciutils
+
+# --- games: Hearth's runners and extras (multilib is enabled for these) ---
+umu-launcher
+wine
+winetricks
+gamemode
+lib32-gamemode
+mangohud
+lib32-mangohud
