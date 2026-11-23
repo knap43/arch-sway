@@ -194,6 +194,7 @@ cp -a /usr/lib/lantern "$MNT/usr/lib/"
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/lantern.desktop
 cp -a /usr/lib/wmai "$MNT/usr/lib/"
 cp -a /usr/lib/mbp-settings "$MNT/usr/lib/"
+install -Dm644 -t "$MNT/usr/local/share/mbp" /usr/local/share/mbp/README.md   # the shortcuts cheat sheet
 install -Dm644 -t "$MNT/usr/share/polkit-1/actions" /usr/share/polkit-1/actions/org.mbp.settings.policy
 [[ -d /usr/share/wmai ]] && cp -a /usr/share/wmai "$MNT/usr/share/"
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/wmai-server.service

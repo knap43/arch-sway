@@ -5,7 +5,8 @@ import os
 
 from gi.repository import Adw, Gio, GLib, Gtk
 
-from .common import (action_row, button, combo_row, entry_row, group, page, read, run,
+from . import shortcuts
+from .common import (action_row, button, combo_row, entry_row, group, page, run,
                      scale_row, spawn, spin_row, switch_row)
 
 FX_NOTE = "Hyprland and Mango only; sway has no such effects."
@@ -29,49 +30,11 @@ def keyboard(win, conf):
     g.add(Adw.EntryRow(title="Type here to try the repeat"))
 
     g = group(p, "Shortcuts")
-    row = action_row("Keyboard shortcuts", "Every shortcut for this desktop", activatable=True)
+    row = action_row("Keyboard shortcuts", "Every shortcut for this desktop (also ⌘K anywhere)", activatable=True)
     row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
-    row.connect("activated", lambda *_: shortcuts_dialog(win))
+    row.connect("activated", lambda *_: shortcuts.toggle(win.get_application()))
     g.add(row)
     return p
-
-
-def shortcuts_dialog(win):
-    """The shortcut tables from the README, for the running compositor."""
-    flavour = read("/etc/mbp-live", "") or os.environ.get("XDG_CURRENT_DESKTOP", "sway").lower()
-    flavour = {"hyprland": "hyprland", "mango": "mango"}.get(flavour, "sway")
-    text = read("/usr/local/share/mbp/README.md")
-    rows, keep, inkeys = [], False, False
-    for line in text.splitlines():
-        if line.startswith("## "):
-            inkeys = line.startswith("## Keys")
-            keep = inkeys
-            continue
-        if line.startswith("### "):
-            keep = inkeys and line[4:].strip().lower() == flavour
-            continue
-        if keep and line.startswith("|") and "---" not in line and not line.startswith("| Keys |"):
-            cells = [c.strip().replace("\\`", "`").replace("\\\\", "\\") for c in line.strip("|").split("|")]
-            if len(cells) >= 2:
-                rows.append(cells[:2])
-    dialog = Adw.Dialog(title="Keyboard shortcuts", content_width=640, content_height=620)
-    view = Adw.ToolbarView()
-    view.add_top_bar(Adw.HeaderBar())
-    pg = Adw.PreferencesPage()
-    g = Adw.PreferencesGroup()
-    if not rows:
-        g.add(action_row("The shortcut list isn't available", "/usr/local/share/mbp/README.md is missing"))
-    for keys, what in rows:
-        r = action_row(what)
-        lbl = Gtk.Label(label=keys)
-        lbl.add_css_class("dim-label")
-        lbl.add_css_class("monospace")
-        r.add_suffix(lbl)
-        g.add(r)
-    pg.add(g)
-    view.set_content(pg)
-    dialog.set_child(view)
-    dialog.present(win)
 
 
 # ---- Mouse & touchpad --------------------------------------------------------

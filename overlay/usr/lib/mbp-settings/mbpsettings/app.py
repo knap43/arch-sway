@@ -5,7 +5,7 @@ import traceback
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from .common import Conf, compositor
-from . import bluetooth, desktop, displays, network, power, sound, system
+from . import bluetooth, desktop, displays, network, power, shortcuts, sound, system
 
 APP_ID = "org.mbp.Settings"
 ACCENTS = {"blue": ("#5e81ac", "#ffffff"), "teal": ("#88c0d0", "#1e1e1e"), "green": ("#a3be8c", "#1e1e1e"),
@@ -73,14 +73,36 @@ DARK_COLOURS = """
 """
 
 
+_accent_provider = Gtk.CssProvider()
+
+
+def install_style():
+    """The desktop's look for every window of the app (Settings and the cheat sheet)."""
+    from .common import run
+    theme = run("mbp-conf", "get", "THEME").stdout.strip() or "dark"
+    accent = run("mbp-conf", "get", "ACCENT").stdout.strip() or "blue"
+    dark = theme != "light"
+    Adw.StyleManager.get_default().set_color_scheme(Adw.ColorScheme.FORCE_DARK if dark else Adw.ColorScheme.FORCE_LIGHT)
+    base = Gtk.CssProvider()
+    base.load_from_string(BASE_CSS + (DARK_COLOURS if dark else ""))
+    display = Gdk.Display.get_default()
+    Gtk.StyleContext.add_provider_for_display(display, base, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    Gtk.StyleContext.add_provider_for_display(display, _accent_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1)
+    set_accent(accent)
+
+
+def set_accent(name):
+    bg, fg = ACCENTS.get(name, ACCENTS["blue"])
+    _accent_provider.load_from_string(
+        f"@define-color accent_bg_color {bg}; @define-color accent_fg_color {fg}; @define-color accent_color {bg};")
+
+
 class Window(Adw.ApplicationWindow):
     def __init__(self, app, start=None):
         super().__init__(application=app, title="Settings", default_width=1020, default_height=700)
         self.flavour = compositor()
         self.conf = Conf(self)
         self.built = {}
-        self.accent_provider = Gtk.CssProvider()
-        self.style(self.conf.get("ACCENT", "blue"))
 
         self.toasts = Adw.ToastOverlay()
         self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.NONE)
@@ -115,21 +137,8 @@ class Window(Adw.ApplicationWindow):
         ids = [p[0] for p in PANELS]
         self.listbox.select_row(self.listbox.get_row_at_index(ids.index(start) if start in ids else 0))
 
-    def style(self, accent):
-        sm = Adw.StyleManager.get_default()
-        dark = self.conf.get("THEME", "dark") != "light"
-        sm.set_color_scheme(Adw.ColorScheme.FORCE_DARK if dark else Adw.ColorScheme.FORCE_LIGHT)
-        base = Gtk.CssProvider()
-        base.load_from_string(BASE_CSS + (DARK_COLOURS if dark else ""))
-        display = Gdk.Display.get_default()
-        Gtk.StyleContext.add_provider_for_display(display, base, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-        Gtk.StyleContext.add_provider_for_display(display, self.accent_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1)
-        self.set_accent(accent)
-
     def set_accent(self, name):
-        bg, fg = ACCENTS.get(name, ACCENTS["blue"])
-        self.accent_provider.load_from_string(
-            f"@define-color accent_bg_color {bg}; @define-color accent_fg_color {fg}; @define-color accent_color {bg};")
+        set_accent(name)
 
     def toast(self, text):
         self.toasts.add_toast(Adw.Toast(title=GLib.markup_escape_text(text), timeout=4))
@@ -158,10 +167,17 @@ class App(Adw.Application):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.start = None
 
+    def do_startup(self):
+        Adw.Application.do_startup(self)
+        install_style()
+
     def do_command_line(self, cmdline):
         args = cmdline.get_arguments()[1:]
         start = args[0] if args else None
-        win = self.props.active_window
+        if start == "shortcuts":        # the cheat sheet (Mod+K): toggles
+            shortcuts.toggle(self)
+            return 0
+        win = next((w for w in self.get_windows() if isinstance(w, Window)), None)
         if win:
             ids = [p[0] for p in PANELS]
             if start in ids:

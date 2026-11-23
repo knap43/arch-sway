@@ -88,7 +88,8 @@ floating_modifier $mod normal
 bindsym --to-code {
     $mod+$left   focus left
     $mod+$down   focus down
-    $mod+$up     focus up
+    # Mod+K: the keyboard shortcuts cheat sheet (Mod+Up still focuses up)
+    $mod+$up     exec mbp-settings shortcuts
     $mod+$right  focus right
     $mod+Left    focus left
     $mod+Down    focus down

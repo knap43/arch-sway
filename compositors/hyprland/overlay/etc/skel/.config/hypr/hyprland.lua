@@ -341,9 +341,11 @@ bind("SHIFT + space", focus_mode_toggle)
 -- Focus / move with Mod+H J K L or arrows (add Shift to move the window)
 for key, dir in pairs({ H = "l", J = "d", K = "u", L = "r",
                         left = "l", down = "d", up = "u", right = "r" }) do
-    bind(key,              hl.dsp.focus({ direction = dir }))
+    if key ~= "K" then bind(key, hl.dsp.focus({ direction = dir })) end
     bind("SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
 end
+-- Mod+K: the keyboard shortcuts cheat sheet (Mod+Up still focuses up)
+bind("K", run("mbp-settings shortcuts"))
 
 -- Drag with Mod + left button, resize with Mod + right button
 bind("mouse:272", hl.dsp.window.drag(),   { mouse = true })
