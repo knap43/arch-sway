@@ -201,6 +201,37 @@ if [[ -z $wmai_model ]]; then
 fi
 install -Dm644 "$wmai_model" "$PROFILE/airootfs/usr/share/wmai/wmcfg-Q4_K_M.gguf"
 
+# toofan (github.com/vyrx-dev/toofan): a typing-speed test for the terminal.
+# Its latest release's static binary, checked against the release's
+# checksums.txt; cached per version in ./cache. Optional: if GitHub can't be
+# reached, the ISO is built without it. TOOFAN_VERSION=2.4.2 pins a release.
+toofan_repo=https://github.com/vyrx-dev/toofan
+toofan_ver=${TOOFAN_VERSION:-$(git ls-remote --tags --refs "$toofan_repo" 2>/dev/null \
+    | awk -F/ '{print $3}' | sed 's/^v//' | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -1)}
+toofan_ok=""
+if [[ -n $toofan_ver ]]; then
+    toofan_tar="toofan_${toofan_ver}_linux_amd64.tar.gz"
+    toofan_dl="$toofan_repo/releases/download/v$toofan_ver"
+    mkdir -p "$HERE/cache"
+    if [[ ! -f $HERE/cache/$toofan_tar ]]; then
+        echo ":: Downloading toofan $toofan_ver"
+        curl -fsSL -o "$HERE/cache/$toofan_tar.part" "$toofan_dl/$toofan_tar" \
+            && mv "$HERE/cache/$toofan_tar.part" "$HERE/cache/$toofan_tar"
+    fi
+    toofan_sum=$(curl -fsSL "$toofan_dl/toofan_${toofan_ver}_checksums.txt" 2>/dev/null \
+        | awk -v f="$toofan_tar" '$2 == f {print $1}')
+    if [[ -f $HERE/cache/$toofan_tar && -n $toofan_sum ]] \
+        && echo "$toofan_sum  $HERE/cache/$toofan_tar" | sha256sum -c --quiet - 2>/dev/null; then
+        tar -xzf "$HERE/cache/$toofan_tar" -C "$WORK" toofan
+        install -Dm755 "$WORK/toofan" "$PROFILE/airootfs/usr/local/bin/toofan"
+        toofan_ok=1
+        echo ":: toofan $toofan_ver added"
+    else
+        rm -f "$HERE/cache/$toofan_tar"
+    fi
+fi
+[[ -n $toofan_ok ]] || echo "!! Couldn't fetch or verify toofan; building without it" >&2
+
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.
 # Each entry: name|launcher comment|desktop categories

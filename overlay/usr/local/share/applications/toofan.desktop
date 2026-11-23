@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=toofan
+GenericName=Typing test
+Comment=Typing-speed practice with English words or real code snippets
+Exec=foot --app-id=toofan --title=toofan toofan
+Icon=input-keyboard
+Terminal=false
+Categories=Education;Game;
+Keywords=typing;wpm;speed;practice;keyboard;

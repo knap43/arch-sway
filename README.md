@@ -227,6 +227,14 @@ few seconds and then stays up; `systemctl --user stop wmai-server` frees its mem
 To build with a different copy: `WMAI_REPO=/path/or/url ./build.sh`; to bundle a specific model,
 set `WMAI_MODEL_URL` and `WMAI_MODEL_SHA256`.
 
+## toofan (typing practice)
+
+[toofan](https://github.com/vyrx-dev/toofan), a typing-speed test for the terminal, is in the launcher and on the
+command line (`toofan`): English words or real code snippets, live WPM and accuracy, a review of your mistakes,
+ranks and races against your own last ten tests. **Ctrl+T** cycles its themes, **Ctrl+P** opens your profile.
+Everything stays local, in `~/.config/toofan`. The build bundles the latest release's binary, checked against the
+release's checksums (`TOOFAN_VERSION=2.4.2 ./build.sh` pins one); if GitHub can't be reached, it's left out.
+
 ## Games
 
 Five tiny dark-fantasy games from `knap43/tiny-games` are fetched at build time and appear in the launcher:
