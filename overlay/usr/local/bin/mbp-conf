@@ -70,7 +70,8 @@ SCHEMA = [
     ("GAPS_INNER", "Appearance", "Gaps between windows (px)", "int", "0", (0, 40), ""),
     ("GAPS_OUTER", "Appearance", "Gaps at the screen edges (px)", "int", "0", (0, 40), ""),
     ("ROUNDING", "Appearance", "Rounded corners (px)", "int", "0", (0, 20), FX.split(" Costs")[0]),
-    ("ANIMATIONS", "Appearance", "Animations", "bool", "off", None, FX),
+    ("ANIMATIONS", "Appearance", "Animations", "bool", "off", None,
+     FX + " Windows only: the launcher, menus, bar and notifications always appear at once."),
     ("BLUR", "Appearance", "Blur behind transparent windows", "bool", "off", None, FX),
     ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
     ("INACTIVE_OPACITY", "Appearance", "Opacity of unfocused windows", "choice", "1",
@@ -368,7 +369,7 @@ def mango_conf(v):
               f"gap_outer_horizontal={v['GAPS_OUTER']}", f"gap_outer_vertical={v['GAPS_OUTER']}",
               f"border_radius={v['ROUNDING']}",
               f"animations={1 if on(v, 'ANIMATIONS') else 0}",
-              f"layer_animations={1 if on(v, 'ANIMATIONS') else 0}",
+              "layer_animations=0",          # menus, bar, notifications: always instant
               f"blur={1 if on(v, 'BLUR') else 0}",
               f"shadows={1 if on(v, 'SHADOWS') else 0}",
               f"unfocused_opacity={v['INACTIVE_OPACITY']}",

@@ -188,6 +188,12 @@ local function tab_or_window(forward)
     end
 end
 
+-- With animations on (Settings → Appearance), they're for windows only: the
+-- launcher, menus, bar and notifications (layers, popups) appear at once.
+hl.animation({ leaf = "layers", enabled = false })
+hl.animation({ leaf = "fadeLayers", enabled = false })
+hl.animation({ leaf = "fadePopups", enabled = false })
+
 -- Three-finger horizontal swipe on the touchpad switches workspaces
 if setting("swipe", true) then
     hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })

@@ -82,7 +82,7 @@ def appearance(win, conf):
 
     g = group(p, "Effects", FX_NOTE + " They cost GPU time on older laptops.")
     g.add(spin_row(conf, "ROUNDING", "Rounded corners (px)"))
-    g.add(switch_row(conf, "ANIMATIONS", "Animations", " "))
+    g.add(switch_row(conf, "ANIMATIONS", "Animations", "Windows only; menus and the launcher appear at once"))
     g.add(switch_row(conf, "SHADOWS", "Shadows", " "))
     g.add(switch_row(conf, "BLUR", "Blur", "Behind see-through windows"))
     g.add(combo_row(conf, "INACTIVE_OPACITY", {"1": "Opaque", "0.95": "95%", "0.9": "90%",
