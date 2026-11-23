@@ -13,6 +13,7 @@ import locale
 import os
 import subprocess
 import sys
+import textwrap
 
 README = "/usr/local/share/mbp/README.md"
 APP_ID = "mbp-shortcuts"
@@ -81,8 +82,10 @@ def main(scr, data, fl):
     query, top = "", 0
     keyw = max((len(k) for _, rows in data for k, _ in rows), default=10) + 3
 
-    def lines():
+    def lines(width):
+        """Screen lines; long descriptions wrap under the description column."""
         words = query.lower().split()
+        room = max(12, width - 3 - keyw)
         out = []
         for title, rows in data:
             hits = [(k, a) for k, a in rows if all(w in f"{k} {a}".lower() for w in words)]
@@ -90,7 +93,10 @@ def main(scr, data, fl):
                 if out:
                     out.append(("", "", "gap"))
                 out.append((title, "", "title"))
-                out += [(k, a, "row") for k, a in hits]
+                for k, a in hits:
+                    parts = textwrap.wrap(a, room) or [""]
+                    out.append((k, parts[0], "row"))
+                    out += [("", more, "row") for more in parts[1:]]
         return out
 
     shown = None
@@ -109,7 +115,7 @@ def main(scr, data, fl):
         if len(bar) + len(hint) < w:
             scr.addnstr(0, w - len(hint) - 1, hint, len(hint), BAR)
         scr.addnstr(1, 0, (" Search: " + query + "▏").ljust(w), w, DIM if not query else curses.A_NORMAL)
-        body = lines()
+        body = lines(w)
         view = h - 3
         top = max(0, min(top, len(body) - view))
         shown = (query, top, h, w)
