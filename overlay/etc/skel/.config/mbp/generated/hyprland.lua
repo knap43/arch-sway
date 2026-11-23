@@ -23,5 +23,7 @@ return {
     left_handed = false,
     disable_while_typing = true,
     swipe = true,
+    hide_cursor_sec = 3,
+    hide_cursor_typing = true,
     displays = {  },
 }

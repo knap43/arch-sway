@@ -45,6 +45,8 @@ def mouse(win, conf):
     g.add(switch_row(conf, "LEFT_HANDED", "Left-handed", "Swap the left and right buttons"))
     g.add(switch_row(conf, "FOCUS_FOLLOWS_MOUSE", "Focus follows the mouse",
                      "Windows take the keyboard when the pointer moves over them"))
+    g.add(spin_row(conf, "HIDE_CURSOR_SEC", "Hide the pointer when idle", "After this many seconds; 0 never hides it"))
+    g.add(switch_row(conf, "HIDE_CURSOR_TYPING", "Hide the pointer while typing", "It comes back when the mouse moves"))
     g = group(p, "Touchpad")
     g.add(switch_row(conf, "TAP_TO_CLICK", "Tap to click"))
     g.add(switch_row(conf, "NATURAL_SCROLL", "Natural scrolling", "Content moves with your fingers"))

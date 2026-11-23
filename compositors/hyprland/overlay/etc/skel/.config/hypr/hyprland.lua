@@ -77,6 +77,11 @@ hl.config({
 -------------------------------------------------------------------------------
 
 hl.config({
+    -- Hide the pointer after a few idle seconds and while typing (Settings → Mouse)
+    cursor = {
+        inactive_timeout = setting("hide_cursor_sec", 3),
+        hide_on_key_press = setting("hide_cursor_typing", true),
+    },
     input = {
         kb_layout = setting("kb_layout", "us,ru"),
         -- Alt+Shift switches layout (on a PC: the Win key, which sends Alt, as

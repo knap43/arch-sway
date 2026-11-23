@@ -160,7 +160,7 @@ desktop's square, dark style. It works the same in all three flavours and change
 | Sound | output and input device, volume, mute |
 | Displays | per display: on/off, resolution, refresh rate, scale, rotation, position next to the built-in one (with *Keep these settings?* and a 15-second undo); brightness now and at login; night light and its temperature; scale for other displays |
 | Keyboard | layouts, Alt ⇄ Win swap, Caps Lock ⇄ Escape, key repeat; every shortcut for this flavour |
-| Mouse & touchpad | pointer speed, left-handed, focus follows mouse, tap to click, natural scrolling, ignore while typing, three-finger swipe between workspaces |
+| Mouse & touchpad | pointer speed, left-handed, focus follows mouse, hiding the pointer when idle (3 s) and while typing, tap to click, natural scrolling, ignore while typing, three-finger swipe between workspaces |
 | Appearance | dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur, unfocused-window opacity |
 | Windows | whether new workspaces open tabbed or tiled |
 | Notifications | do not disturb, how long they stay, where they appear, show the last one again |

@@ -56,6 +56,8 @@ SCHEMA = [
     ("POINTER_SPEED", "Mouse & touchpad", "Pointer speed", "int", "0", (-100, 100), "-100 slowest, 100 fastest."),
     ("LEFT_HANDED", "Mouse & touchpad", "Left-handed buttons", "bool", "off", None, ""),
     ("DISABLE_WHILE_TYPING", "Mouse & touchpad", "Ignore the touchpad while typing", "bool", "on", None, ""),
+    ("HIDE_CURSOR_SEC", "Mouse & touchpad", "Hide the pointer after (seconds, 0 = never)", "int", "3", (0, 20), ""),
+    ("HIDE_CURSOR_TYPING", "Mouse & touchpad", "Hide the pointer while typing", "bool", "on", None, ""),
     ("SWIPE_WORKSPACES", "Mouse & touchpad", "Three-finger swipe switches workspaces", "bool", "on", None, ""),
     ("NATURAL_SCROLL", "Look & behaviour", "Natural scrolling (touchpad)", "bool", "on", None, ""),
     ("TAP_TO_CLICK", "Look & behaviour", "Tap to click (touchpad)", "bool", "on", None, ""),
@@ -274,6 +276,8 @@ def sway_conf(v):
         if c.get("scale"):
             parts.append(f"scale {fmt(float(c['scale']))}")
         lines.append(" ".join(parts))
+    lines += [f"seat * hide_cursor {int(v['HIDE_CURSOR_SEC']) * 1000}",
+              f"seat * hide_cursor when-typing {'enable' if on(v, 'HIDE_CURSOR_TYPING') else 'disable'}"]
     if on(v, "SWIPE_WORKSPACES"):
         lines += ["bindgesture swipe:3:left exec sway-workspace-next",
                   "bindgesture swipe:3:right workspace prev_on_output"]
@@ -336,6 +340,8 @@ def hyprland_lua(v):
         f"    left_handed = {str(on(v, 'LEFT_HANDED')).lower()},",
         f"    disable_while_typing = {str(on(v, 'DISABLE_WHILE_TYPING')).lower()},",
         f"    swipe = {str(on(v, 'SWIPE_WORKSPACES')).lower()},",
+        f"    hide_cursor_sec = {v['HIDE_CURSOR_SEC']},",
+        f"    hide_cursor_typing = {str(on(v, 'HIDE_CURSOR_TYPING')).lower()},",
         f"    displays = {{ {hypr_displays(v)} }},",
         "}",
     ]) + "\n"
@@ -372,7 +378,9 @@ def mango_conf(v):
               f"mouse_accel_speed={accel(v)}", f"trackpad_accel_speed={accel(v)}",
               f"mouse_left_handed={1 if on(v, 'LEFT_HANDED') else 0}",
               f"trackpad_left_handed={1 if on(v, 'LEFT_HANDED') else 0}",
-              f"trackpad_disable_while_typing={1 if on(v, 'DISABLE_WHILE_TYPING') else 0}"]
+              f"trackpad_disable_while_typing={1 if on(v, 'DISABLE_WHILE_TYPING') else 0}",
+              f"cursor_hide_timeout={v['HIDE_CURSOR_SEC']}",
+              f"cursor_hide_on_keypress={1 if on(v, 'HIDE_CURSOR_TYPING') else 0}"]
     if on(v, "SWIPE_WORKSPACES"):
         lines += ["gesturebind=none,left,3,viewtoright_have_client",
                   "gesturebind=none,right,3,viewtoleft_have_client"]
