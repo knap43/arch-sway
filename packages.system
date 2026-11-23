@@ -97,6 +97,8 @@ python-cryptography
 python-aiohttp
 python-pygame
 python-httpx
+# Lantern's interface (Textual, which brings rich)
+python-textual
 llama-cpp
 # wmai reads hyprland.lua with a standalone Lua
 lua
