@@ -1,4 +1,5 @@
 # Defaults for this desktop (compiled into the GSettings schemas).
-# Mousepad without its toolbar (View → Toolbar brings it back).
+# Mousepad without its menubar (File, Edit, View…): right-click the text for
+# the menus (Menubar submenu), or View → Menubar there to bring it back.
 [org.xfce.mousepad.preferences.window]
-toolbar-visible=false
+menubar-visible=false
