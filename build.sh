@@ -207,7 +207,7 @@ install -Dm644 "$wmai_model" "$PROFILE/airootfs/usr/share/wmai/wmcfg-Q4_K_M.gguf
 # reached, the ISO is built without it. TOOFAN_VERSION=2.4.2 pins a release.
 toofan_repo=https://github.com/vyrx-dev/toofan
 toofan_ver=${TOOFAN_VERSION:-$(git ls-remote --tags --refs "$toofan_repo" 2>/dev/null \
-    | awk -F/ '{print $3}' | sed 's/^v//' | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -1)}
+    | awk -F/ '{print $3}' | sed 's/^v//' | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -1 || true)}
 toofan_ok=""
 if [[ -n $toofan_ver ]]; then
     toofan_tar="toofan_${toofan_ver}_linux_amd64.tar.gz"
@@ -219,7 +219,7 @@ if [[ -n $toofan_ver ]]; then
             && mv "$HERE/cache/$toofan_tar.part" "$HERE/cache/$toofan_tar"
     fi
     toofan_sum=$(curl -fsSL "$toofan_dl/toofan_${toofan_ver}_checksums.txt" 2>/dev/null \
-        | awk -v f="$toofan_tar" '$2 == f {print $1}')
+        | awk -v f="$toofan_tar" '$2 == f {print $1}' || true)
     if [[ -f $HERE/cache/$toofan_tar && -n $toofan_sum ]] \
         && echo "$toofan_sum  $HERE/cache/$toofan_tar" | sha256sum -c --quiet - 2>/dev/null; then
         tar -xzf "$HERE/cache/$toofan_tar" -C "$WORK" toofan
