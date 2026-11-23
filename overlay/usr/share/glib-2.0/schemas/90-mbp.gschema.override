@@ -1,0 +1,4 @@
+# Defaults for this desktop (compiled into the GSettings schemas).
+# Mousepad without its toolbar (View → Toolbar brings it back).
+[org.xfce.mousepad.preferences.window]
+toolbar-visible=false
