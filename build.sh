@@ -253,6 +253,7 @@ file_permissions["/usr/local/bin/live-user-setup"]="0:0:755"
 file_permissions["/etc/sudoers.d/live"]="0:0:440"
 EOF
 
+echo 'file_permissions["/usr/lib/mbp-settings/mbp-settings-helper"]="0:0:755"' >> "$PROFILE/profiledef.sh"
 # Every helper in /usr/local/bin is executable.
 for f in "$HERE"/overlay/usr/local/bin/* "$FLAVOUR_DIR"/overlay/usr/local/bin/*; do
     [[ -e $f ]] || continue

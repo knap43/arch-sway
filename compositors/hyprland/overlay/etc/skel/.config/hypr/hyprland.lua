@@ -28,6 +28,8 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 for _, m in ipairs(setting("monitors", {})) do
     hl.monitor({ output = m.output, mode = "preferred", position = "auto", scale = m.scale })
 end
+-- Displays arranged in the Displays panel (mode, position, scale, rotation, off)
+for _, m in ipairs(setting("displays", {})) do hl.monitor(m) end
 
 hl.config({
     general = {
@@ -86,10 +88,12 @@ hl.config({
         repeat_delay = setting("repeat_delay", 300),
         repeat_rate = setting("repeat_rate", 35),
         follow_mouse = setting("follow_mouse", 1),   -- focus follows the pointer
+        sensitivity = setting("sensitivity", 0),
+        left_handed = setting("left_handed", false),
         touchpad = {
             tap_to_click = setting("tap_to_click", true),
             natural_scroll = setting("natural_scroll", true),
-            disable_while_typing = true,
+            disable_while_typing = setting("disable_while_typing", true),
             clickfinger_behavior = true,
         },
     },
@@ -177,6 +181,11 @@ local function tab_or_window(forward)
     else
         hl.dispatch(hl.dsp.window.cycle_next({ next = forward }))
     end
+end
+
+-- Three-finger horizontal swipe on the touchpad switches workspaces
+if setting("swipe", true) then
+    hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 end
 
 -- ---- Tabbed by default -------------------------------------------------------
@@ -414,8 +423,8 @@ hl.window_rule({ name = "float-pavucontrol", match = { class = "^(org.pulseaudio
 hl.window_rule({ name = "float-nm-editor", match = { class = "^nm-connection-editor$" }, float = true })
 hl.window_rule({ name = "live-welcome", match = { class = "^live-welcome$" },
                  float = true, size = "780 560", center = true })
-hl.window_rule({ name = "mbp-settings", match = { class = "^mbp-settings$" },
-                 float = true, size = "900 640", center = true })
+hl.window_rule({ name = "settings", match = { class = "^org\\.mbp\\.Settings$" },
+                 float = true, size = "1020 700", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
 
 -- Managed by wmai (keep this last so its settings win)

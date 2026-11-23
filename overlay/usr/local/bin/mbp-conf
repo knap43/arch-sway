@@ -53,8 +53,15 @@ SCHEMA = [
     ("DEFAULT_LAYOUT", "Look & behaviour", "New workspaces open", "choice", "tabbed", ["tabbed", "tiled"],
      "Mod+Tab still switches each workspace."),
     ("FOCUS_FOLLOWS_MOUSE", "Look & behaviour", "Focus follows the mouse", "bool", "on", None, ""),
+    ("POINTER_SPEED", "Mouse & touchpad", "Pointer speed", "int", "0", (-100, 100), "-100 slowest, 100 fastest."),
+    ("LEFT_HANDED", "Mouse & touchpad", "Left-handed buttons", "bool", "off", None, ""),
+    ("DISABLE_WHILE_TYPING", "Mouse & touchpad", "Ignore the touchpad while typing", "bool", "on", None, ""),
+    ("SWIPE_WORKSPACES", "Mouse & touchpad", "Three-finger swipe switches workspaces", "bool", "on", None, ""),
     ("NATURAL_SCROLL", "Look & behaviour", "Natural scrolling (touchpad)", "bool", "on", None, ""),
     ("TAP_TO_CLICK", "Look & behaviour", "Tap to click (touchpad)", "bool", "on", None, ""),
+    ("THEME", "Appearance", "Application style", "choice", "dark", ["dark", "light"],
+     "GTK applications; the desktop itself stays dark."),
+    ("TEXT_SCALE", "Appearance", "Text size", "choice", "1", ["0.9", "1", "1.1", "1.25", "1.5"], "GTK applications."),
     ("ACCENT", "Appearance", "Accent colour", "choice", "blue", list(ACCENTS),
      "Focused window borders, the active tab and the bar's current workspace."),
     ("BORDER_WIDTH", "Appearance", "Border width (px)", "int", "2", (0, 10), ""),
@@ -66,6 +73,11 @@ SCHEMA = [
     ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
     ("INACTIVE_OPACITY", "Appearance", "Opacity of unfocused windows", "choice", "1",
      ["1", "0.95", "0.9", "0.85", "0.8"], FX.split(" Costs")[0]),
+    ("NOTIFY_TIMEOUT", "Notifications", "Hide notifications after (seconds, 0 = never)", "int", "6", (0, 120), ""),
+    ("NOTIFY_POSITION", "Notifications", "Position", "choice", "top-right",
+     ["top-right", "top-center", "top-left", "bottom-right", "bottom-center", "bottom-left"], ""),
+    ("DISPLAYS", "Displays", "Display layout", "json", "{}", None,
+     "Per display: mode, position, scale, rotation, on/off (set by the Displays panel)."),
     ("LOCK_MIN", "Power & idle", "Lock after (minutes, 0 = never)", "int", "5", (0, 240), ""),
     ("SCREEN_OFF_MIN", "Power & idle", "Screen off after (minutes, 0 = never)", "int", "10", (0, 240), ""),
     ("SUSPEND_MIN", "Power & idle", "Suspend after (minutes, 0 = never)", "int", "15", (0, 240), ""),
@@ -103,12 +115,18 @@ def validate(key, value):
     if kind == "bool" and value not in ("on", "off"):
         return f"{label}: on or off"
     if kind == "int":
-        if not re.fullmatch(r"\d+", value) or not extra[0] <= int(value) <= extra[1]:
+        if not re.fullmatch(r"-?\d+", value) or not extra[0] <= int(value) <= extra[1]:
             return f"{label}: a whole number from {extra[0]} to {extra[1]}"
     if kind == "text" and not re.fullmatch(extra, value):
         return f"{label}: not in the expected form"
     if kind == "path" and (not value or "\n" in value):
         return f"{label}: a file path"
+    if kind == "json":
+        try:
+            if not isinstance(json.loads(value), dict):
+                raise ValueError
+        except ValueError:
+            return f"{label}: a JSON object"
     return None
 
 
@@ -161,12 +179,32 @@ def outputs():
     return found
 
 
+TRANSFORMS = ["normal", "90", "180", "270"]
+
+
+def displays(v):
+    """{output: {"mode": "WxH@R", "x", "y", "scale", "transform", "enabled"}}."""
+    try:
+        d = json.loads(v["DISPLAYS"])
+    except ValueError:
+        return {}
+    return {k: c for k, c in d.items() if isinstance(c, dict)}
+
+
 def scales(v):
     """[(output, scale)] for displays that shouldn't be at 1."""
+    custom = displays(v)
     if v["SCALE"] == "auto":
-        return [(name, 1.5) for name, height in outputs() if height >= 1080]
-    s = float(v["SCALE"])
-    return [] if s == 1 else [(name, s) for name, _ in outputs()]
+        auto = [(name, 1.5) for name, height in outputs() if height >= 1080]
+    else:
+        s = float(v["SCALE"])
+        auto = [] if s == 1 else [(name, s) for name, _ in outputs()]
+    return [(n, s) for n, s in auto if n not in custom]
+
+
+def mode_parts(mode):
+    m = re.fullmatch(r"(\d+)x(\d+)(?:@([\d.]+))?", str(mode or ""))
+    return (int(m.group(1)), int(m.group(2)), float(m.group(3)) if m.group(3) else None) if m else None
 
 
 # ---- the compositor snippets -------------------------------------------------
@@ -208,17 +246,66 @@ def sway_conf(v):
              "input type:touchpad {",
              f"    natural_scroll {'enabled' if on(v, 'NATURAL_SCROLL') else 'disabled'}",
              f"    tap {'enabled' if on(v, 'TAP_TO_CLICK') else 'disabled'}",
+             f"    dwt {'enabled' if on(v, 'DISABLE_WHILE_TYPING') else 'disabled'}",
+             f"    pointer_accel {accel(v)}",
+             f"    left_handed {'enabled' if on(v, 'LEFT_HANDED') else 'disabled'}",
+             "}",
+             "input type:pointer {",
+             f"    pointer_accel {accel(v)}",
+             f"    left_handed {'enabled' if on(v, 'LEFT_HANDED') else 'disabled'}",
              "}",
              f"focus_follows_mouse {'yes' if on(v, 'FOCUS_FOLLOWS_MOUSE') else 'no'}",
              f"workspace_layout {'tabbed' if v['DEFAULT_LAYOUT'] == 'tabbed' else 'default'}",
              f"output * bg {shlex.quote(v['WALLPAPER'])} fill #1e1e1e",
              "output * scale 1"]
     lines += [f"output {name} scale {fmt(s)}" for name, s in scales(v)]
+    for name, c in displays(v).items():
+        if c.get("enabled") is False:
+            lines.append(f"output {name} disable")
+            continue
+        parts = [f"output {name} enable"]
+        mp = mode_parts(c.get("mode"))
+        if mp:
+            parts.append(f"mode {mp[0]}x{mp[1]}" + (f"@{mp[2]:.3f}Hz" if mp[2] else ""))
+        if "x" in c and "y" in c:
+            parts.append(f"position {int(c['x'])} {int(c['y'])}")
+        if c.get("transform") in TRANSFORMS:
+            parts.append(f"transform {c['transform']}")
+        if c.get("scale"):
+            parts.append(f"scale {fmt(float(c['scale']))}")
+        lines.append(" ".join(parts))
+    if on(v, "SWIPE_WORKSPACES"):
+        lines += ["bindgesture swipe:3:left exec sway-workspace-next",
+                  "bindgesture swipe:3:right workspace prev_on_output"]
     return "\n".join(lines) + "\n"
+
+
+def accel(v):
+    return f"{int(v['POINTER_SPEED']) / 100:g}"
 
 
 def lua_str(s):
     return '"' + s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
+
+
+def hypr_displays(v):
+    out = []
+    for name, c in displays(v).items():
+        fields = [f"output = {lua_str(name)}"]
+        if c.get("enabled") is False:
+            fields.append("disabled = true")
+        else:
+            mp = mode_parts(c.get("mode"))
+            mode = "preferred"
+            if mp:
+                mode = f"{mp[0]}x{mp[1]}" + (f"@{mp[2]:g}" if mp[2] else "")
+            position = f"{int(c['x'])}x{int(c['y'])}" if "x" in c and "y" in c else "auto"
+            fields += [f"mode = {lua_str(mode)}", f"position = {lua_str(position)}",
+                       f"scale = {fmt(float(c.get('scale') or 1))}"]
+            if c.get("transform") in TRANSFORMS:
+                fields.append(f"transform = {TRANSFORMS.index(c['transform'])}")
+        out.append("{ " + ", ".join(fields) + " }")
+    return ", ".join(out)
 
 
 def hyprland_lua(v):
@@ -245,6 +332,11 @@ def hyprland_lua(v):
         f"    blur = {str(on(v, 'BLUR')).lower()},",
         f"    shadows = {str(on(v, 'SHADOWS')).lower()},",
         f"    inactive_opacity = {v['INACTIVE_OPACITY']},",
+        f"    sensitivity = {accel(v)},",
+        f"    left_handed = {str(on(v, 'LEFT_HANDED')).lower()},",
+        f"    disable_while_typing = {str(on(v, 'DISABLE_WHILE_TYPING')).lower()},",
+        f"    swipe = {str(on(v, 'SWIPE_WORKSPACES')).lower()},",
+        f"    displays = {{ {hypr_displays(v)} }},",
         "}",
     ]) + "\n"
 
@@ -276,9 +368,28 @@ def mango_conf(v):
               f"unfocused_opacity={v['INACTIVE_OPACITY']}",
               f"focus_color=0x{bg}ff", f"scratchpad_color=0x{bg}ff",
               f"tab_bar_decorate_focus_bg_color=0x{bg}ff",
-              f"tab_bar_decorate_focus_fg_color=0x{fg}ff"]
+              f"tab_bar_decorate_focus_fg_color=0x{fg}ff",
+              f"mouse_accel_speed={accel(v)}", f"trackpad_accel_speed={accel(v)}",
+              f"mouse_left_handed={1 if on(v, 'LEFT_HANDED') else 0}",
+              f"trackpad_left_handed={1 if on(v, 'LEFT_HANDED') else 0}",
+              f"trackpad_disable_while_typing={1 if on(v, 'DISABLE_WHILE_TYPING') else 0}"]
+    if on(v, "SWIPE_WORKSPACES"):
+        lines += ["gesturebind=none,left,3,viewtoright_have_client",
+                  "gesturebind=none,right,3,viewtoleft_have_client"]
     lines += [f"tag_rule=id:{i},layout_name:{layout}" for i in range(1, 10)]
     lines += [f"monitor_rule=name:^{regex_literal(n)}$,scale:{fmt(s)}" for n, s in scales(v)]
+    for name, c in displays(v).items():      # rotation isn't available in Mango's monitor rules
+        f = [f"name:^{regex_literal(name)}$"]
+        if c.get("enabled") is False:
+            f.append("disable:1")
+        else:
+            mp = mode_parts(c.get("mode"))
+            if mp:
+                f += [f"width:{mp[0]}", f"height:{mp[1]}"] + ([f"refresh:{mp[2]:g}"] if mp[2] else [])
+            if "x" in c and "y" in c:
+                f += [f"x:{int(c['x'])}", f"y:{int(c['y'])}"]
+            f.append(f"scale:{fmt(float(c.get('scale') or 1))}")
+        lines.append("monitor_rule=" + ",".join(f))
     return "\n".join(lines) + "\n"
 
 
@@ -290,16 +401,45 @@ def waybar_css(v):
             f"    background: #{bg};\n    color: #{fg};\n}}\n")
 
 
+def mako_conf(v):
+    timeout = int(v["NOTIFY_TIMEOUT"]) * 1000
+    return "\n".join([f"# {HEADER}", f"default-timeout={timeout}", f"anchor={v['NOTIFY_POSITION']}",
+                      f"border-color=#{accent(v)[0]}", "", "[mode=do-not-disturb]", "invisible=1"]) + "\n"
+
+
+def gtk_settings(v):
+    """GTK 3 reads its dark/light preference from settings.ini, GTK 4 from gsettings."""
+    path = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.join(HOME, ".config")), "gtk-3.0", "settings.ini")
+    dark = "1" if v["THEME"] == "dark" else "0"
+    try:
+        lines = open(path).read().splitlines()
+    except OSError:
+        lines = ["[Settings]"]
+    lines = [l for l in lines if not l.startswith("gtk-application-prefer-dark-theme")]
+    lines.insert(1 if lines and lines[0].startswith("[") else 0, f"gtk-application-prefer-dark-theme={dark}")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+def gsettings(v):
+    iface = "org.gnome.desktop.interface"
+    quiet("gsettings", "set", iface, "color-scheme", "prefer-dark" if v["THEME"] == "dark" else "default")
+    quiet("gsettings", "set", iface, "gtk-theme", "Adwaita")
+    quiet("gsettings", "set", iface, "text-scaling-factor", v["TEXT_SCALE"])
+
+
 def generate(v=None):
     v = v or load()
     os.makedirs(GENERATED, exist_ok=True)
     for name, text in (("sway-vars.conf", sway_vars(v)), ("sway.conf", sway_conf(v)),
                        ("hyprland.lua", hyprland_lua(v)), ("mango.conf", mango_conf(v)),
-                       ("waybar.css", waybar_css(v))):
+                       ("waybar.css", waybar_css(v)), ("mako.conf", mako_conf(v))):
         path = os.path.join(GENERATED, name)
         with open(path + ".tmp", "w") as f:
             f.write(text)
         os.replace(path + ".tmp", path)
+    gtk_settings(v)
 
 
 # ---- applying to the running session -----------------------------------------
@@ -343,6 +483,8 @@ def apply():
     if wm in ("hyprland", "mango"):
         quiet("pkill", "-SIGUSR2", "-x", "waybar")     # reload its style (accent)
     if wm:
+        gsettings(v)
+        quiet("makoctl", "reload")
         quiet("pkill", "-x", "wlsunset")
         detach("mbp-nightlight", "start")
         detach("mbp-idle")

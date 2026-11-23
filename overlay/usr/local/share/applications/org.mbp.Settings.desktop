@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Settings
+Comment=Network, Bluetooth, sound, displays, keyboard, mouse, appearance, power, users…
+Exec=mbp-settings
+Icon=preferences-system
+Terminal=false
+StartupNotify=true
+Categories=Settings;
+Keywords=wifi;wi-fi;network;bluetooth;sound;volume;display;monitor;resolution;scale;keyboard;layout;mouse;touchpad;wallpaper;theme;accent;notifications;power;battery;lid;time;timezone;users;password;default;apps;about;

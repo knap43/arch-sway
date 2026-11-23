@@ -13,13 +13,16 @@ systemctl --user restart tether.service 2>/dev/null
 # Brightness at login, from the desktop settings ("keep" leaves it alone)
 b=$(mbp-conf get BRIGHTNESS 2>/dev/null)
 [[ ${b:-100} == keep ]] || brightnessctl set "${b:-100}%" >/dev/null 2>&1
-# Dark everywhere: GTK 4 / libadwaita apps follow color-scheme. GTK 3 apps
+# Dark (or light, from the desktop settings): GTK 4 / libadwaita apps follow color-scheme. GTK 3 apps
 # (Thunar, Mousepad...) use the built-in Adwaita theme, made dark by
 # gtk-application-prefer-dark-theme in ~/.config/gtk-3.0/settings.ini. (Naming
 # "Adwaita-dark" here would make GTK 3 fall back to plain, light Adwaita, since
 # no theme of that name is installed.)
-gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null
+theme=$(mbp-conf get THEME 2>/dev/null)
+[[ $theme == light ]] && scheme=default || scheme=prefer-dark
+gsettings set org.gnome.desktop.interface color-scheme "$scheme" 2>/dev/null
 gsettings set org.gnome.desktop.interface gtk-theme Adwaita 2>/dev/null
+gsettings set org.gnome.desktop.interface text-scaling-factor "$(mbp-conf get TEXT_SCALE 2>/dev/null || echo 1)" 2>/dev/null
 
 bg mako
 bg /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1

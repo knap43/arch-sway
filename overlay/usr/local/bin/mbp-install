@@ -193,6 +193,8 @@ cp -a /usr/lib/lantern "$MNT/usr/lib/"
 [[ -d /usr/share/lantern ]] && cp -a /usr/share/lantern "$MNT/usr/share/"
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/lantern.desktop
 cp -a /usr/lib/wmai "$MNT/usr/lib/"
+cp -a /usr/lib/mbp-settings "$MNT/usr/lib/"
+install -Dm644 -t "$MNT/usr/share/polkit-1/actions" /usr/share/polkit-1/actions/org.mbp.settings.policy
 [[ -d /usr/share/wmai ]] && cp -a /usr/share/wmai "$MNT/usr/share/"
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/wmai-server.service
 if [[ -d /usr/lib/tiny-games ]]; then

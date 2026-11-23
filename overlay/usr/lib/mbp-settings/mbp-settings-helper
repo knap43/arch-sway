@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# The few things Desktop Settings needs root for, run through pkexec
+# (polkit asks for an administrator's password):
+#   lid suspend|lock|ignore|poweroff     what closing the lid does
+#   adduser NAME "FULL NAME" ADMIN(0|1)  new user; the password comes on stdin
+#   deluser NAME                         remove a user and their home folder
+set -euo pipefail
+die() { echo "$*" >&2; exit 1; }
+
+case ${1-} in
+    lid)
+        [[ ${2-} =~ ^(suspend|lock|ignore|poweroff)$ ]] || die "Unknown lid action"
+        mkdir -p /etc/systemd/logind.conf.d
+        printf '%s\n' "# Written by Desktop Settings (mbp-settings)" "[Login]" \
+            "HandleLidSwitch=$2" "HandleLidSwitchExternalPower=$2" > /etc/systemd/logind.conf.d/50-mbp-lid.conf
+        systemctl kill -s HUP systemd-logind
+        ;;
+    adduser)
+        name=${2-} full=${3-} admin=${4-0}
+        [[ $name =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || die "Invalid username"
+        [[ $full != *:* && $full != *$'\n'* ]] || die "Invalid full name"
+        id "$name" >/dev/null 2>&1 && die "$name already exists"
+        IFS= read -r password || true
+        [[ -n $password ]] || die "Empty password"
+        groups=()
+        [[ $admin == 1 ]] && groups=(-G wheel)
+        useradd -m "${groups[@]}" -c "$full" -s /usr/bin/fish "$name"
+        printf '%s:%s\n' "$name" "$password" | chpasswd
+        ;;
+    deluser)
+        name=${2-}
+        [[ $name =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || die "Invalid username"
+        uid=$(id -u "$name" 2>/dev/null) || die "No such user"
+        (( uid >= 1000 && uid < 60000 )) || die "Only regular users can be removed"
+        [[ $uid != "${PKEXEC_UID-}" ]] || die "You can't remove your own account"
+        loginctl terminate-user "$name" 2>/dev/null || true
+        userdel -r "$name" 2>/dev/null || userdel "$name"
+        ;;
+    *)
+        die "usage: mbp-settings-helper lid|adduser|deluser ..."
+        ;;
+esac

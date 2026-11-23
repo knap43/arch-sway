@@ -90,13 +90,16 @@ base-devel
 vim
 python
 python-gobject
+adwaita-icon-theme
 gtk4
 libadwaita
 python-cryptography
 python-aiohttp
 python-pygame
-python-textual
 python-httpx
 llama-cpp
 # wmai reads hyprland.lua with a standalone Lua
 lua
+# Settings: display layout and the graphics card's name
+wlr-randr
+pciutils

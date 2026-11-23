@@ -72,7 +72,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 
 ⌘ is the Command key on the MacBook. On a PC keyboard such as the ThinkPad's, Alt and the Windows key
 trade places, so ⌘ is the key next to the space bar there too (the Alt key), and Alt moves to the
-Windows key, so the layout switch is **Win ⇧** there (Option ⇧ on the MacBook: the same spot, just left of ⌘). The choice is made per machine (anything but a Mac swaps); *Desktop Settings* →
+Windows key, so the layout switch is **Win ⇧** there (Option ⇧ on the MacBook: the same spot, just left of ⌘). The choice is made per machine (anything but a Mac swaps); *Settings* →
 Keyboard can turn it on or off for good. All shortcuts work in
 both the US and Russian layouts. Caps Lock and Escape are swapped. These are the same in every flavour:
 
@@ -138,7 +138,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ , / ⌘ T | tabbed / stacked (press ⌘ . to go back to tiled) |
 
 Focus follows the mouse pointer, displays 1080p or taller are scaled 1.5× and brightness is set to
-100% at every login; all of that can be changed in *Desktop Settings* (below). Screenshots go to `~/Pictures/Screenshots`.
+100% at every login; all of that can be changed in *Settings* (below). Screenshots go to `~/Pictures/Screenshots`.
 Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
 `/usr/share/backgrounds/mbp/wallpaper.jpg`. The fish prompt is `[$PWD]$`, set in
 `~/.config/fish/functions/fish_prompt.fish`.
@@ -147,24 +147,37 @@ Configs live in `~/.config/`: `sway` + `i3status`, `hypr/hyprland.lua` + `waybar
 `mango/config.conf` + `waybar`; plus `foot`, `fuzzel`, `mako` and `fish` in every flavour.
 Autostart, idle and night light are shared by all three, in `/usr/local/bin/mbp-session-start`.
 
-## Desktop Settings
+## Settings
 
-**Desktop Settings** in the launcher (or `mbp-settings` in a terminal) changes the basics the same way in
-all three flavours, with the keyboard or the mouse:
+**Settings** in the launcher (or `mbp-settings [panel]`, e.g. `mbp-settings network`) is a GTK 4 app in the
+desktop's square, dark style. It works the same in all three flavours and changes take effect at once:
 
-| Tab | Settings |
+| Panel | What's in it |
 |---|---|
-| Keyboard | Alt ⇄ Win swap (automatic / on / off), layouts (e.g. `us,ru`), Caps Lock ⇄ Escape, key repeat |
-| Display | scale (automatic, 1–2), night light on/off and temperature, brightness at login |
-| Look & behaviour | wallpaper, whether new workspaces open tabbed or tiled, focus follows mouse, natural scrolling, tap to click |
-| Appearance | accent colour (borders, active tab, the bar's current workspace), border width, gaps; and, in Hyprland and Mango only (sway has no such effects): rounded corners, animations, blur, shadows, opacity of unfocused windows |
-| Power & idle | minutes until lock, screen off and suspend (0 = never); suspend always, on battery only or never |
+| Network | Wi-Fi on/off, networks (connect with a password, disconnect, forget), wired status, VPNs on/off |
+| Bluetooth | on/off, search, pair, connect, disconnect, remove; battery level of connected devices |
+| Sound | output and input device, volume, mute |
+| Displays | per display: on/off, resolution, refresh rate, scale, rotation, position next to the built-in one (with *Keep these settings?* and a 15-second undo); brightness now and at login; night light and its temperature; scale for other displays |
+| Keyboard | layouts, Alt ⇄ Win swap, Caps Lock ⇄ Escape, key repeat; every shortcut for this flavour |
+| Mouse & touchpad | pointer speed, left-handed, focus follows mouse, tap to click, natural scrolling, ignore while typing, three-finger swipe between workspaces |
+| Appearance | dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur, unfocused-window opacity |
+| Windows | whether new workspaces open tabbed or tiled |
+| Notifications | do not disturb, how long they stay, where they appear, show the last one again |
+| Power | battery charge, health and power draw; lock / screen off / suspend times; what closing the lid does |
+| Date & time | automatic time, time zone, setting the time by hand |
+| Users | your account and password; add or remove users (administrators can use sudo) |
+| Default apps | browser, email, files, text, images, video, music, PDFs, archives |
+| About | computer name (editable), model, processor, memory, graphics, disk, system, kernel, uptime |
 
-**Ctrl+S** saves and applies: the compositor reloads its config, and the wallpaper, night light and idle timers
-restart. A few things only show up in new workspaces (the default layout). The settings live in
-`~/.config/mbp/settings.conf`; `mbp-conf` turns them into `~/.config/mbp/generated/{sway.conf,hyprland.lua,mango.conf}`,
-which each compositor's config loads after its own defaults (sway also loads `sway-vars.conf` first, and Waybar imports `waybar.css`) (and again at every login, for the machine it runs on).
-Edit the file by hand if you like, then run `mbp-conf apply`.
+The rarer things open the full tools: *All connections* (`nm-connection-editor`) for static addresses, enterprise
+Wi-Fi and new VPNs; the Bluetooth manager (`blueman-manager`); and the volume control (`pavucontrol`) for
+per-app volumes. The lid and user changes ask for an administrator's password (polkit).
+
+The desktop settings live in `~/.config/mbp/settings.conf`; `mbp-conf` turns them into
+`~/.config/mbp/generated/{sway.conf,sway-vars.conf,hyprland.lua,mango.conf,waybar.css,mako.conf}`, which the
+compositors, Waybar and mako load after their own defaults (regenerated at every login for the machine it runs on).
+Edit the file by hand if you like, then run `mbp-conf apply`. In Mango, a rotated display isn't remembered
+after logging out: its display rules have no rotation.
 
 ## Tether (phone and computer bridge)
 
@@ -230,8 +243,9 @@ overlay/                 files copied onto every flavour's root filesystem
   etc/skel/.config       shared desktop configs (also copied to the installed system)
   usr/local/bin/mbp-install         the installer
   usr/local/bin/mbp-session-start   autostart, idle/lock, night light (all compositors)
-  usr/local/bin/mbp-settings        the Desktop Settings window (Textual)
-  usr/local/bin/mbp-conf            its backend: settings.conf -> each compositor's snippet, apply
+  usr/local/bin/mbp-settings        starts Settings (the app lives in usr/lib/mbp-settings)
+  usr/lib/mbp-settings/             the Settings app (Python, GTK 4) and its pkexec helper
+  usr/local/bin/mbp-conf            the desktop settings: settings.conf -> each compositor's snippet, apply
   usr/local/bin/mbp-*               power menu, screenshot, OSD, battery, night-light and idle helpers
   etc/xkb/                          the mbp:swap_alt_win keyboard option (Alt ⇄ Win on PC keyboards)
   usr/local/bin/live-user-setup     creates the live user at boot
