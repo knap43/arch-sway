@@ -477,6 +477,20 @@ def wallpaper(v=None):
     detach("swaybg", "-i", v["WALLPAPER"], "-m", "fill", "-c", "1e1e1e")
 
 
+def restart_waybar():
+    """Stop Waybar and start it again. Its in-place reload (SIGUSR2) can crash
+    it, which left the bar gone after changing the accent colour."""
+    import time
+    quiet("pkill", "-x", "waybar")
+    for _ in range(40):                                # up to 2 s for it to exit
+        if subprocess.run(["pgrep", "-x", "waybar"], capture_output=True).returncode != 0:
+            break
+        time.sleep(0.05)
+    else:
+        quiet("pkill", "-KILL", "-x", "waybar")
+    detach("waybar")
+
+
 def apply():
     v = load()
     generate(v)
@@ -490,7 +504,7 @@ def apply():
         quiet("mmsg", "dispatch", "reload_config")
         wallpaper(v)
     if wm in ("hyprland", "mango"):
-        quiet("pkill", "-SIGUSR2", "-x", "waybar")     # reload its style (accent)
+        restart_waybar()                               # new accent colour
     if wm:
         gsettings(v)
         quiet("makoctl", "reload")
