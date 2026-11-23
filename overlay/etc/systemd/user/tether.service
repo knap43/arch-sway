@@ -1,5 +1,5 @@
 [Unit]
-Description=Tether phone bridge (clipboard and files)
+Description=Tether phone bridge
 After=network-online.target
 
 # Not enabled at login on purpose: sway starts it once the Wayland session

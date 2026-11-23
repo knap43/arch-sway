@@ -1,10 +1,1 @@
-{
-  "clipboard": true,
-  "clipboard_backend": "wl-clipboard",
-  "notifications": false,
-  "phone_audio": false,
-  "phone_screen": false,
-  "phone_play": false,
-  "phone_remote": false,
-  "remote_shell": false
-}
+{"clipboard_backend": "wl-clipboard"}

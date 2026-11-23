@@ -182,12 +182,12 @@ after logging out: its display rules have no rotation.
 
 ## Tether (phone and computer bridge)
 
-[Tether](https://github.com/knap43/tether) is fetched when the ISO is built and installed
-trimmed down to **clipboard sync and file sharing**. Its other features (notifications,
-phone audio/screen, remote input, commands) start switched off, and the window shows only the
-clipboard and file controls (`TETHER_FEATURES=clipboard,files` in its launcher entry).
+[Tether](https://github.com/knap43/tether) is fetched when the ISO is built and installed in full: clipboard
+sync, file sharing and folder sync, the phone's notifications on the desktop, the phone's audio and screen
+here, playing what the phone shares, and commands. Remote control of this computer from the phone and the
+remote shell start switched off, as Tether ships them (remote control needs GNOME, so it can't work here).
 
-- Open **Tether** from the launcher to pair your phone or another computer (same pairing as usual).
+- Open **Tether** from the launcher to pair your phone or another computer.
 - **Clipboard** syncs automatically (via wl-clipboard; the service starts after login).
 - **Send files:** right-click in Thunar → *Send with Tether*. With several devices connected,
   a menu asks which one. Incoming files land in `~/Downloads/Tether`.
