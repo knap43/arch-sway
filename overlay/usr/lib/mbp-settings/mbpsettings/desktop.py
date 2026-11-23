@@ -5,7 +5,6 @@ import os
 
 from gi.repository import Adw, Gio, GLib, Gtk
 
-from . import shortcuts
 from .common import (action_row, button, combo_row, entry_row, group, page, run,
                      scale_row, spawn, spin_row, switch_row)
 
@@ -32,7 +31,7 @@ def keyboard(win, conf):
     g = group(p, "Shortcuts")
     row = action_row("Keyboard shortcuts", "Every shortcut for this desktop (also ⌘K anywhere)", activatable=True)
     row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
-    row.connect("activated", lambda *_: shortcuts.toggle(win.get_application()))
+    row.connect("activated", lambda *_: spawn("mbp-shortcuts", "--toggle"))
     g.add(row)
     return p
 

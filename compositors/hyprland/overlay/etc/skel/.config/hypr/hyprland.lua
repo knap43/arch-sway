@@ -345,7 +345,7 @@ for key, dir in pairs({ H = "l", J = "d", K = "u", L = "r",
     bind("SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
 end
 -- Mod+K: the keyboard shortcuts cheat sheet (Mod+Up still focuses up)
-bind("K", run("mbp-settings shortcuts"))
+bind("K", run("mbp-shortcuts --toggle"))
 
 -- Drag with Mod + left button, resize with Mod + right button
 bind("mouse:272", hl.dsp.window.drag(),   { mouse = true })
@@ -425,6 +425,8 @@ hl.window_rule({ name = "float-pavucontrol", match = { class = "^(org.pulseaudio
 hl.window_rule({ name = "float-nm-editor", match = { class = "^nm-connection-editor$" }, float = true })
 hl.window_rule({ name = "live-welcome", match = { class = "^live-welcome$" },
                  float = true, size = "780 560", center = true })
+hl.window_rule({ name = "mbp-shortcuts", match = { class = "^mbp-shortcuts$" },
+                 float = true, size = "820 640", center = true })
 hl.window_rule({ name = "settings", match = { class = "^org\\.mbp\\.Settings$" },
                  float = true, size = "1020 700", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })

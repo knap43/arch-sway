@@ -5,7 +5,7 @@ import traceback
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from .common import Conf, compositor
-from . import bluetooth, desktop, displays, network, power, shortcuts, sound, system
+from . import bluetooth, desktop, displays, network, power, sound, system
 
 APP_ID = "org.mbp.Settings"
 ACCENTS = {"blue": ("#5e81ac", "#ffffff"), "teal": ("#88c0d0", "#1e1e1e"), "green": ("#a3be8c", "#1e1e1e"),
@@ -77,7 +77,7 @@ _accent_provider = Gtk.CssProvider()
 
 
 def install_style():
-    """The desktop's look for every window of the app (Settings and the cheat sheet)."""
+    """The desktop's look for every window of the app."""
     from .common import run
     theme = run("mbp-conf", "get", "THEME").stdout.strip() or "dark"
     accent = run("mbp-conf", "get", "ACCENT").stdout.strip() or "blue"
@@ -174,9 +174,6 @@ class App(Adw.Application):
     def do_command_line(self, cmdline):
         args = cmdline.get_arguments()[1:]
         start = args[0] if args else None
-        if start == "shortcuts":        # the cheat sheet (Mod+K): toggles
-            shortcuts.toggle(self)
-            return 0
         win = next((w for w in self.get_windows() if isinstance(w, Window)), None)
         if win:
             ids = [p[0] for p in PANELS]
