@@ -280,6 +280,7 @@ EOF
 title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
+initrd  /amd-ucode.img
 initrd  /initramfs-linux.img
 options $CMDLINE
 EOF
@@ -287,6 +288,7 @@ EOF
 title   Arch Linux (fallback)
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
+initrd  /amd-ucode.img
 initrd  /initramfs-linux-fallback.img
 options $CMDLINE
 EOF

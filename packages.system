@@ -6,6 +6,7 @@ base
 linux
 linux-firmware
 intel-ucode
+amd-ucode
 broadcom-wl-dkms
 linux-headers
 mesa
@@ -15,6 +16,10 @@ intel-media-driver
 vulkan-intel
 lib32-vulkan-intel
 lib32-mesa
+# AMD graphics, in case of other hardware: mesa already brings radeonsi (OpenGL and
+# VA-API), linux-firmware the GPU firmware; these add Vulkan (RADV, 64/32-bit)
+vulkan-radeon
+lib32-vulkan-radeon
 xorg-xwayland
 sudo
 man-db
