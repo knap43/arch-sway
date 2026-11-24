@@ -10,8 +10,8 @@ order += "memory"
 order += "tztime local"
 
 volume master {
-    format = "♪ %volume"
-    format_muted = "♪ muted"
+    format = "VOL %volume"
+    format_muted = "VOL muted"
     device = "pulse"
 }
 battery all {

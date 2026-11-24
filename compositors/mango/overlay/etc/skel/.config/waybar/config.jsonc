@@ -26,8 +26,8 @@
         "format-default": ""          // shown only in other modes, e.g. resize
     },
     "wireplumber": {
-        "format": "♪ {volume}%",
-        "format-muted": "♪ muted",
+        "format": "VOL {volume}%",
+        "format-muted": "VOL muted",
         "on-click": "pavucontrol"
     },
     "battery": {

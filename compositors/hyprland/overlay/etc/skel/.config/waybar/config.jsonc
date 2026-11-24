@@ -21,8 +21,8 @@
         "on-click": "activate"
     },
     "wireplumber": {
-        "format": "♪ {volume}%",
-        "format-muted": "♪ muted",
+        "format": "VOL {volume}%",
+        "format-muted": "VOL muted",
         "on-click": "pavucontrol"
     },
     "battery": {
