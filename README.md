@@ -94,7 +94,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
 | ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
 | ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |
-| ⌘ ⇧ Q or ⌘ Esc | power menu (lock, suspend, log out, reboot, power off) |
+| ⌘ ⇧ Q or ⌘ Esc | power menu (lock, suspend, log out, reboot, power off); Mango: ⌘ Esc only |
 | ⌘ ⇧ C | reload the config |
 | ⌘ N | night light on / off (on by default, 4000 K) |
 | Win ⇧ (Mac: Option ⇧) | switch US ⇄ RU (the key just left of ⌘, plus Shift) |
@@ -133,7 +133,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | Keys | Action |
 |---|---|
 | ⌘ Tab | switch between tabbed and tiled |
-| ⌘ ⇧ Tab | overview of every window (pick one, or ⌘ ⇧ Tab again to leave) |
+| ⌘ ⇧ Q | overview of every window (pick one, or ⌘ ⇧ Q again to leave) |
 | ⌘ A / ⌘ S | tag (workspace) to the left / right |
 | ⌘ 1…9 / ⌘ ⇧ 1…9 | go to / send window to tag (Mango has nine) |
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
