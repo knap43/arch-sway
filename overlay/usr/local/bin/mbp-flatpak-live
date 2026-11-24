@@ -1,0 +1,11 @@
+#!/bin/sh
+# Live system only: the Flatpak apps packed in the ISO (Zen Browser and its
+# runtime) appear in /var/lib/flatpak. The image is mounted read-only with a
+# writable layer in RAM on top, so nothing is unpacked.
+set -e
+img=/usr/local/share/mbp/flatpak.sfs
+base=/run/mbp-flatpak
+mountpoint -q /var/lib/flatpak && exit 0
+mkdir -p "$base/image" "$base/upper" "$base/work" /var/lib/flatpak
+mount -o loop,ro "$img" "$base/image"
+mount -t overlay overlay -o "lowerdir=$base/image,upperdir=$base/upper,workdir=$base/work" /var/lib/flatpak

@@ -1,0 +1,14 @@
+[Unit]
+Description=Bundled Flatpak apps for the live session
+ConditionPathExists=/etc/mbp-live
+ConditionPathExists=/usr/local/share/mbp/flatpak.sfs
+After=local-fs.target
+Before=display-manager.service systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/mbp-flatpak-live
+
+[Install]
+WantedBy=multi-user.target

@@ -76,11 +76,10 @@ noto-fonts-emoji
 ttf-jetbrains-mono
 
 # --- applications ---
-librewolf
 mpv
 mpv-mpris
 kew
-flatpak
+flatpak            # Zen Browser comes from Flathub (see build.sh)
 thunar
 gvfs
 gvfs-dnssd

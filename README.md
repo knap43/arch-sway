@@ -64,7 +64,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Audio | PipeWire + WirePlumber, pavucontrol |
 | Power | TLP, zram swap (zstd); lock at 5 min idle, screen off at 10, suspend at 15 on battery; battery warnings at 15% and 5% |
 | Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth tray (blueman), touchpad tap-to-click, TrackPoint |
-| Apps | btop, fastfetch, nnn (terminal file manager), Flatpak (Flathub added; apps show up in the launcher), LibreWolf, mpv (hardware decoding on; F7–F9 control it via mpv-mpris), kew (terminal music player; F7–F9 control it), Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
+| Apps | btop, fastfetch, nnn (terminal file manager), Flatpak (Flathub added; apps show up in the launcher), Zen Browser (Flatpak, preinstalled), mpv (hardware decoding on; F7–F9 control it via mpv-mpris), kew (terminal music player; F7–F9 control it), Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
 | Dev | git, base-devel, vim, Python + PyGObject, GTK 4, libadwaita |
 | Boot | systemd-boot on UEFI (GRUB if booted in legacy/BIOS mode) |
 
@@ -80,7 +80,7 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 |---|---|
 | ⌘ D | terminal |
 | ⌘ Space / ⌘ Q | app launcher |
-| ⌘ E / ⌘ B | Thunar / LibreWolf |
+| ⌘ E / ⌘ B | Thunar / Zen Browser |
 | ⌘ V | clipboard history |
 | ⌘ W | close window |
 | ⌘ [ / ⌘ ] | previous / next window on this workspace |

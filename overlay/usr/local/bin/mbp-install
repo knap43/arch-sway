@@ -189,7 +189,7 @@ genfstab -U "$MNT" >> "$MNT/etc/fstab"
 info "Copying desktop configuration"
 cp -rT /etc/skel/.config "$MNT/etc/skel/.config"
 for f in /usr/local/bin/*; do
-    case ${f##*/} in mbp-install|live-user-setup|live-welcome) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
+    case ${f##*/} in mbp-install|live-user-setup|live-welcome|mbp-flatpak-live) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
 cp -a /usr/lib/lantern "$MNT/usr/lib/"
@@ -218,6 +218,16 @@ for d in /opt/duckstation /opt/pcsx2; do
 done
 # Our mupen64plus entry (with a ROM picker) shadows the package's own one.
 install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/mupen64plus.desktop
+
+# Zen Browser and its runtime: the Flatpak installation packed in the ISO
+if [[ -f /usr/local/share/mbp/flatpak.sfs ]]; then
+    info "Copying Zen Browser (Flatpak)"
+    fpimg=$(mktemp -d)
+    mount -o loop,ro /usr/local/share/mbp/flatpak.sfs "$fpimg"
+    mkdir -p "$MNT/var/lib/flatpak"
+    cp -a "$fpimg/." "$MNT/var/lib/flatpak/"
+    umount "$fpimg"; rmdir "$fpimg"
+fi
 
 if [[ -d /usr/lib/tiny-games ]]; then
     cp -a /usr/lib/tiny-games "$MNT/usr/lib/"

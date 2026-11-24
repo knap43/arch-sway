@@ -336,6 +336,45 @@ EOF
 done
 (( ${#EMU_ADDED[@]} )) && echo ":: Emulators added: ${EMU_ADDED[*]}"
 
+# Zen Browser, from Flathub, with the runtime and GL drivers it needs, so it
+# works offline from the first boot. It's installed into a Flatpak system
+# installation of its own, kept in ./cache/flatpak (updated, not re-downloaded,
+# on later builds), and packed as one squashfs image: mkarchiso drops file
+# modes from airootfs, and Flatpak needs them. The live system mounts the
+# image on /var/lib/flatpak (mbp-flatpak-live); the installer copies it out.
+# Needs flatpak on the build machine; without it, or offline, the ISO is built
+# without Zen. ZEN_APP=... picks another Flathub app id.
+ZEN_APP=${ZEN_APP:-app.zen_browser.zen}
+FP="$HERE/cache/flatpak"
+zen_ok=""
+if command -v flatpak >/dev/null; then
+    fp() { sudo env FLATPAK_SYSTEM_DIR="$FP" flatpak --system "$@"; }
+    sudo mkdir -p "$FP"
+    echo ":: Fetching $ZEN_APP from Flathub (cached in ./cache/flatpak)"
+    if fp remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo \
+        && fp install -y --noninteractive --or-update flathub "$ZEN_APP"; then
+        fp update -y --noninteractive || true
+        # Intel video decoding inside the sandbox (both laptops have Intel graphics).
+        branch=$(fp info --show-runtime "$ZEN_APP" 2>/dev/null | awk -F/ '{print $NF}')
+        [[ -n $branch ]] && fp install -y --noninteractive --or-update flathub \
+            "org.freedesktop.Platform.VAAPI.Intel//$branch" || true
+        fp uninstall -y --noninteractive --unused || true
+        # Links that point into the build path would dangle on the ISO.
+        sudo find "$FP" -lname "$FP/*" -print0 | while IFS= read -r -d '' l; do
+            t=$(readlink "$l"); sudo ln -sfn "/var/lib/flatpak/${t#"$FP/"}" "$l"
+        done
+        install -d "$PROFILE/airootfs/usr/local/share/mbp"
+        sudo mksquashfs "$FP" "$PROFILE/airootfs/usr/local/share/mbp/flatpak.sfs" \
+            -comp zstd -noappend -quiet -no-progress
+        sudo chown "$(id -u):$(id -g)" "$PROFILE/airootfs/usr/local/share/mbp/flatpak.sfs"
+        mkdir -p "$PROFILE/airootfs/etc/systemd/system/multi-user.target.wants"
+        ln -sf /etc/systemd/system/mbp-flatpak-live.service "$PROFILE/airootfs/etc/systemd/system/multi-user.target.wants/mbp-flatpak-live.service"
+        zen_ok=1
+        echo ":: Zen added ($(du -h "$PROFILE/airootfs/usr/local/share/mbp/flatpak.sfs" | cut -f1) with its runtime)"
+    fi
+fi
+[[ -n $zen_ok ]] || echo "!! Couldn't fetch Zen from Flathub (is flatpak installed here?); building without a browser" >&2
+
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.
 # Each entry: name|launcher comment|desktop categories

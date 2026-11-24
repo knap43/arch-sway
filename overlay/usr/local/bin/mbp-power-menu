@@ -3,7 +3,7 @@
 choice=$(printf '%s\n' Lock Suspend "Log out" Reboot "Power off" \
     | fuzzel --dmenu --prompt "Power: " --lines 5 --width 20) || exit 0
 
-# Under Hyprland, hyprshutdown asks every app to close first (so LibreWolf and
+# Under Hyprland, hyprshutdown asks every app to close first (so Zen and
 # friends exit cleanly instead of being killed), then quits and runs $1.
 hypr_quit() {
     if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE-} ]] && command -v hyprshutdown >/dev/null; then

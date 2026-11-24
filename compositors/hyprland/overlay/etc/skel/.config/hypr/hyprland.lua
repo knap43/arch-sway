@@ -333,7 +333,7 @@ bind("D",      run(term))
 bind("space",  run(menu))
 bind("Q",      run(menu))
 bind("E",      run("thunar"))
-bind("B",      run("librewolf"))
+bind("B",      run("flatpak run app.zen_browser.zen"))
 bind("V",      run('cliphist list | fuzzel --dmenu --prompt "Clipboard: " | cliphist decode | wl-copy'))
 
 -------------------------------------------------------------------------------
