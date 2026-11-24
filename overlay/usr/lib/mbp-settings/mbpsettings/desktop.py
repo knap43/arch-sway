@@ -77,6 +77,8 @@ def appearance(win, conf):
 
     g = group(p, "Windows")
     g.add(spin_row(conf, "BORDER_WIDTH", "Border width (px)"))
+    g.add(switch_row(conf, "SMART_BORDERS", "No border on a lone window",
+                     "When one tiled window fills the screen"))
     g.add(spin_row(conf, "GAPS_INNER", "Gaps between windows (px)"))
     g.add(spin_row(conf, "GAPS_OUTER", "Gaps at the screen edges (px)"))
 

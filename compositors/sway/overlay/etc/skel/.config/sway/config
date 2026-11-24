@@ -18,7 +18,7 @@ default_border pixel $border
 default_floating_border pixel $border
 gaps inner $gaps_inner
 gaps outer $gaps_outer
-hide_edge_borders smart
+hide_edge_borders smart   # Settings can turn this off (generated sway.conf, below)
 focus_follows_mouse yes
 workspace_layout tabbed
 output * bg /usr/share/backgrounds/mbp/wallpaper.jpg fill #1e1e1e

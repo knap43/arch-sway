@@ -67,6 +67,8 @@ SCHEMA = [
     ("ACCENT", "Appearance", "Accent colour", "choice", "blue", list(ACCENTS),
      "Focused window borders, the active tab and the bar's current workspace."),
     ("BORDER_WIDTH", "Appearance", "Border width (px)", "int", "2", (0, 10), ""),
+    ("SMART_BORDERS", "Appearance", "No border when a window is alone on the screen", "bool", "on", None,
+     "Tiled windows; floating ones keep theirs."),
     ("GAPS_INNER", "Appearance", "Gaps between windows (px)", "int", "0", (0, 40), ""),
     ("GAPS_OUTER", "Appearance", "Gaps at the screen edges (px)", "int", "0", (0, 40), ""),
     ("ROUNDING", "Appearance", "Rounded corners (px)", "int", "0", (0, 20), FX.split(" Costs")[0]),
@@ -240,6 +242,9 @@ def sway_vars(v):
 
 def sway_conf(v):
     lines = [f"# {HEADER}",
+             # Borders that touch the screen edge go when a window is alone (with no gaps,
+             # that's all of them); with several, every window keeps its border.
+             f"hide_edge_borders {'smart' if on(v, 'SMART_BORDERS') else 'none'}",
              "input type:keyboard {",
              f"    xkb_layout {v['LAYOUTS']}",
              f"    xkb_options {xkb_options(v)}",
@@ -330,6 +335,7 @@ def hyprland_lua(v):
         f"    accent = {lua_str(accent(v)[0])},",
         f"    accent_text = {lua_str(accent(v)[1])},",
         f"    border_size = {v['BORDER_WIDTH']},",
+        f"    smart_borders = {str(on(v, 'SMART_BORDERS')).lower()},",
         f"    gaps_in = {v['GAPS_INNER']},",
         f"    gaps_out = {v['GAPS_OUTER']},",
         f"    rounding = {v['ROUNDING']},",
@@ -365,6 +371,7 @@ def mango_conf(v):
              f"tap_to_click={1 if on(v, 'TAP_TO_CLICK') else 0}"]
     bg, fg = accent(v)
     lines += [f"border_px={v['BORDER_WIDTH']}",
+              f"no_border_when_single={1 if on(v, 'SMART_BORDERS') else 0}",
               f"gap_inner_horizontal={v['GAPS_INNER']}", f"gap_inner_vertical={v['GAPS_INNER']}",
               f"gap_outer_horizontal={v['GAPS_OUTER']}", f"gap_outer_vertical={v['GAPS_OUTER']}",
               f"border_radius={v['ROUNDING']}",

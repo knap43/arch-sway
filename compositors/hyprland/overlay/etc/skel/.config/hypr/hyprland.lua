@@ -446,5 +446,12 @@ hl.window_rule({ name = "settings", match = { class = "^org\\.mbp\\.Settings$" }
                  float = true, size = "1020 700", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
 
+-- No border on a lone tiled window (Settings → Appearance): w[tv1] is a workspace
+-- with one visible tiled window (a tab group counts as one), f[1] one in fullscreen.
+if setting("smart_borders", true) then
+    hl.window_rule({ name = "smart-borders", match = { float = false, workspace = "w[tv1]" }, border_size = 0 })
+    hl.window_rule({ name = "smart-borders-fs", match = { float = false, workspace = "f[1]" }, border_size = 0 })
+end
+
 -- Managed by wmai (keep this last so its settings win)
 require("ai")
