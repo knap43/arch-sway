@@ -202,7 +202,9 @@ To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
 [Hearth](https://github.com/knap43/hearth) is a terminal game launcher, fetched when the ISO is built.
 It scans `~/Games` (`Windows/` and `Linux/` inside it), runs Windows games through Proton via
-umu-launcher, falls back to Wine, and starts native Linux ports directly. Open it from the launcher
+umu-launcher, falls back to Wine, and starts native Linux ports directly. It also plays the consoles
+below: put ROMs in `~/Games/PS1`, `PS2`, `N64`, `GameCube` or `Wii` (sub-folders are categories), and
+Hearth starts them fullscreen in DuckStation, PCSX2, Mupen64Plus or Dolphin. Open it from the launcher
 or run `hearth` (fish completions included); `hearth doctor` shows the paths and runners.
 
 - **Proton needs Vulkan**, so it works on the ThinkPad (HD 520) but not on the MacBook (HD 3000 has
