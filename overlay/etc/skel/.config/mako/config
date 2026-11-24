@@ -3,7 +3,7 @@ background-color=#1e1e1e
 text-color=#d8d8d8
 border-color=#5e81ac
 border-size=2
-default-timeout=6000
+default-timeout=2000
 
 # Timeout, position, accent and do-not-disturb from the desktop settings
 include=~/.config/mbp/generated/mako.conf

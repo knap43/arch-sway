@@ -76,7 +76,7 @@ SCHEMA = [
     ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
     ("INACTIVE_OPACITY", "Appearance", "Opacity of unfocused windows", "choice", "1",
      ["1", "0.95", "0.9", "0.85", "0.8"], FX.split(" Costs")[0]),
-    ("NOTIFY_TIMEOUT", "Notifications", "Hide notifications after (seconds, 0 = never)", "int", "6", (0, 120), ""),
+    ("NOTIFY_TIMEOUT", "Notifications", "Hide notifications after (seconds, 0 = never)", "int", "2", (0, 120), ""),
     ("NOTIFY_POSITION", "Notifications", "Position", "choice", "top-right",
      ["top-right", "top-center", "top-left", "bottom-right", "bottom-center", "bottom-left"], ""),
     ("DISPLAYS", "Displays", "Display layout", "json", "{}", None,
