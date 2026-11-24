@@ -1,0 +1,7 @@
+[Desktop Entry]
+# Hidden from the launcher: Settings covers this, and opens the full tool from
+# its advanced rows. This entry shadows the package's own one.
+Type=Application
+Name=nm-connection-editor
+Hidden=true
+NoDisplay=true
