@@ -442,7 +442,7 @@ def gtklock_css(v):
     """The lock screen: clock, date and a password box over the dimmed wallpaper,
     square and in the accent colour. GTK 3 CSS, for gtklock (see mbp-lock)."""
     from urllib.parse import quote
-    bg, fg = accent(v)
+    bg, _ = accent(v)
     wall = v["WALLPAPER"]
     layers = "linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55))"
     if os.path.isfile(wall):
@@ -457,15 +457,14 @@ window {{
 }}
 * {{ font-family: "JetBrains Mono", monospace; border-radius: 0; box-shadow: none; text-shadow: none; }}
 #clock-label {{ font-size: 72px; color: #eeeeee; }}
-#date-label {{ font-size: 16px; color: #bbbbbb; margin-bottom: 24px; }}
-#input-label {{ color: #dddddd; }}
+#date-label {{ font-size: 16px; color: #bbbbbb; }}
 #input-field {{
     background: #2a2a2a; color: #dddddd; caret-color: #{bg};
     border: 1px solid #333333; padding: 6px 10px; min-width: 260px;
 }}
 #input-field:focus {{ border-color: #{bg}; }}
-#unlock-button {{ background: #{bg}; color: #{fg}; border: 1px solid #{bg}; padding: 6px 14px; }}
-#unlock-button:hover {{ background: #{bg}; }}
+/* gtklock puts the show-password icon back when focus moves between screens */
+#input-field image {{ opacity: 0; }}
 #error-label {{ color: #bf616a; }}
 #warning-label {{ color: #ebcb8b; }}
 """
