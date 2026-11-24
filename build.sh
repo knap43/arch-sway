@@ -245,6 +245,97 @@ if [[ -n $toofan_ver ]]; then
 fi
 [[ -n $toofan_ok ]] || echo "!! Couldn't fetch or verify toofan; building without it" >&2
 
+# DuckStation (PS1) and PCSX2 (PS2) are only published as AppImages. Each is
+# downloaded (cached in ./cache), checked against the SHA-256 GitHub records
+# for the release asset, and unpacked into /opt/<name> at build time, so it
+# needs no FUSE and starts quicker; the wrapper in /usr/local/bin runs its
+# AppRun. The image is never executed here: its squashfs is found from the
+# ELF header and opened with unsquashfs. Optional, like toofan: if one can't
+# be fetched or verified, the ISO is built without it.
+# Each entry: name|GitHub repo|release (latest = newest stable)|asset|title|comment|categories|mime types
+EMULATORS=(
+    "duckstation|stenzek/duckstation|tags/latest|DuckStation-x64.AppImage|DuckStation|PlayStation emulator|Game;Emulator;|application/x-cue;application/x-psx-rom;"
+    "pcsx2|PCSX2/pcsx2|latest|pcsx2-*-linux-appimage-x64-Qt.AppImage|PCSX2|PlayStation 2 emulator|Game;Emulator;|application/x-cue;application/x-iso9660-image;application/x-ps2-rom;"
+)
+appimage_asset() {   # repo release pattern -> "url sha256 tag" from GitHub's API
+    curl -fsSL "https://api.github.com/repos/$1/releases/$2" 2>/dev/null | python3 -c '
+import fnmatch, json, sys
+d = json.load(sys.stdin)
+for a in d.get("assets", []):
+    if fnmatch.fnmatch(a["name"], sys.argv[1]) and (a.get("digest") or "").startswith("sha256:"):
+        print(a["browser_download_url"], a["digest"][7:], d.get("tag_name", "?")); break
+' "$3" 2>/dev/null || true
+}
+squashfs_offset() {  # where the squashfs starts: the end of the runtime ELF
+    python3 -c '
+import struct, sys
+b = open(sys.argv[1], "rb").read(64)
+shoff, = struct.unpack_from("<Q", b, 0x28); shentsize, shnum = struct.unpack_from("<HH", b, 0x3A)
+off = shoff + shentsize * shnum
+f = open(sys.argv[1], "rb"); f.seek(off)
+print(off if f.read(4) == b"hsqs" else "")
+' "$1"
+}
+EMU_ADDED=()
+for entry in "${EMULATORS[@]}"; do
+    IFS='|' read -r emu repo rel pattern title comment categories mimes <<< "$entry"
+    read -r emu_url emu_sum emu_tag < <(appimage_asset "$repo" "$rel" "$pattern") || true
+    if [[ -z ${emu_url-} ]]; then
+        echo "!! Couldn't find $title's AppImage on GitHub; building without it" >&2
+        continue
+    fi
+    emu_file="$HERE/cache/$emu-$emu_sum.AppImage"     # per checksum: rolling releases change
+    mkdir -p "$HERE/cache"
+    if [[ ! -f $emu_file ]]; then
+        echo ":: Downloading $title ($emu_tag)"
+        curl -fsSL -o "$emu_file.part" "$emu_url" && mv "$emu_file.part" "$emu_file"
+    fi
+    if ! { [[ -f $emu_file ]] && echo "$emu_sum  $emu_file" | sha256sum -c --quiet - 2>/dev/null; }; then
+        rm -f "$emu_file" "$emu_file.part"
+        echo "!! $title's AppImage didn't download or match its checksum; building without it" >&2
+        continue
+    fi
+    emu_off=$(squashfs_offset "$emu_file")
+    rm -rf "$WORK/$emu.AppDir"
+    if [[ -z $emu_off ]] || ! unsquashfs -q -n -o "$emu_off" -d "$WORK/$emu.AppDir" "$emu_file" >/dev/null; then
+        echo "!! Couldn't unpack $title's AppImage; building without it" >&2
+        continue
+    fi
+    install -d "$PROFILE/airootfs/opt"
+    cp -a "$WORK/$emu.AppDir" "$PROFILE/airootfs/opt/$emu"
+    chmod -R u+rwX,go+rX,go-w "$PROFILE/airootfs/opt/$emu"
+    printf '#!/bin/sh\n# %s (%s), unpacked from its AppImage when the ISO was built.\nexec /opt/%s/AppRun "$@"\n' \
+        "$title" "$emu_tag" "$emu" > "$PROFILE/airootfs/usr/local/bin/$emu"
+    chmod 755 "$PROFILE/airootfs/usr/local/bin/$emu"
+    # mkarchiso doesn't keep modes, so list everything that must stay executable.
+    echo "file_permissions[\"/usr/local/bin/$emu\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+    while IFS= read -r -d '' x; do
+        echo "file_permissions[\"/opt/$emu/${x#"$WORK/$emu.AppDir/"}\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+    done < <(find "$WORK/$emu.AppDir" -type f -perm -u+x -print0)
+    # The icon the AppImage itself uses (.DirIcon, followed if it's a link).
+    emu_icon=$(readlink -f "$WORK/$emu.AppDir/.DirIcon" 2>/dev/null || true)
+    icon_name=applications-games
+    if [[ -f $emu_icon ]]; then
+        ext=${emu_icon##*.}; [[ $ext == svg ]] || ext=png
+        install -Dm644 "$emu_icon" "$PROFILE/airootfs/usr/share/pixmaps/$emu.$ext"
+        icon_name=$emu
+    fi
+    cat > "$PROFILE/airootfs/usr/share/applications/mbp-$emu.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$title
+Comment=$comment
+Exec=/usr/local/bin/$emu %f
+Icon=$icon_name
+Terminal=false
+Categories=$categories
+MimeType=$mimes
+Keywords=emulator;games;
+EOF
+    EMU_ADDED+=("$title $emu_tag")
+done
+(( ${#EMU_ADDED[@]} )) && echo ":: Emulators added: ${EMU_ADDED[*]}"
+
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.
 # Each entry: name|launcher comment|desktop categories

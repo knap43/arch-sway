@@ -206,6 +206,17 @@ install -Dm644 -t "$MNT/usr/local/share/mbp" /usr/local/share/mbp/README.md   # 
 install -Dm644 -t "$MNT/usr/share/polkit-1/actions" /usr/share/polkit-1/actions/org.mbp.settings.policy
 [[ -d /usr/share/wmai ]] && cp -a /usr/share/wmai "$MNT/usr/share/"
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/wmai-server.service
+# Emulators unpacked from AppImages (DuckStation, PCSX2), when the ISO has them
+for d in /opt/duckstation /opt/pcsx2; do
+    [[ -d $d ]] || continue
+    cp -a "$d" "$MNT/opt/"
+    n=${d##*/}
+    install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/mbp-$n.desktop
+    for i in /usr/share/pixmaps/$n.*; do [[ -f $i ]] && install -Dm644 -t "$MNT/usr/share/pixmaps" "$i"; done
+done
+# Our mupen64plus entry (with a ROM picker) shadows the package's own one.
+install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/mupen64plus.desktop
+
 if [[ -d /usr/lib/tiny-games ]]; then
     cp -a /usr/lib/tiny-games "$MNT/usr/lib/"
     install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/tiny-games-*.desktop

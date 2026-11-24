@@ -214,6 +214,22 @@ or run `hearth` (fish completions included); `hearth doctor` shows the paths and
 
 To build with a different copy: `HEARTH_REPO=/path/or/url ./build.sh`.
 
+## Emulators
+
+| system | emulator | how it's installed |
+|---|---|---|
+| PlayStation | [DuckStation](https://github.com/stenzek/duckstation) | its AppImage, unpacked into `/opt/duckstation` |
+| PlayStation 2 | [PCSX2](https://github.com/PCSX2/pcsx2) | its AppImage (latest stable), unpacked into `/opt/pcsx2` |
+| Nintendo 64 | mupen64plus | Arch package; the launcher entry asks for a ROM (Esc quits) |
+| GameCube and Wii | Dolphin | Arch package (`dolphin-emu`) |
+
+`build.sh` downloads the two AppImages (cached in `./cache`), checks them against the SHA-256 GitHub
+records for each release asset, and unpacks them, so they need no FUSE and start a little quicker. If
+one can't be fetched or verified, the ISO is built without it. They update with the next ISO build.
+
+DuckStation and PCSX2 need a BIOS dumped from your own console; point them at it on first start.
+PCSX2 and Dolphin ask a lot of the graphics, so expect the ThinkPad to manage far more than the MacBook.
+
 ## Lantern
 
 [Lantern](https://github.com/knap43/lantern), a text RPG with a small local LLM as the Dungeon Master,

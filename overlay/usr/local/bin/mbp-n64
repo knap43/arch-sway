@@ -1,0 +1,10 @@
+#!/bin/sh
+# mupen64plus has no window of its own: open the ROM given, or ask for one.
+# Esc quits the game; keys and controllers: see `man mupen64plus`.
+rom=${1-}
+if [ -z "$rom" ]; then
+    rom=$(zenity --file-selection --title="Choose an N64 ROM" \
+        --file-filter="N64 ROMs | *.z64 *.Z64 *.n64 *.N64 *.v64 *.V64 *.zip *.7z" \
+        --file-filter="All files | *") || exit 0
+fi
+exec mupen64plus --windowed --resolution 960x720 "$rom"

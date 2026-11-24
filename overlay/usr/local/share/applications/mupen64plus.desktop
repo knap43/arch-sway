@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Mupen64Plus
+Comment=Nintendo 64 emulator
+Exec=/usr/local/bin/mbp-n64 %f
+Icon=mupen64plus
+Terminal=false
+Categories=Game;Emulator;
+MimeType=application/x-n64-rom;
+Keywords=n64;nintendo;emulator;games;
