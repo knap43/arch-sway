@@ -1,0 +1,7 @@
+[Desktop Entry]
+# Hidden: gpsd comes in as a dependency of Waybar, and its GPS viewers are of no
+# use without a receiver. This entry shadows the package's own one.
+Type=Application
+Name=xgpsspeed
+Hidden=true
+NoDisplay=true
