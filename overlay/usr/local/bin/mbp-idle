@@ -14,7 +14,7 @@ else
 fi
 
 args=(-w)
-(( ${lock:-5} > 0 ))  && args+=(timeout $((lock * 60)) 'swaylock -f -c 1e1e1e')
+(( ${lock:-5} > 0 ))  && args+=(timeout $((lock * 60)) mbp-lock)
 (( ${off:-10} > 0 ))  && args+=(timeout $((off * 60)) "$screen_off" resume "$screen_on")
 if (( ${susp:-15} > 0 )); then
     case ${when:-battery} in
@@ -22,5 +22,5 @@ if (( ${susp:-15} > 0 )); then
         battery) args+=(timeout $((susp * 60)) mbp-suspend-if-battery) ;;
     esac
 fi
-args+=(before-sleep 'swaylock -f -c 1e1e1e')
+args+=(before-sleep mbp-lock lock mbp-lock)   # lock: loginctl lock-session
 exec swayidle "${args[@]}"

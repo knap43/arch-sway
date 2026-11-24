@@ -438,6 +438,39 @@ def gsettings(v):
     quiet("gsettings", "set", iface, "text-scaling-factor", v["TEXT_SCALE"])
 
 
+def gtklock_css(v):
+    """The lock screen: clock, date and a password box over the dimmed wallpaper,
+    square and in the accent colour. GTK 3 CSS, for gtklock (see mbp-lock)."""
+    from urllib.parse import quote
+    bg, fg = accent(v)
+    wall = v["WALLPAPER"]
+    layers = "linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55))"
+    if os.path.isfile(wall):
+        layers += f', url("file://{quote(os.path.abspath(wall))}")'
+    return f"""/* {HEADER} */
+window {{
+    background-color: #1e1e1e;
+    background-image: {layers};
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}}
+* {{ font-family: "JetBrains Mono", monospace; border-radius: 0; box-shadow: none; text-shadow: none; }}
+#clock-label {{ font-size: 72px; color: #eeeeee; }}
+#date-label {{ font-size: 16px; color: #bbbbbb; margin-bottom: 24px; }}
+#input-label {{ color: #dddddd; }}
+#input-field {{
+    background: #2a2a2a; color: #dddddd; caret-color: #{bg};
+    border: 1px solid #333333; padding: 6px 10px; min-width: 260px;
+}}
+#input-field:focus {{ border-color: #{bg}; }}
+#unlock-button {{ background: #{bg}; color: #{fg}; border: 1px solid #{bg}; padding: 6px 14px; }}
+#unlock-button:hover {{ background: #{bg}; }}
+#error-label {{ color: #bf616a; }}
+#warning-label {{ color: #ebcb8b; }}
+"""
+
+
 STYLE_PY = "/usr/lib/mbp-settings/mbpsettings/style.py"
 
 
@@ -462,7 +495,8 @@ def generate(v=None):
     os.makedirs(GENERATED, exist_ok=True)
     for name, text in (("sway-vars.conf", sway_vars(v)), ("sway.conf", sway_conf(v)),
                        ("hyprland.lua", hyprland_lua(v)), ("mango.conf", mango_conf(v)),
-                       ("waybar.css", waybar_css(v)), ("mako.conf", mako_conf(v))):
+                       ("waybar.css", waybar_css(v)), ("mako.conf", mako_conf(v)),
+                       ("gtklock.css", gtklock_css(v))):
         path = os.path.join(GENERATED, name)
         with open(path + ".tmp", "w") as f:
             f.write(text)

@@ -35,7 +35,7 @@ unzip
 # --- Wayland session (shared by every compositor) ---
 swaybg
 swayidle
-swaylock
+gtklock
 wlopm
 foot
 fuzzel

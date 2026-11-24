@@ -14,7 +14,7 @@ hypr_quit() {
 }
 
 case $choice in
-    Lock)        swaylock -f -c 1e1e1e ;;
+    Lock)        mbp-lock ;;
     Suspend)     systemctl suspend ;;
     "Log out")
         if   [[ -n ${SWAYSOCK-} ]]; then swaymsg exit

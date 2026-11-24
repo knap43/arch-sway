@@ -1,0 +1,11 @@
+#!/bin/sh
+# Lock the screen with gtklock: clock, date and a password box over the dimmed
+# wallpaper, in the desktop's look (~/.config/mbp/generated/gtklock.css, written
+# by mbp-conf). Returns once the screen is locked, like swaylock -f did.
+pgrep -x gtklock >/dev/null && exit 0
+css=${XDG_CONFIG_HOME:-$HOME/.config}/mbp/generated/gtklock.css
+[ -f "$css" ] || mbp-conf generate >/dev/null 2>&1
+set -- --daemonize --style "$css" --time-format '%H:%M' --date-format '%A, %-d %B' --idle-hide --idle-timeout 30
+# The password box follows the pointer between screens; gtklock recommends it for Hyprland.
+[ -n "${HYPRLAND_INSTANCE_SIGNATURE-}" ] && set -- "$@" --follow-focus
+exec gtklock "$@"
