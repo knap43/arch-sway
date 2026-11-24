@@ -89,7 +89,9 @@ class Window(Adw.ApplicationWindow):
         side_view.set_content(Gtk.ScrolledWindow(child=self.listbox, hscrollbar_policy=Gtk.PolicyType.NEVER))
         self.content_page = Adw.NavigationPage(title="Settings")
         content_view = Adw.ToolbarView()
-        content_view.add_top_bar(Adw.HeaderBar())
+        # No window buttons (Mod+W closes): they made this header taller than the
+        # sidebar's, so the two edges no longer lined up.
+        content_view.add_top_bar(Adw.HeaderBar(show_start_title_buttons=False, show_end_title_buttons=False))
         content_view.set_content(self.stack)
         self.content_page.set_child(content_view)
 
