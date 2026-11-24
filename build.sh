@@ -74,7 +74,8 @@ sed -i '/^#\[multilib\]$/{s/^#//;n;s/^#//}' "$PROFILE/pacman.conf"
 grep -q '^\[multilib\]' "$PROFILE/pacman.conf" || printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> "$PROFILE/pacman.conf"
 
 # The installed system's packages: shared ones + this flavour's.
-grep -vhE '^\s*(#|$)' "$HERE/packages.system" "$FLAVOUR_DIR/packages" > "$WORK/system-pkgs"
+# One name per line; '#' starts a comment, also after a name.
+sed -E 's/#.*//; s/[[:space:]]+$//; s/^[[:space:]]+//; /^$/d' "$HERE/packages.system" "$FLAVOUR_DIR/packages" > "$WORK/system-pkgs"
 
 # Packages: releng's list + ours, deduplicated.
 # (releng still lists the prebuilt broadcom-wl, which Arch has dropped

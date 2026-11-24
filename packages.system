@@ -79,7 +79,8 @@ ttf-jetbrains-mono
 mpv
 mpv-mpris
 kew
-flatpak            # Zen Browser comes from Flathub (see build.sh)
+# Zen Browser comes from Flathub (see build.sh)
+flatpak
 thunar
 gvfs
 gvfs-dnssd
