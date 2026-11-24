@@ -29,7 +29,7 @@ def keyboard(win, conf):
     g.add(Adw.EntryRow(title="Type here to try the repeat"))
 
     g = group(p, "Shortcuts")
-    row = action_row("Keyboard shortcuts", "Every shortcut for this desktop (also ⌘K anywhere)", activatable=True)
+    row = action_row("Keyboard shortcuts", "Every shortcut for this desktop (also ⌘? anywhere)", activatable=True)
     row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
     row.connect("activated", lambda *_: spawn("mbp-shortcuts", "--toggle"))
     g.add(row)

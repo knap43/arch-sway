@@ -84,13 +84,14 @@ bindsym --to-code {
 }
 floating_modifier $mod normal
 
-# Focus / move with ⌘+H J K L or arrows (add Shift to move the window)
+# ⌘+H J K L resize (narrower, taller, shorter, wider; hold to repeat), ⌘+arrows
+# focus, and Shift with either moves the window. ⌘+? opens the shortcuts cheat sheet.
 bindsym --to-code {
-    $mod+$left   focus left
-    $mod+$down   focus down
-    # Mod+K: the keyboard shortcuts cheat sheet (Mod+Up still focuses up)
-    $mod+$up     exec mbp-shortcuts --toggle
-    $mod+$right  focus right
+    $mod+$left   resize shrink width 20px
+    $mod+$down   resize grow height 20px
+    $mod+$up     resize shrink height 20px
+    $mod+$right  resize grow width 20px
+    $mod+Shift+slash  exec mbp-shortcuts --toggle
     $mod+Left    focus left
     $mod+Down    focus down
     $mod+Up      focus up

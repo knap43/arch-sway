@@ -84,8 +84,9 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ V | clipboard history |
 | ⌘ W | close window |
 | ⌘ [ / ⌘ ] | previous / next window on this workspace |
-| ⌘ H J L or arrows | focus (up: ⌘ ↑); add ⇧ to move the window (up: ⌘ ⇧ K) |
-| ⌘ K | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ K or Esc closes it) |
+| ⌘ arrows | focus; add ⇧ to move the window (⌘ ⇧ H J K L too) |
+| ⌘ H J K L | resize: narrower, taller, shorter, wider (hold to repeat) |
+| ⌘ ? | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ ? or Esc closes it) |
 | ⌘ ⇧ A / ⌘ ⇧ S | take the window to the previous / next workspace |
 | ⌘ F / ⌘ ⇧ F | fullscreen / floating |
 | ⌘ Return | tiled: this window takes the left half, the others share the right (Mango: swaps it into the master area) |

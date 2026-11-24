@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Keyboard shortcuts cheat sheet (Mod+K), in the terminal.
+"""Keyboard shortcuts cheat sheet (Mod+?), in the terminal.
 
 The README's key tables: the ones shared by every flavour, then the running
 compositor's. Type to filter, arrows / Page Up / Page Down to scroll, Escape
 clears the search or closes.
 
   mbp-shortcuts            show it here
-  mbp-shortcuts --toggle   open it in its own window, or close that window (Mod+K)
+  mbp-shortcuts --toggle   open it in its own window, or close that window (Mod+?)
 """
 import curses
 import locale

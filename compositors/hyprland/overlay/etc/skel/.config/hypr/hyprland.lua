@@ -349,14 +349,18 @@ bind("F",            hl.dsp.window.fullscreen())
 bind("SHIFT + F",    hl.dsp.window.float({ action = "toggle" }))
 bind("SHIFT + space", focus_mode_toggle)
 
--- Focus / move with Mod+H J K L or arrows (add Shift to move the window)
+-- Mod+H J K L resize (narrower, taller, shorter, wider; hold to repeat), Mod+arrows
+-- focus, and Shift with either moves the window
 for key, dir in pairs({ H = "l", J = "d", K = "u", L = "r",
                         left = "l", down = "d", up = "u", right = "r" }) do
-    if key ~= "K" then bind(key, hl.dsp.focus({ direction = dir })) end
+    if #key > 1 then bind(key, hl.dsp.focus({ direction = dir })) end
     bind("SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
 end
--- Mod+K: the keyboard shortcuts cheat sheet (Mod+Up still focuses up)
-bind("K", run("mbp-shortcuts --toggle"))
+for key, d in pairs({ H = { -20, 0 }, J = { 0, 20 }, K = { 0, -20 }, L = { 20, 0 } }) do
+    bind(key, hl.dsp.window.resize({ x = d[1], y = d[2], relative = true }), { repeating = true })
+end
+-- Mod+?: the keyboard shortcuts cheat sheet
+bind("SHIFT + slash", run("mbp-shortcuts --toggle"))
 
 -- Drag with Mod + left button, resize with Mod + right button
 bind("mouse:272", hl.dsp.window.drag(),   { mouse = true })
