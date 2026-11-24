@@ -438,6 +438,25 @@ def gsettings(v):
     quiet("gsettings", "set", iface, "text-scaling-factor", v["TEXT_SCALE"])
 
 
+STYLE_PY = "/usr/lib/mbp-settings/mbpsettings/style.py"
+
+
+def tether_style(v):
+    """Tether's window in the same colours as Settings: both come from style.py."""
+    import importlib.util
+    try:
+        spec = importlib.util.spec_from_file_location("mbp_style", STYLE_PY)
+        style = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(style)
+    except (OSError, ImportError):
+        return
+    path = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.join(HOME, ".config")), "tether", "style.css")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path + ".tmp", "w") as f:
+        f.write(f"/* {HEADER} */\n" + style.tether_css(v["THEME"], v["ACCENT"]))
+    os.replace(path + ".tmp", path)
+
+
 def generate(v=None):
     v = v or load()
     os.makedirs(GENERATED, exist_ok=True)
@@ -449,6 +468,7 @@ def generate(v=None):
             f.write(text)
         os.replace(path + ".tmp", path)
     gtk_settings(v)
+    tether_style(v)
 
 
 # ---- applying to the running session -----------------------------------------

@@ -192,8 +192,9 @@ remote shell start switched off, as Tether ships them (remote control needs GNOM
 - **Send files:** right-click in Thunar → *Send with Tether*. With several devices connected,
   a menu asks which one. Incoming files land in `~/Downloads/Tether`.
 - **Browse the phone** in Thunar (WebDAV, through `gvfs-dnssd`), and set up **folder sync** in the Tether window.
-- The window uses a light, square-cornered look from `~/.config/tether/style.css`;
-  the launcher entry starts it with `TETHER_COLOR_SCHEME=light`.
+- The window has the same square look and colours as Settings, following its theme and accent
+  colour: mbp-conf writes `~/.config/tether/style.css` from Settings' own stylesheet whenever the
+  settings change (reopen Tether's window to see a change).
 
 To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 

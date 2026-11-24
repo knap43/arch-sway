@@ -1,3 +1,9 @@
 #!/bin/sh
 # Tether (https://github.com/knap43/tether), bundled into the ISO at build time.
+# Its window follows the desktop's light/dark setting, like Settings; the
+# colours are in ~/.config/tether/style.css, written by mbp-conf.
+if [ -z "${TETHER_COLOR_SCHEME-}" ]; then
+    TETHER_COLOR_SCHEME=$(mbp-conf get THEME 2>/dev/null)
+    export TETHER_COLOR_SCHEME
+fi
 PYTHONPATH="/usr/lib/tether${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m tether "$@"
