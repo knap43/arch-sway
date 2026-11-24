@@ -216,9 +216,6 @@ for d in /opt/duckstation /opt/pcsx2; do
     install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/mbp-$n.desktop
     for i in /usr/share/pixmaps/$n.*; do [[ -f $i ]] && install -Dm644 -t "$MNT/usr/share/pixmaps" "$i"; done
 done
-# Launcher entries that shadow packages' own: mupen64plus (with a ROM picker),
-# and gpsd's xgps and xgpsspeed, hidden.
-install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/*.desktop
 
 # Zen Browser and its runtime: the Flatpak installation packed in the ISO
 if [[ -f /usr/local/share/mbp/flatpak.sfs ]]; then
@@ -234,6 +231,8 @@ if [[ -d /usr/lib/tiny-games ]]; then
     cp -a /usr/lib/tiny-games "$MNT/usr/lib/"
     install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/tiny-games-*.desktop
 fi
+# Our launcher entries, including ones that shadow packages' own: mupen64plus
+# (with a ROM picker), and gpsd's xgps and xgpsspeed, hidden.
 install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/*.desktop
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop
