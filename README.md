@@ -86,11 +86,11 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ [ / ⌘ ] | previous / next window on this workspace |
 | ⌘ arrows | focus; add ⇧ to move the window (⌘ ⇧ H J K L too) |
 | ⌘ H J K L | resize: narrower, taller, shorter, wider (hold to repeat) |
-| ⌘ ? | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ ? or Esc closes it) |
+| ⌘ / | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ / or Esc closes it) |
 | ⌘ ⇧ A / ⌘ ⇧ S | take the window to the previous / next workspace |
 | ⌘ F / ⌘ ⇧ F | fullscreen / floating |
 | ⌘ Return | tiled: this window takes the left half, the others share the right (Mango: swaps it into the master area) |
-| ⌘ / | float every window on this workspace, or tile them all again (none of the three has a true floating layout) |
+| ⌘ G | float every window on this workspace, or tile them all again (none of the three has a true floating layout) |
 | ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
 | ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
 | ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |

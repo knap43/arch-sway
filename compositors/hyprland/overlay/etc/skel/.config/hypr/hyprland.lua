@@ -255,7 +255,7 @@ local function tile_or_flip()
     end
 end
 
--- Mod+/: float every window on this workspace, or, if they all float already,
+-- Mod+G: float every window on this workspace, or, if they all float already,
 -- tile them again (Mango's toggle_all_floating; none of the three has a
 -- floating layout as such). Tab groups are broken up first.
 local function toggle_all_floating()
@@ -359,8 +359,8 @@ end
 for key, d in pairs({ H = { -20, 0 }, J = { 0, 20 }, K = { 0, -20 }, L = { 20, 0 } }) do
     bind(key, hl.dsp.window.resize({ x = d[1], y = d[2], relative = true }), { repeating = true })
 end
--- Mod+?: the keyboard shortcuts cheat sheet
-bind("SHIFT + slash", run("mbp-shortcuts --toggle"))
+-- Mod+/: the keyboard shortcuts cheat sheet
+bind("slash", run("mbp-shortcuts --toggle"))
 
 -- Drag with Mod + left button, resize with Mod + right button
 bind("mouse:272", hl.dsp.window.drag(),   { mouse = true })
@@ -392,7 +392,7 @@ bind("period",    tile_or_flip)                   -- tiled (again: flip the spli
 bind("comma",     tab_workspace)                  -- tabbed
 bind("T",         tab_workspace)                  -- (no stacked layout: tabs too)
 bind("Return",    to_left_half)                   -- tiled: this window takes the left half
-bind("slash",     toggle_all_floating)            -- float / tile every window here
+bind("G",         toggle_all_floating)            -- float / tile every window here
 bind("grave",         hl.dsp.workspace.toggle_special("scratch"))
 bind("SHIFT + grave", hl.dsp.window.move({ workspace = "special:scratch", follow = false }))
 

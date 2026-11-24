@@ -85,13 +85,13 @@ bindsym --to-code {
 floating_modifier $mod normal
 
 # ⌘+H J K L resize (narrower, taller, shorter, wider; hold to repeat), ⌘+arrows
-# focus, and Shift with either moves the window. ⌘+? opens the shortcuts cheat sheet.
+# focus, and Shift with either moves the window. ⌘+/ opens the shortcuts cheat sheet.
 bindsym --to-code {
     $mod+$left   resize shrink width 20px
     $mod+$down   resize grow height 20px
     $mod+$up     resize shrink height 20px
     $mod+$right  resize grow width 20px
-    $mod+Shift+slash  exec mbp-shortcuts --toggle
+    $mod+slash   exec mbp-shortcuts --toggle
     $mod+Left    focus left
     $mod+Down    focus down
     $mod+Up      focus up
@@ -147,7 +147,7 @@ bindsym --to-code {
     # Tiled: this window takes the left half, the rest share the right
     $mod+Return     exec sway-layout left-half
     # Float every window on this workspace, or tile them all again
-    $mod+slash      exec sway-layout float-all
+    $mod+g          exec sway-layout float-all
     $mod+r          mode "resize"
     $mod+Shift+grave  move scratchpad
     $mod+grave        scratchpad show

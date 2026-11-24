@@ -2,7 +2,7 @@
 """Layout helpers sway lacks, matching the Hyprland and Mango flavours.
 
   sway-layout float-all   float every window on this workspace, or, if they
-                          all float already, tile them again (Mod+/)
+                          all float already, tile them again (Mod+G)
   sway-layout left-half   in a tiled workspace, the focused window takes the
                           left half and the rest share the right (Mod+Return)
 """
