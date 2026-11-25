@@ -18,10 +18,10 @@ default_border pixel $border
 default_floating_border pixel $border
 gaps inner $gaps_inner
 gaps outer $gaps_outer
-# No border when one tiled window fills the screen: alone, or the current tab of a
-# tabbed container. Floating windows keep theirs. Settings can turn this off
-# (the generated sway.conf, below).
-hide_edge_borders smart
+# Every window keeps its border. Settings can drop it when one tiled window fills
+# the screen, alone or as the current tab (hide_edge_borders smart, in the
+# generated sway.conf below); floating windows always keep theirs.
+hide_edge_borders none
 focus_follows_mouse yes
 workspace_layout tabbed
 output * bg /usr/share/backgrounds/mbp/wallpaper.jpg fill #1e1e1e

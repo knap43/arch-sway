@@ -449,7 +449,7 @@ hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_
 -- No border when one tiled window fills the screen (Settings → Appearance): w[tv1]
 -- is a workspace with one visible tiled window, which includes a tab group (only its
 -- current tab is visible), f[1] one in fullscreen. Floating windows keep theirs.
-if setting("smart_borders", true) then
+if setting("smart_borders", false) then
     hl.window_rule({ name = "smart-borders", match = { float = false, workspace = "w[tv1]" }, border_size = 0 })
     hl.window_rule({ name = "smart-borders-fs", match = { float = false, workspace = "f[1]" }, border_size = 0 })
 end

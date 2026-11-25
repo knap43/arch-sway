@@ -125,8 +125,7 @@ gamemode
 lib32-gamemode
 mangohud
 lib32-mangohud
-# --- emulators: N64 and GameCube/Wii (DuckStation and PCSX2 come as unpacked
-# AppImages, see build.sh); zenity is the ROM picker for mupen64plus
+# --- emulators: N64 (DuckStation and PCSX2 come as unpacked AppImages, see
+# build.sh); zenity is the ROM picker for mupen64plus
 mupen64plus
-dolphin-emu
 zenity

@@ -67,7 +67,7 @@ SCHEMA = [
     ("ACCENT", "Appearance", "Accent colour", "choice", "blue", list(ACCENTS),
      "Focused window borders, the active tab and the bar's current workspace."),
     ("BORDER_WIDTH", "Appearance", "Border width (px)", "int", "2", (0, 10), ""),
-    ("SMART_BORDERS", "Appearance", "No borders in tabbed layout or on a lone window", "bool", "on", None,
+    ("SMART_BORDERS", "Appearance", "No borders in tabbed layout or on a lone window", "bool", "off", None,
      "Tiled windows only; floating windows always keep their border."),
     ("GAPS_INNER", "Appearance", "Gaps between windows (px)", "int", "0", (0, 40), ""),
     ("GAPS_OUTER", "Appearance", "Gaps at the screen edges (px)", "int", "0", (0, 40), ""),

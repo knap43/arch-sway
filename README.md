@@ -204,8 +204,8 @@ To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 [RetroHub](https://github.com/knap43/retrohub) is a terminal game launcher, fetched when the ISO is built.
 It scans `~/Games` (`Windows/` and `Linux/` inside it), runs Windows games through Proton via
 umu-launcher, falls back to Wine, and starts native Linux ports directly. It also plays the consoles
-below: put ROMs in `~/Games/PS1`, `PS2`, `N64`, `GameCube` or `Wii` (sub-folders are categories), and
-RetroHub starts them fullscreen in DuckStation, PCSX2, Mupen64Plus or Dolphin. Open it from the launcher
+below: put ROMs in `~/Games/PS1`, `PS2` or `N64` (sub-folders are categories), and RetroHub starts
+them fullscreen in DuckStation, PCSX2 or Mupen64Plus. Open it from the launcher
 or run `retrohub` (fish completions included); `retrohub doctor` shows the paths and runners.
 
 - **Proton needs Vulkan**, so it works on the ThinkPad (HD 520) but not on the MacBook (HD 3000 has
@@ -224,14 +224,13 @@ To build with a different copy: `RETROHUB_REPO=/path/or/url ./build.sh`.
 | PlayStation | [DuckStation](https://github.com/stenzek/duckstation) | its AppImage, unpacked into `/opt/duckstation` |
 | PlayStation 2 | [PCSX2](https://github.com/PCSX2/pcsx2) | its AppImage (latest stable), unpacked into `/opt/pcsx2` |
 | Nintendo 64 | mupen64plus | Arch package; the launcher entry asks for a ROM (Esc quits) |
-| GameCube and Wii | Dolphin | Arch package (`dolphin-emu`) |
 
 `build.sh` downloads the two AppImages (cached in `./cache`), checks them against the SHA-256 GitHub
 records for each release asset, and unpacks them, so they need no FUSE and start a little quicker. If
 one can't be fetched or verified, the ISO is built without it. They update with the next ISO build.
 
 DuckStation and PCSX2 need a BIOS dumped from your own console; point them at it on first start.
-PCSX2 and Dolphin ask a lot of the graphics, so expect the ThinkPad to manage far more than the MacBook.
+PCSX2 asks a lot of the graphics, so expect the ThinkPad to manage far more than the MacBook.
 
 ## toofan (typing practice)
 
