@@ -360,6 +360,43 @@ if command -v flatpak >/dev/null; then
         [[ -n $branch ]] && fp install -y --noninteractive --or-update flathub \
             "org.freedesktop.Platform.VAAPI.Intel//$branch" || true
         fp uninstall -y --noninteractive --unused || true
+        # Extensions, through Zen's system-config extension point (mounted in the
+        # sandbox at /app/etc/zen): the .xpi files and a policies.json that installs
+        # them once from those files, so they work offline from the first start;
+        # users can remove them, and they update from addons.mozilla.org. Zen's
+        # own policies (the app's distribution/policies.json) are kept, merged in.
+        # ZEN_EXTENSIONS=... lists addons.mozilla.org slugs.
+        ZEN_EXTENSIONS=${ZEN_EXTENSIONS:-ublock-origin vimium-ff}
+        branch_app=$(fp info "$ZEN_APP" 2>/dev/null | awk -F': *' '/^ *Branch:/ {print $2; exit}')
+        zen_sys="$FP/extension/$ZEN_APP.systemconfig/x86_64/${branch_app:-stable}"
+        sudo rm -rf "$zen_sys"
+        sudo install -d "$zen_sys/extensions" "$zen_sys/policies"
+        zen_xpis=()
+        for slug in $ZEN_EXTENSIONS; do
+            xpi="$WORK/zen-$slug.xpi"
+            if curl -fsSL -o "$xpi" "https://addons.mozilla.org/firefox/downloads/latest/$slug/latest.xpi" \
+                && python3 -c 'import sys, zipfile; sys.exit(zipfile.ZipFile(sys.argv[1]).testzip() is not None)' "$xpi" 2>/dev/null; then
+                sudo install -m644 "$xpi" "$zen_sys/extensions/$slug.xpi"
+                zen_xpis+=("/app/etc/zen/extensions/$slug.xpi")
+            else
+                echo "!! Couldn't download the Zen extension $slug; leaving it out" >&2
+            fi
+        done
+        zen_dist="$FP/app/$ZEN_APP/current/active/files/bin/distribution/policies.json"
+        [[ -f $zen_dist ]] || zen_dist=""
+        python3 - "${zen_dist:-}" "${zen_xpis[@]}" > "$WORK/zen-policies.json" <<'PYEOF'
+import json, sys
+base = {"policies": {}}
+if sys.argv[1]:
+    try:
+        base = json.load(open(sys.argv[1]))
+    except (OSError, ValueError):
+        pass
+ext = base.setdefault("policies", {}).setdefault("Extensions", {})
+ext["Install"] = list(dict.fromkeys(ext.get("Install", []) + sys.argv[2:]))
+json.dump(base, sys.stdout, indent=2)
+PYEOF
+        sudo install -m644 "$WORK/zen-policies.json" "$zen_sys/policies/policies.json"
         # Links that point into the build path would dangle on the ISO.
         sudo find "$FP" -lname "$FP/*" -print0 | while IFS= read -r -d '' l; do
             t=$(readlink "$l"); sudo ln -sfn "/var/lib/flatpak/${t#"$FP/"}" "$l"
