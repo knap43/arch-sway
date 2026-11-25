@@ -1,0 +1,3 @@
+#!/bin/sh
+# RetroHub (https://github.com/knap43/retrohub), bundled into the ISO at build time.
+PYTHONPATH=/usr/lib/retrohub exec python3 -m retrohub "$@"

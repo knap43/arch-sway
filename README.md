@@ -199,14 +199,14 @@ remote shell start switched off, as Tether ships them (remote control needs GNOM
 
 To build with a different copy of Tether: `TETHER_REPO=/path/or/url ./build.sh`.
 
-## Hearth (game launcher)
+## RetroHub (game launcher)
 
-[Hearth](https://github.com/knap43/hearth) is a terminal game launcher, fetched when the ISO is built.
+[RetroHub](https://github.com/knap43/retrohub) is a terminal game launcher, fetched when the ISO is built.
 It scans `~/Games` (`Windows/` and `Linux/` inside it), runs Windows games through Proton via
 umu-launcher, falls back to Wine, and starts native Linux ports directly. It also plays the consoles
 below: put ROMs in `~/Games/PS1`, `PS2`, `N64`, `GameCube` or `Wii` (sub-folders are categories), and
-Hearth starts them fullscreen in DuckStation, PCSX2, Mupen64Plus or Dolphin. Open it from the launcher
-or run `hearth` (fish completions included); `hearth doctor` shows the paths and runners.
+RetroHub starts them fullscreen in DuckStation, PCSX2, Mupen64Plus or Dolphin. Open it from the launcher
+or run `retrohub` (fish completions included); `retrohub doctor` shows the paths and runners.
 
 - **Proton needs Vulkan**, so it works on the ThinkPad (HD 520) but not on the MacBook (HD 3000 has
   no Vulkan driver). There, set a game's runner to *Wine* with `e`, or rely on native ports.
@@ -215,7 +215,7 @@ or run `hearth` (fish completions included); `hearth doctor` shows the paths and
   installed; users are in the `gamemode` group.
 - The multilib repository is enabled on the installed system for umu-launcher and the 32-bit drivers.
 
-To build with a different copy: `HEARTH_REPO=/path/or/url ./build.sh`.
+To build with a different copy: `RETROHUB_REPO=/path/or/url ./build.sh`.
 
 ## Emulators
 

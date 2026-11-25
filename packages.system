@@ -111,13 +111,13 @@ python-httpx
 libpulse
 yt-dlp
 ethtool
-# Hearth's interface (Textual, which brings rich)
+# RetroHub's interface (Textual, which brings rich)
 python-textual
 # Settings: display layout and the graphics card's name
 wlr-randr
 pciutils
 
-# --- games: Hearth's runners and extras (multilib is enabled for these) ---
+# --- games: RetroHub's runners and extras (multilib is enabled for these) ---
 umu-launcher
 wine
 winetricks

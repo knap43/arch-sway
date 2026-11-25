@@ -192,9 +192,9 @@ for f in /usr/local/bin/*; do
     case ${f##*/} in mbp-install|live-user-setup|live-welcome|mbp-flatpak-live) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
-cp -a /usr/lib/hearth "$MNT/usr/lib/"
-install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/hearth.desktop
-install -Dm644 -t "$MNT/usr/share/fish/vendor_completions.d" /usr/share/fish/vendor_completions.d/hearth.fish
+cp -a /usr/lib/retrohub "$MNT/usr/lib/"
+install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/retrohub.desktop
+install -Dm644 -t "$MNT/usr/share/fish/vendor_completions.d" /usr/share/fish/vendor_completions.d/retrohub.fish
 cp -a /usr/lib/mbp-settings "$MNT/usr/lib/"
 install -Dm644 -t "$MNT/usr/share/glib-2.0/schemas" /usr/share/glib-2.0/schemas/90-mbp.gschema.override
 arch-chroot "$MNT" glib-compile-schemas /usr/share/glib-2.0/schemas   # Mousepad defaults
