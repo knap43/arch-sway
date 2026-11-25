@@ -453,5 +453,3 @@ if setting("smart_borders", true) then
     hl.window_rule({ name = "smart-borders-fs", match = { float = false, workspace = "f[1]" }, border_size = 0 })
 end
 
--- Managed by wmai (keep this last so its settings win)
-require("ai")

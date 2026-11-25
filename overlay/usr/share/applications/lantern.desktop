@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Lantern
-Comment=Text RPG with a local AI Dungeon Master
-Exec=foot --app-id=lantern --title=Lantern /usr/local/bin/lantern
-Icon=applications-games
-Terminal=false
-Categories=Game;RolePlaying;
-Keywords=rpg;text;adventure;llm;

@@ -192,13 +192,9 @@ for f in /usr/local/bin/*; do
     case ${f##*/} in mbp-install|live-user-setup|live-welcome|mbp-flatpak-live) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
 done
 cp -a /usr/lib/tether "$MNT/usr/lib/"
-cp -a /usr/lib/lantern "$MNT/usr/lib/"
 cp -a /usr/lib/hearth "$MNT/usr/lib/"
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/hearth.desktop
 install -Dm644 -t "$MNT/usr/share/fish/vendor_completions.d" /usr/share/fish/vendor_completions.d/hearth.fish
-[[ -d /usr/share/lantern ]] && cp -a /usr/share/lantern "$MNT/usr/share/"
-install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/lantern.desktop
-cp -a /usr/lib/wmai "$MNT/usr/lib/"
 cp -a /usr/lib/mbp-settings "$MNT/usr/lib/"
 install -Dm644 -t "$MNT/usr/share/glib-2.0/schemas" /usr/share/glib-2.0/schemas/90-mbp.gschema.override
 arch-chroot "$MNT" glib-compile-schemas /usr/share/glib-2.0/schemas   # Mousepad defaults
@@ -206,8 +202,6 @@ install -Dm644 -t "$MNT/usr/local/share/mbp" /usr/local/share/mbp/README.md   # 
 install -Dm644 -t "$MNT/usr/local/share/mbp" /usr/local/share/mbp/gtklock.ui  # the lock screen's layout
 install -Dm644 /etc/xdg/user-dirs.conf "$MNT/etc/xdg/user-dirs.conf"  # no Desktop, Documents, ... made at login
 install -Dm644 -t "$MNT/usr/share/polkit-1/actions" /usr/share/polkit-1/actions/org.mbp.settings.policy
-[[ -d /usr/share/wmai ]] && cp -a /usr/share/wmai "$MNT/usr/share/"
-install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/wmai-server.service
 # Emulators unpacked from AppImages (DuckStation, PCSX2), when the ISO has them
 for d in /opt/duckstation /opt/pcsx2; do
     [[ -d $d ]] || continue
