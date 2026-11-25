@@ -1,0 +1,8 @@
+[Desktop Entry]
+# Zathura, kept out of the launcher: documents open in it from Thunar and the
+# like. This entry lists no file types; the default for PDFs is the MuPDF
+# backend's own (hidden) entry, org.pwmt.zathura-pdf-mupdf.desktop.
+Type=Application
+Name=Zathura
+Hidden=true
+NoDisplay=true
