@@ -204,15 +204,18 @@ def apps_page(win, conf):
     p = page("Default apps", "preferences-desktop-apps-symbolic")
     g = group(p, "Open with", "What opens links and files of each kind.")
     for title, mimes in DEFAULTS:
+        current = Gio.AppInfo.get_default_for_type(mimes[0], False)
         apps, seen = [], set()
         for m in mimes:
             for a in Gio.AppInfo.get_all_for_type(m):
-                if a.get_id() not in seen and a.should_show():
+                # Hidden entries are skipped, except the current default: some
+                # apps register their file types only on one (Zathura's backend).
+                hidden = not a.should_show() and not (current and a.equal(current))
+                if a.get_id() not in seen and not hidden:
                     seen.add(a.get_id())
                     apps.append(a)
         if not apps:
             continue
-        current = Gio.AppInfo.get_default_for_type(mimes[0], False)
         row = Adw.ComboRow(title=title)
         row.set_model(Gtk.StringList.new([a.get_display_name() for a in apps]))
         ids = [a.get_id() for a in apps]
