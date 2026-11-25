@@ -1,0 +1,7 @@
+[Desktop Entry]
+# Hidden from the launcher: vim runs from a terminal (or RetroHub, for winetricks).
+# This entry shadows the package's own one.
+Type=Application
+Name=vim
+Hidden=true
+NoDisplay=true

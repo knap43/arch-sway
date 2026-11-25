@@ -18,3 +18,14 @@ image/webp=org.xfce.ristretto.desktop
 image/bmp=org.xfce.ristretto.desktop
 image/tiff=org.xfce.ristretto.desktop
 image/svg+xml=org.xfce.ristretto.desktop
+# Archives in Xarchiver
+application/zip=xarchiver.desktop
+application/x-tar=xarchiver.desktop
+application/x-7z-compressed=xarchiver.desktop
+application/vnd.rar=xarchiver.desktop
+application/x-rar=xarchiver.desktop
+application/gzip=xarchiver.desktop
+application/x-compressed-tar=xarchiver.desktop
+application/x-xz-compressed-tar=xarchiver.desktop
+application/x-zstd-compressed-tar=xarchiver.desktop
+application/x-bzip2-compressed-tar=xarchiver.desktop

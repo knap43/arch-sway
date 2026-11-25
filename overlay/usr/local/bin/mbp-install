@@ -227,7 +227,8 @@ if [[ -d /usr/lib/tiny-games ]]; then
 fi
 # Our launcher entries, including ones that shadow packages' own: mupen64plus
 # (with a ROM picker); hidden: gpsd's xgps and xgpsspeed, the network,
-# Bluetooth and volume tools that Settings opens itself, Zathura and Ristretto.
+# Bluetooth and volume tools that Settings opens itself, Zathura, Ristretto,
+# Xarchiver, vim and winetricks.
 install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/*.desktop
 install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
 install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop

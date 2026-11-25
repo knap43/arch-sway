@@ -1,0 +1,17 @@
+[Desktop Entry]
+# Xarchiver, kept out of the launcher: archives open in it from Thunar (it's the
+# default for them, and Thunar's Extract/Create archive entries use it). A full
+# copy of the package's entry with NoDisplay, so it stays usable as the default,
+# and without the document, disc-image and AppImage types it also claims (EPUB,
+# ODT, DOCX, ISO...), so those don't open as archives.
+Type=Application
+Name=Xarchiver
+GenericName=Archive manager
+Comment=Create, extract and modify archives
+Icon=xarchiver
+Exec=xarchiver %f
+StartupNotify=true
+Terminal=false
+Categories=GTK;Utility;Archiving;Compression;
+MimeType=application/gzip;application/java-archive;application/vnd.android.app-bundle;application/vnd.android.package-archive;application/vnd.bzip3;application/vnd.comicbook-rar;application/vnd.comicbook+zip;application/vnd.debian.binary-package;application/vnd.ms-cab-compressed;application/vnd.rar;application/x-7z-compressed;application/x-archive;application/x-arj;application/x-bzip;application/x-bzip-compressed-tar;application/x-bzip1;application/x-bzip1-compressed-tar;application/x-bzip2;application/x-bzip2-compressed-tar;application/x-bzip3;application/x-bzip3-compressed-tar;application/x-cb7;application/x-cbt;application/x-compress;application/x-compressed-tar;application/x-cpio;application/x-cpio-compressed;application/x-java-archive;application/x-lha;application/x-lrzip;application/x-lrzip-compressed-tar;application/x-lz4;application/x-lz4-compressed-tar;application/x-lzip;application/x-lzip-compressed-tar;application/x-lzma;application/x-lzma-compressed-tar;application/x-lzop;application/x-rar;application/x-rpm;application/x-rzip;application/x-rzip-compressed-tar;application/x-source-rpm;application/x-tar;application/x-tarz;application/x-tzo;application/x-xpinstall;application/x-xz;application/x-xz-compressed-tar;application/x-zip-compressed-fb2;application/x-zpaq;application/x-zstd-compressed-tar;application/zip;application/zstd;
+NoDisplay=true
