@@ -45,7 +45,6 @@ hl.config({
     },
     decoration = {
         rounding = setting("rounding", 0),
-        inactive_opacity = setting("inactive_opacity", 1),
         -- When on (Settings → Appearance): a small, faint shadow, not Hyprland's dark default
         shadow = { enabled = setting("shadows", false), range = 6, render_power = 3,
                    color = "rgba(00000040)" },

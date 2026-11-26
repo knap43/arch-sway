@@ -18,7 +18,6 @@ return {
     animations = false,
     blur = false,
     shadows = false,
-    inactive_opacity = 1,
     sensitivity = 0,
     left_handed = false,
     disable_while_typing = true,

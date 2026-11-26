@@ -105,8 +105,8 @@ SCHEMA = [
      FX + " Windows only: the launcher, menus, bar and notifications always appear at once."),
     ("BLUR", "Appearance", "Blur behind transparent windows", "bool", "off", None, FX),
     ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
-    ("INACTIVE_OPACITY", "Appearance", "Opacity of unfocused windows", "choice", "1",
-     ["1", "0.95", "0.9", "0.85", "0.8"], FX.split(" Costs")[0]),
+    ("TERMINAL_OPACITY", "Appearance", "Terminal (foot) opacity", "choice", "1",
+     ["1", "0.95", "0.9", "0.85", "0.8", "0.7"], "The background only; text stays opaque. New terminals."),
     ("NOTIFY_TIMEOUT", "Notifications", "Hide notifications after (seconds, 0 = never)", "int", "2", (0, 120), ""),
     ("NOTIFY_POSITION", "Notifications", "Position", "choice", "top-right",
      ["top-right", "top-center", "top-left", "bottom-right", "bottom-center", "bottom-left"], ""),
@@ -260,7 +260,8 @@ def accent(v):
 def foot_colours(v):
     """The terminal's colours for the theme (foot.ini includes this file)."""
     t = THEMES[v["COLOUR_THEME"]]
-    lines = [f"# {HEADER}", "[colors-dark]", f"background={t['background']}", f"foreground={t['foreground']}"]
+    lines = [f"# {HEADER}", "[colors-dark]", f"background={t['background']}", f"foreground={t['foreground']}",
+             f"alpha={v['TERMINAL_OPACITY']}"]
     lines += [f"regular{i}={c}" for i, c in enumerate(t["colours"][:8])]
     lines += [f"bright{i}={c}" for i, c in enumerate(t["colours"][8:])]
     bg, fg = accent(v)
@@ -397,7 +398,6 @@ def hyprland_lua(v):
         f"    animations = {str(on(v, 'ANIMATIONS')).lower()},",
         f"    blur = {str(on(v, 'BLUR')).lower()},",
         f"    shadows = {str(on(v, 'SHADOWS')).lower()},",
-        f"    inactive_opacity = {v['INACTIVE_OPACITY']},",
         f"    sensitivity = {accel(v)},",
         f"    left_handed = {str(on(v, 'LEFT_HANDED')).lower()},",
         f"    disable_while_typing = {str(on(v, 'DISABLE_WHILE_TYPING')).lower()},",
@@ -437,7 +437,6 @@ def mango_conf(v):
               "layer_animations=0",          # menus, bar, notifications: always instant
               f"blur={1 if on(v, 'BLUR') else 0}",
               f"shadows={1 if on(v, 'SHADOWS') else 0}",
-              f"unfocused_opacity={v['INACTIVE_OPACITY']}",
               f"focus_color=0x{bg}ff", f"scratchpad_color=0x{bg}ff",
               f"tab_bar_decorate_focus_bg_color=0x{bg}ff",
               f"tab_bar_decorate_focus_fg_color=0x{fg}ff",
