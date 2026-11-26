@@ -176,8 +176,9 @@ for_window [app_id="org.mbp.Settings"] floating enable, resize set 1020 700, mov
 # ---- Bar ---------------------------------------------------------------------
 bar {
     position top
-    status_command i3status
-    font pango:JetBrains Mono 9
+    # i3status, plus a Bluetooth icon (mbp-bar-status)
+    status_command mbp-bar-status
+    font pango:JetBrains Mono, Symbols Nerd Font 9
     tray_output *
     # From the theme and accent colour (Mod+T, Settings → Appearance; sway-vars.conf)
     colors {

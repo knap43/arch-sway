@@ -4,7 +4,7 @@
 
 /* Waybar (Hyprland and Mango flavours), styled like the sway flavour's bar. */
 * {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "JetBrains Mono", "Symbols Nerd Font", monospace;
     font-size: 12px;
     min-height: 0;
     border: none;
@@ -33,11 +33,12 @@ window#waybar {
     background: @bar_urgent;
 }
 
-#wireplumber, #battery, #cpu, #memory, #clock, #tray, #keymode {
+#network, #bluetooth, #wireplumber, #battery, #cpu, #memory, #clock, #tray, #keymode {
     padding: 0 8px;
 }
 
 #wireplumber.muted { color: @bar_dim; }
+#network.disconnected, #network.disabled, #bluetooth.off, #bluetooth.disabled { color: @bar_dim; }
 #battery.warning:not(.charging) { color: @bar_warn; }
 #battery.critical:not(.charging) { color: @bar_urgent; }
 #keymode { background: @accent; color: @accent_text; }

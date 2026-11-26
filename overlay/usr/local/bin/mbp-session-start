@@ -26,9 +26,12 @@ gsettings set org.gnome.desktop.interface text-scaling-factor "$(mbp-conf get TE
 
 bg mako
 bg /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-bg nm-applet --indicator
 bg wl-paste --watch cliphist store
 bg udiskie --smart-tray
+# Wi-Fi and Bluetooth are icons in the bar (click: Settings), so the applets
+# draw none: nm-applet isn't started (Settings asks for Wi-Fi passwords), and
+# blueman-applet runs without its tray icon, for pairing prompts and transfers.
+gsettings set org.blueman.general plugin-list "['!StatusIcon']" 2>/dev/null
 bg blueman-applet
 bg mbp-battery-watch
 bg mbp-nightlight start

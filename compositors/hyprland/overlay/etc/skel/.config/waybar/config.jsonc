@@ -9,6 +9,8 @@
     ],
     "modules-center": [],
     "modules-right": [
+        "network",
+        "bluetooth",
         "wireplumber",
         "battery",
         "cpu",
@@ -19,6 +21,30 @@
     "hyprland/workspaces": {
         "format": "{name}",
         "on-click": "activate"
+    },
+    "network": {
+        // Nerd Font icons (Symbols Nerd Font): signal strength, wired, or off
+        "format-wifi": "{icon}",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "format-ethernet": "󰈀",
+        "format-linked": "󰤯",
+        "format-disconnected": "󰤮",
+        "format-disabled": "󰤮",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+        "tooltip-format-ethernet": "{ifname}: {ipaddr}",
+        "tooltip-format-disconnected": "Not connected",
+        "on-click": "mbp-settings network"
+    },
+    "bluetooth": {
+        "format": "󰂯",
+        "format-connected": "󰂱",
+        "format-off": "󰂲",
+        "format-disabled": "󰂲",
+        "format-no-controller": "",
+        "tooltip-format": "Bluetooth: {status}",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}",
+        "on-click": "mbp-settings bluetooth"
     },
     "wireplumber": {
         "format": "VOL {volume}%",

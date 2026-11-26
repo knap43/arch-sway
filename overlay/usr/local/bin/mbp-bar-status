@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""The sway bar's status line: i3status's, with a Bluetooth icon put in after the
+network ones (i3status has no Bluetooth module). Icons: Symbols Nerd Font."""
+import json
+import subprocess
+import sys
+import time
+
+ON, CONNECTED, OFF = "\U000f00af", "\U000f00b1", "\U000f00b2"
+_cache = [0.0, None]
+
+
+def bluetooth():
+    """The Bluetooth block, or None without an adapter; checked every 5 s."""
+    if time.monotonic() - _cache[0] < 5:
+        return _cache[1]
+    block = None
+    try:
+        show = subprocess.run(["bluetoothctl", "show"], capture_output=True, text=True, timeout=2).stdout
+        if "Controller" in show:
+            if "Powered: yes" not in show:
+                block = {"name": "bluetooth", "full_text": OFF, "color": "#888888"}
+            else:
+                conn = subprocess.run(["bluetoothctl", "devices", "Connected"],
+                                      capture_output=True, text=True, timeout=2).stdout
+                block = {"name": "bluetooth", "full_text": CONNECTED if conn.strip() else ON}
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    _cache[:] = [time.monotonic(), block]
+    return block
+
+
+def main():
+    proc = subprocess.Popen(["i3status"], stdout=subprocess.PIPE, text=True, bufsize=1)
+    for line in proc.stdout:
+        body = line.lstrip(",")
+        prefix = line[: len(line) - len(body)]
+        if body.startswith("[{"):
+            try:
+                blocks = json.loads(body)
+            except ValueError:
+                blocks = None
+            if blocks is not None:
+                bt = bluetooth()
+                if bt:
+                    at = sum(1 for b in blocks if b.get("name") in ("wireless", "ethernet"))
+                    blocks.insert(at, bt)
+                line = prefix + json.dumps(blocks, ensure_ascii=False) + "\n"
+        sys.stdout.write(line)
+        sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (BrokenPipeError, KeyboardInterrupt):
+        pass

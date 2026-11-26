@@ -8,7 +8,7 @@ There are three flavours. Each has the same apps, keys and look; only the compos
 
 | Flavour | Compositor | New workspaces open | Bar |
 |---|---|---|---|
-| `sway` (default) | sway | tabbed | swaybar + i3status |
+| `sway` (default) | sway | tabbed | swaybar + i3status (+ a Bluetooth icon) |
 | `hyprland` | Hyprland 0.57 (Lua config) | tabbed | Waybar |
 | `mango` | Mango (mangowm) 0.18 | tabbed | Waybar |
 
@@ -42,7 +42,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 2. The session starts automatically (user `live`, no password) and a **welcome window** opens.
    It shows the essential shortcuts and what the installer will do:
    - **Installing needs no internet.** Every package is on the stick, so the installer works offline.
-   - **W** picks a Wi-Fi network (or use the network icon in the bar). Networks you join here are
+   - **W** picks a Wi-Fi network (or Settings → Network). Networks you join here are
      saved in the new system **with their passwords**.
    - **K** lists every shortcut for this flavour.
    - **Enter** starts the installer. It asks for disk, hostname, user, password, timezone and
@@ -58,12 +58,12 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 | Area | Choice |
 |---|---|
 | Graphics | Intel HD 3000 (MacBook, Mesa crocus) and HD 520 (ThinkPad, Mesa iris), early KMS, VA-API video decoding, Xwayland |
-| Wi-Fi | NetworkManager + nm-applet. MacBook: `broadcom-wl-dkms` (BCM4331, built for the kernel at install); ThinkPad: iwlwifi from `linux-firmware`. `wheel` users manage networks without a password prompt, and Wi-Fi passwords are stored system-wide |
+| Wi-Fi | NetworkManager, managed in Settings; its icon in the bar shows the signal (Hyprland, Mango: click for Settings, hover for the network). MacBook: `broadcom-wl-dkms` (BCM4331, built for the kernel at install); ThinkPad: iwlwifi from `linux-firmware`. `wheel` users manage networks without a password prompt, and Wi-Fi passwords are stored system-wide |
 | Session | sway, Hyprland or Mango; swayidle/gtklock, mako, fuzzel, foot, wob popups |
 | Shell | fish (starts the compositor on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |
 | Power | TLP, zram swap (zstd); lock at 5 min idle, screen off at 10, suspend at 15 on battery; battery warnings at 15% and 5% |
-| Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth tray (blueman), touchpad tap-to-click, TrackPoint |
+| Devices | USB drives auto-mount (udiskie, tray icon), Bluetooth in Settings with an icon in the bar (on, off, connected; blueman handles pairing prompts and file transfers), touchpad tap-to-click, TrackPoint |
 | Apps | btop, fastfetch, nnn (terminal file manager), Flatpak (Flathub added; apps show up in the launcher), Zen Browser (Flatpak, preinstalled with uBlock Origin and Vimium; `ZEN_EXTENSIONS=` at build time changes the list), mpv (hardware decoding on; F7–F9 control it via mpv-mpris), kew (terminal music player; F7–F9 control it), Thunar, Ristretto, Zathura, Mousepad, Xarchiver |
 | Dev | git, base-devel, vim, Python + PyGObject, GTK 4, libadwaita |
 | Boot | systemd-boot on UEFI (GRUB if booted in legacy/BIOS mode) |

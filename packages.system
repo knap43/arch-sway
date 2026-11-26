@@ -74,6 +74,8 @@ fish
 noto-fonts
 noto-fonts-emoji
 ttf-jetbrains-mono
+# icons in the bar (Wi-Fi, Bluetooth): Nerd Font symbols only
+ttf-nerd-fonts-symbols
 
 # --- applications ---
 mpv

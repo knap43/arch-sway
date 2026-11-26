@@ -3,12 +3,24 @@ general {
     interval = 5
 }
 
+# Wi-Fi and wired as Nerd Font icons (Symbols Nerd Font); Bluetooth's icon is
+# added by mbp-bar-status, which the bar runs around i3status.
+order += "wireless _first_"
+order += "ethernet _first_"
 order += "volume master"
 order += "battery all"
 order += "cpu_usage"
 order += "memory"
 order += "tztime local"
 
+wireless _first_ {
+    format_up = "󰤨"
+    format_down = "󰤮"
+}
+ethernet _first_ {
+    format_up = "󰈀"
+    format_down = ""
+}
 volume master {
     format = "VOL %volume"
     format_muted = "VOL muted"
