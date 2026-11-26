@@ -1,4 +1,5 @@
-/* The accent colour from the desktop settings (mbp-settings) */
+/* The bar's colours come from the theme and accent colour (Mod+T, Settings →
+   Appearance): mbp-conf writes them to this file as named colours. */
 @import url("../mbp/generated/waybar.css");
 
 /* Waybar (Hyprland and Mango flavours), styled like the sway flavour's bar. */
@@ -11,32 +12,32 @@
 }
 
 window#waybar {
-    background: #1e1e1e;
-    color: #cccccc;
+    background: @bar_bg;
+    color: @bar_fg;
 }
 
 #workspaces button {
     padding: 0 8px;
-    color: #888888;
+    color: @bar_dim;
     background: transparent;
 }
 
 #workspaces button.active,
 #workspaces button.focused {
-    color: #ffffff;
-    background: #5e81ac;
+    color: @accent_text;
+    background: @accent;
 }
 
 #workspaces button.urgent {
-    color: #ffffff;
-    background: #bf616a;
+    color: @bar_bg;
+    background: @bar_urgent;
 }
 
 #wireplumber, #battery, #cpu, #memory, #clock, #tray, #keymode {
     padding: 0 8px;
 }
 
-#wireplumber.muted { color: #888888; }
-#battery.warning:not(.charging) { color: #ebcb8b; }
-#battery.critical:not(.charging) { color: #bf616a; }
-#keymode { background: #5e81ac; color: #ffffff; }
+#wireplumber.muted { color: @bar_dim; }
+#battery.warning:not(.charging) { color: @bar_warn; }
+#battery.critical:not(.charging) { color: @bar_urgent; }
+#keymode { background: @accent; color: @accent_text; }

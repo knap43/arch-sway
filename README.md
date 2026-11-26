@@ -156,10 +156,10 @@ Focus follows the mouse pointer, displays 1080p or taller are scaled 1.5× and b
 Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
 `/usr/share/backgrounds/mbp/wallpaper.jpg`.
 
-**Themes** (⌘ T, or *Settings* → Appearance → Theme) set the terminal and menu (fuzzel) colours,
-the accent colour and the wallpaper together: *Default* is the look described here; *Everforest* uses the
+**Themes** (⌘ T, or *Settings* → Appearance → Theme) set the colours of the terminal, the menus (fuzzel)
+and the bar, the accent colour and the wallpaper together: *Default* is the look described here; *Everforest* uses the
 [Everforest](https://github.com/sainnhe/everforest) dark palette in the terminal, its green as the
-accent and a foggy forest (`/usr/share/backgrounds/mbp/everforest.jpg`). Menus change at once and
+accent and a foggy forest (`/usr/share/backgrounds/mbp/everforest.jpg`). Menus and the bar change at once;
 terminals opened afterwards get the new colours; the accent and wallpaper can still be changed on their own. `mbp-conf theme NAME`
 does it from a shell. Themes live in `THEMES` in `mbp-conf`. The fish prompt is `[$PWD]$`, set in
 `~/.config/fish/functions/fish_prompt.fish`.

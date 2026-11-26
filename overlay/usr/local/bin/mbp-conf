@@ -45,12 +45,15 @@ THEMES = {
     "default": {
         "label": "Default", "accent": "blue", "wallpaper": f"{WALLPAPERS}/wallpaper.jpg",
         "background": "1e1e1e", "foreground": "d8d8d8", "dim": "8a8a8a", "match": "81a1c1",
+        # the bar: its text, a raised background (other screens' workspaces), separators
+        "bar_text": "cccccc", "raised": "3b3b3b", "line": "444444", "warn": "ebcb8b", "urgent": "bf616a",
         "colours": ["2a2a2a", "bf616a", "a3be8c", "ebcb8b", "5e81ac", "b48ead", "88c0d0", "d8d8d8",
                     "4c4c4c", "d08770", "b5d19c", "f0d399", "81a1c1", "c895bf", "8fbcbb", "ffffff"],
     },
     "everforest": {          # Everforest dark, medium (github.com/sainnhe/everforest)
         "label": "Everforest", "accent": "everforest", "wallpaper": f"{WALLPAPERS}/everforest.jpg",
         "background": "2d353b", "foreground": "d3c6aa", "dim": "859289", "match": "dbbc7f",
+        "bar_text": "d3c6aa", "raised": "475258", "line": "475258", "warn": "dbbc7f", "urgent": "e67e80",
         "colours": ["475258", "e67e80", "a7c080", "dbbc7f", "7fbbb3", "d699b6", "83c092", "d3c6aa",
                     "859289", "e67e80", "a7c080", "dbbc7f", "7fbbb3", "d699b6", "83c092", "f2efdf"],
     },
@@ -282,6 +285,10 @@ def sway_vars(v):
         f"# {HEADER}",
         f"set $accent #{bg}",
         f"set $accent_text #{fg}",
+        # the bar's colours, from the theme
+        *(f"set $bar_{k} #{THEMES[v['COLOUR_THEME']][key]}" for k, key in
+          (("bg", "background"), ("text", "bar_text"), ("dim", "dim"), ("raised", "raised"),
+           ("line", "line"), ("urgent", "urgent"))),
         f"set $border {v['BORDER_WIDTH']}",
         f"set $gaps_inner {v['GAPS_INNER']}",
         f"set $gaps_outer {v['GAPS_OUTER']}",
@@ -461,11 +468,12 @@ def mango_conf(v):
 
 
 def waybar_css(v):
+    """The bar's colours, from the theme and accent; waybar/style.css uses them."""
+    t = THEMES[v["COLOUR_THEME"]]
     bg, fg = accent(v)
-    return (f"/* {HEADER} */\n"
-            "window#waybar #workspaces button.active,\n"
-            "window#waybar #workspaces button.focused {\n"
-            f"    background: #{bg};\n    color: #{fg};\n}}\n")
+    colours = {"bar_bg": t["background"], "bar_fg": t["bar_text"], "bar_dim": t["dim"], "bar_warn": t["warn"],
+               "bar_urgent": t["urgent"], "accent": bg, "accent_text": fg}
+    return f"/* {HEADER} */\n" + "".join(f"@define-color {k} #{c};\n" for k, c in colours.items())
 
 
 def mako_conf(v):
