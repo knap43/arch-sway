@@ -488,8 +488,6 @@ hl.window_rule({ name = "live-welcome", match = { class = "^live-welcome$" },
                  float = true, size = "780 560", center = true })
 hl.window_rule({ name = "mbp-shortcuts", match = { class = "^mbp-shortcuts$" },
                  float = true, size = "820 640", center = true })
-hl.window_rule({ name = "settings", match = { class = "^org\\.mbp\\.Settings$" },
-                 float = true, size = "1020 700", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
 
 -- No border when one tiled window fills the screen (Settings → Appearance): w[tv1]
