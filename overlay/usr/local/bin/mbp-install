@@ -346,6 +346,7 @@ fi
 
 echo
 info "Installation complete."
-echo "   Power off (sudo poweroff), and only once the machine is off remove the USB stick:"
-echo "   the live system runs from it until the very end. Then turn it back on."
+echo "   Reboot (sudo reboot). Remove the USB stick only once the screen has gone dark or"
+echo "   shows the maker's logo: the live system runs from it until the very end. If it starts"
+echo "   the live system again, remove the stick and reboot once more."
 echo "   Log in as '$USERNAME' on the console — the desktop starts by itself."
