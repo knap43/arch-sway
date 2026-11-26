@@ -8,7 +8,8 @@ Tether looks the same.
 # name: (background, the text colour that reads on it); mbp-conf has the same.
 ACCENTS = {"blue": ("#5e81ac", "#ffffff"), "teal": ("#88c0d0", "#1e1e1e"), "green": ("#a3be8c", "#1e1e1e"),
            "yellow": ("#ebcb8b", "#1e1e1e"), "orange": ("#d08770", "#1e1e1e"), "red": ("#bf616a", "#ffffff"),
-           "purple": ("#b48ead", "#1e1e1e"), "grey": ("#6b6b6b", "#ffffff")}
+           "purple": ("#b48ead", "#1e1e1e"), "grey": ("#6b6b6b", "#ffffff"),
+           "everforest": ("#a7c080", "#2d353b")}
 
 # Each theme names libadwaita's colours plus the few of our own (mbp_*) that
 # the rules below use, so the two themes differ only here.

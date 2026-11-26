@@ -79,6 +79,18 @@ class Conf:
     def on_change(self, key, callback):
         self.listeners.setdefault(key, []).append(callback)
 
+    def refresh(self, *keys):
+        """Re-read settings something else changed (mbp-conf theme), telling listeners."""
+        try:
+            fresh = {s["key"]: s["value"] for s in json.loads(run("mbp-conf", "schema").stdout)}
+        except ValueError:
+            return
+        for key in keys:
+            if key in fresh and fresh[key] != self.values.get(key):
+                self.values[key] = fresh[key]
+                for callback in self.listeners.get(key, []):
+                    callback(fresh[key])
+
     def set(self, key, value, apply=True):
         value = str(value)
         if self.values.get(key) == value:

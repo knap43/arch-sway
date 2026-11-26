@@ -373,7 +373,6 @@ bind("backslash", hl.dsp.layout("preselect r"))   -- next window opens to the ri
 bind("minus",     hl.dsp.layout("preselect d"))   -- next window opens below
 bind("period",    tile_or_flip)                   -- tiled (again: flip the split)
 bind("comma",     tab_workspace)                  -- tabbed
-bind("T",         tab_workspace)                  -- (no stacked layout: tabs too)
 
 hl.define_submap("resize", function()
     local step = 20
@@ -413,6 +412,7 @@ local ACTIONS = {
     screenshot_full = run("mbp-screenshot --full"),
     power_menu      = run("mbp-power-menu"),
     lock            = run("mbp-lock"),
+    theme           = run("mbp-theme"),
     nightlight      = run("mbp-nightlight toggle"),
     reload          = hl.dsp.reload_config(),
 }
@@ -446,6 +446,7 @@ local DEFAULT_SHORTCUTS = {
     { mod = true, mods = "CTRL + SHIFT", key = "S", action = "screenshot_full" },
     { mod = true, mods = "", key = "Escape", action = "power_menu" },
     { mod = true, mods = "SHIFT", key = "Q", action = "power_menu" },
+    { mod = true, mods = "", key = "T", action = "theme" },
     { mod = true, mods = "", key = "N", action = "nightlight" },
     { mod = true, mods = "SHIFT", key = "C", action = "reload" },
 }

@@ -5,7 +5,7 @@ import os
 
 from gi.repository import Adw, Gio, GLib, Gtk
 
-from .common import (action_row, button, combo_row, entry_row, group, page, run,
+from .common import (action_row, button, combo_row, entry_row, group, page, run, run_async,
                      scale_row, spawn, spin_row, switch_row)
 
 FX_NOTE = "Hyprland and Mango only; sway has no such effects."
@@ -62,7 +62,8 @@ def mouse(win, conf):
 
 # ---- Appearance --------------------------------------------------------------
 ACCENT_HEX = {"blue": "5e81ac", "teal": "88c0d0", "green": "a3be8c", "yellow": "ebcb8b",
-              "orange": "d08770", "red": "bf616a", "purple": "b48ead", "grey": "6b6b6b"}
+              "orange": "d08770", "red": "bf616a", "purple": "b48ead", "grey": "6b6b6b",
+              "everforest": "a7c080"}
 
 
 def appearance(win, conf):
@@ -74,6 +75,7 @@ def appearance(win, conf):
     g.add(combo_row(conf, "TEXT_SCALE", {"0.9": "Smaller", "1": "Normal", "1.1": "Larger",
                                          "1.25": "Large", "1.5": "Largest"}, "Text size",
                     "GTK applications"))
+    g.add(theme_row(win, conf))
     g.add(accent_row(win, conf))
 
     g = group(p, "Wallpaper")
@@ -97,6 +99,36 @@ def appearance(win, conf):
     return p
 
 
+THEME_LABELS = {"default": "Default", "everforest": "Everforest"}
+
+
+def theme_row(win, conf):
+    """Terminal colours, accent and wallpaper at once, as Mod+T does (mbp-conf theme)."""
+    names = conf.spec("COLOUR_THEME").get("choices") or ["default"]
+    row = Adw.ComboRow(title="Theme")
+    row.set_subtitle("Terminal colours, accent colour and wallpaper together (also ⌘T)")
+    row.set_model(Gtk.StringList.new([THEME_LABELS.get(n, n.capitalize()) for n in names]))
+    current = conf.get("COLOUR_THEME", "default")
+    row.set_selected(names.index(current) if current in names else 0)
+
+    def done(result):
+        if result.returncode != 0:
+            win.toast(result.stderr.strip().removeprefix("mbp-conf: ") or "Couldn't switch the theme")
+            return
+        conf.refresh("COLOUR_THEME", "ACCENT", "WALLPAPER")
+        win.set_accent(conf.get("ACCENT"))
+        win.toast("Theme switched; new terminals use its colours")
+
+    def changed(r, _):
+        name = names[r.get_selected()]
+        if name != conf.get("COLOUR_THEME"):
+            run_async(["mbp-conf", "theme", name], done)
+    row.connect("notify::selected", changed)
+    conf.on_change("COLOUR_THEME", lambda n: n in names and row.get_selected() != names.index(n)
+                   and row.set_selected(names.index(n)))
+    return row
+
+
 def accent_row(win, conf):
     row = Adw.ActionRow(title="Accent colour")
     row.set_subtitle("Focused borders, the active tab, the bar's current workspace")
@@ -118,6 +150,7 @@ def accent_row(win, conf):
         b.set_active(conf.get("ACCENT") == name)
         b.connect("toggled", lambda btn, n=name: btn.get_active() and (conf.set("ACCENT", n), win.set_accent(n)))
     row.add_suffix(box)
+    conf.on_change("ACCENT", lambda n: n in buttons and buttons[n].set_active(True))
     return row
 
 

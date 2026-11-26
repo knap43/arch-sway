@@ -14,6 +14,8 @@ mbp-settings is the friendly way to change them.
   mbp-conf apply                generate, then reload the running compositor
                                 and restart wallpaper, night light and idle
   mbp-conf wallpaper            (re)start the wallpaper (Hyprland, Mango)
+  mbp-conf theme [NAME]         switch theme (terminal colours, accent, wallpaper)
+                                and apply; without NAME, list them
   mbp-conf shortcuts            write the keyboard shortcuts (shortcuts.conf, from
                                 Settings) and reload the running compositor only
 """
@@ -32,6 +34,26 @@ ACCENTS = {
     "blue": ("5e81ac", "ffffff"), "teal": ("88c0d0", "1e1e1e"), "green": ("a3be8c", "1e1e1e"),
     "yellow": ("ebcb8b", "1e1e1e"), "orange": ("d08770", "1e1e1e"), "red": ("bf616a", "ffffff"),
     "purple": ("b48ead", "1e1e1e"), "grey": ("6b6b6b", "ffffff"),
+    "everforest": ("a7c080", "2d353b"),
+}
+WALLPAPERS = "/usr/share/backgrounds/mbp"
+
+# Themes (Mod+T, mbp-theme): each sets the terminal colours, the accent colour
+# and the wallpaper together; the accent and wallpaper can still be changed
+# afterwards in Settings. Terminal colours: foot's [colors-dark], 0-7 then 8-15.
+THEMES = {
+    "default": {
+        "label": "Default", "accent": "blue", "wallpaper": f"{WALLPAPERS}/wallpaper.jpg",
+        "background": "1e1e1e", "foreground": "d8d8d8",
+        "colours": ["2a2a2a", "bf616a", "a3be8c", "ebcb8b", "5e81ac", "b48ead", "88c0d0", "d8d8d8",
+                    "4c4c4c", "d08770", "b5d19c", "f0d399", "81a1c1", "c895bf", "8fbcbb", "ffffff"],
+    },
+    "everforest": {          # Everforest dark, medium (github.com/sainnhe/everforest)
+        "label": "Everforest", "accent": "everforest", "wallpaper": f"{WALLPAPERS}/everforest.jpg",
+        "background": "2d353b", "foreground": "d3c6aa",
+        "colours": ["475258", "e67e80", "a7c080", "dbbc7f", "7fbbb3", "d699b6", "83c092", "d3c6aa",
+                    "859289", "e67e80", "a7c080", "dbbc7f", "7fbbb3", "d699b6", "83c092", "f2efdf"],
+    },
 }
 FX = "Hyprland and Mango only (sway has no such effects). Costs GPU time on older laptops."
 
@@ -66,6 +88,8 @@ SCHEMA = [
     ("THEME", "Appearance", "Application style", "choice", "dark", ["dark", "light"],
      "GTK applications; the desktop itself stays dark."),
     ("TEXT_SCALE", "Appearance", "Text size", "choice", "1", ["0.9", "1", "1.1", "1.25", "1.5"], "GTK applications."),
+    ("COLOUR_THEME", "Appearance", "Theme", "choice", "default", list(THEMES),
+     "Terminal colours, accent colour and wallpaper together (Mod+T switches)."),
     ("ACCENT", "Appearance", "Accent colour", "choice", "blue", list(ACCENTS),
      "Focused window borders, the active tab and the bar's current workspace."),
     ("BORDER_WIDTH", "Appearance", "Border width (px)", "int", "2", (0, 10), ""),
@@ -228,6 +252,17 @@ def fmt(x):
 
 def accent(v):
     return ACCENTS[v["ACCENT"]]
+
+
+def foot_colours(v):
+    """The terminal's colours for the theme (foot.ini includes this file)."""
+    t = THEMES[v["COLOUR_THEME"]]
+    lines = [f"# {HEADER}", "[colors-dark]", f"background={t['background']}", f"foreground={t['foreground']}"]
+    lines += [f"regular{i}={c}" for i, c in enumerate(t["colours"][:8])]
+    lines += [f"bright{i}={c}" for i, c in enumerate(t["colours"][8:])]
+    bg, fg = accent(v)
+    lines += [f"selection-background={bg}", f"selection-foreground={fg}"]
+    return "\n".join(lines) + "\n"
 
 
 def sway_vars(v):
@@ -523,7 +558,7 @@ def generate(v=None):
     for name, text in (("sway-vars.conf", sway_vars(v)), ("sway.conf", sway_conf(v)),
                        ("hyprland.lua", hyprland_lua(v)), ("mango.conf", mango_conf(v)),
                        ("waybar.css", waybar_css(v)), ("mako.conf", mako_conf(v)),
-                       ("gtklock.css", gtklock_css(v)),
+                       ("gtklock.css", gtklock_css(v)), ("foot-colours.ini", foot_colours(v)),
                        *((("sway-binds.conf", sc.sway_binds()), ("mango-binds.conf", sc.mango_binds()))
                          if (sc := shortcuts_module()) else ())):
         path = os.path.join(GENERATED, name)
@@ -625,6 +660,20 @@ def main(argv):
         print(f"Applied to {wm}." if wm else "Saved; applies from the next login.")
     elif cmd == "wallpaper":
         wallpaper()
+    elif cmd == "theme":
+        v = load()
+        if not args:
+            for name, t in THEMES.items():
+                print(f"{name}\t{t['label']}{'  (current)' if name == v['COLOUR_THEME'] else ''}")
+            return
+        name = args[0].lower()
+        if name not in THEMES:
+            sys.exit(f"mbp-conf: no theme {args[0]!r} (themes: {', '.join(THEMES)})")
+        t = THEMES[name]
+        v.update(COLOUR_THEME=name, ACCENT=t["accent"], WALLPAPER=t["wallpaper"])
+        save(v)
+        wm = apply()
+        print(f"{t['label']} theme applied to {wm}." if wm else f"{t['label']} theme saved; applies from the next login.")
     elif cmd == "shortcuts":
         generate()
         wm = compositor()

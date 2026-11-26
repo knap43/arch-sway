@@ -135,7 +135,6 @@ bindsym --to-code {
     $mod+minus      splitv
     $mod+period     layout toggle split
     $mod+comma      layout tabbed
-    $mod+t          layout stacking
 }
 
 mode "resize" {

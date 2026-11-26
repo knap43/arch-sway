@@ -1,0 +1,15 @@
+#!/bin/sh
+# Mod+T: pick a theme in a menu. A theme sets the terminal colours, the accent
+# colour and the wallpaper together (see THEMES in mbp-conf); Settings →
+# Appearance has the same switch. New terminals open in the new colours.
+themes=$(mbp-conf theme) || exit 1
+current=$(printf '%s\n' "$themes" | awk -F'\t' '/\(current\)/ {print $1}')
+choice=$(printf '%s\n' "$themes" | cut -f2 | sed 's/  (current)$//' |
+    fuzzel --dmenu --prompt "Theme: " --select "$(printf '%s\n' "$themes" | awk -F'\t' '/\(current\)/ {sub(/  \(current\)$/, "", $2); print $2}')") || exit 0
+name=$(printf '%s\n' "$themes" | awk -F'\t' -v c="$choice" '{l=$2; sub(/  \(current\)$/, "", l)} l == c {print $1}')
+[ -n "$name" ] && [ "$name" != "$current" ] || exit 0
+if mbp-conf theme "$name" >/dev/null 2>&1; then
+    notify-send -a Theme "Theme: $choice" "New terminals open in its colours."
+else
+    notify-send -a Theme -u critical "Couldn't switch the theme" "Try: mbp-conf theme $name"
+fi

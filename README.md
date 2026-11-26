@@ -101,6 +101,7 @@ sheet always shows the keys as they are now. The defaults:
 | ⌘ / | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ / or Esc closes it) |
 | ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |
 | ⌘ Esc or ⌘ ⇧ Q | power menu (lock, suspend, log out, reboot, power off); Mango: ⌘ Esc only |
+| ⌘ T | switch theme: Default or Everforest (terminal colours, accent colour and wallpaper together) |
 | ⌘ N | night light on / off (on by default, 4000 K) |
 | ⌘ ⇧ C | reload the config |
 
@@ -126,7 +127,7 @@ These are the same in every flavour:
 | ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ ⇧ Space | switch focus between floating and tiled |
 | ⌘ \\ / ⌘ - | split side by side / top and bottom |
-| ⌘ . / ⌘ , / ⌘ T | tiling (press again to flip split direction) / tabbed / stacked |
+| ⌘ . / ⌘ , | tiling (press again to flip split direction) / tabbed |
 | ⌘ P | focus parent container |
 
 ### Hyprland
@@ -138,7 +139,7 @@ These are the same in every flavour:
 | ⌘ ⇧ Space | switch focus between floating and tiled |
 | ⌘ \\ / ⌘ - | open the next window to the right / below |
 | ⌘ . | tiled: break the tabs apart (press again to flip the split direction) |
-| ⌘ , or ⌘ T | tabbed: the whole workspace as tabs (Hyprland has no stacked layout) |
+| ⌘ , | tabbed: the whole workspace as tabs |
 | ⌘ [ / ⌘ ] | in tabs: previous / next tab (or click a tab) |
 
 ### Mango
@@ -148,12 +149,19 @@ These are the same in every flavour:
 | ⌘ A / ⌘ S | tag (workspace) to the left / right |
 | ⌘ 1…9 / ⌘ ⇧ 1…9 | go to / send window to tag (Mango has nine) |
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
-| ⌘ , / ⌘ T | tabbed / stacked (press ⌘ . to go back to tiled) |
+| ⌘ , | tabbed (press ⌘ . to go back to tiled) |
 
 Focus follows the mouse pointer, displays 1080p or taller are scaled 1.5× and brightness is set to
 100% at every login; all of that can be changed in *Settings* (below). Screenshots go to `~/Pictures/Screenshots`.
 Helper scripts live in `/usr/local/bin/mbp-*`. The default wallpaper is
-`/usr/share/backgrounds/mbp/wallpaper.jpg`. The fish prompt is `[$PWD]$`, set in
+`/usr/share/backgrounds/mbp/wallpaper.jpg`.
+
+**Themes** (⌘ T, or *Settings* → Appearance → Theme) set the terminal colours, the accent colour and
+the wallpaper together: *Default* is the look described here; *Everforest* uses the
+[Everforest](https://github.com/sainnhe/everforest) dark palette in the terminal, its green as the
+accent and a foggy forest (`/usr/share/backgrounds/mbp/everforest.jpg`). Terminals opened afterwards get
+the new colours; the accent and wallpaper can still be changed on their own. `mbp-conf theme NAME`
+does it from a shell. Themes live in `THEMES` in `mbp-conf`. The fish prompt is `[$PWD]$`, set in
 `~/.config/fish/functions/fish_prompt.fish`.
 
 Configs live in `~/.config/`: `sway` + `i3status`, `hypr/hyprland.lua` + `waybar`, or
@@ -174,7 +182,7 @@ desktop's square, dark style. It works the same in all three flavours and change
 | Keyboard | layouts, Alt ⇄ Win swap, Caps Lock ⇄ Escape, key repeat; every shortcut for this flavour |
 | Keyboard shortcuts | change the keys of the main actions (apps, closing, fullscreen, floating, layouts, scratchpad, screenshots, power menu, lock, cheat sheet...): press the new keys, add a second one or turn one off; it warns when a key is taken and can take it over. Add your own shortcuts that run any command. Moving, resizing and workspace keys stay fixed |
 | Mouse & touchpad | pointer speed, left-handed, focus follows mouse, hiding the pointer when idle (3 s) and while typing, tap to click, natural scrolling, ignore while typing, three-finger swipe between workspaces |
-| Appearance | dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur, unfocused-window opacity |
+| Appearance | theme, dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur, unfocused-window opacity |
 | Windows | whether new workspaces open tabbed or tiled |
 | Notifications | do not disturb, how long they stay, where they appear, show the last one again |
 | Power | battery charge, health and power draw; lock / screen off / suspend times; what closing the lid does |

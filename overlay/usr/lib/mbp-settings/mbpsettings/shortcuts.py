@@ -71,6 +71,7 @@ ACTIONS = [
     Action("power_menu", "System", "Power menu", ["Mod+Escape", "Mod+Shift+q"],
            "exec mbp-power-menu", "spawn,mbp-power-menu", defaults={"mango": ["Mod+Escape"]}),
     Action("lock", "System", "Lock the screen", [], "exec mbp-lock", "spawn,mbp-lock"),
+    Action("theme", "System", "Switch theme", ["Mod+t"], "exec mbp-theme", "spawn,mbp-theme"),
     Action("nightlight", "System", "Night light on or off", ["Mod+n"],
            "exec mbp-nightlight toggle", "spawn,mbp-nightlight toggle"),
     Action("reload", "System", "Reload the desktop", ["Mod+Shift+c"], "reload", "reload_config"),
@@ -87,7 +88,7 @@ FIXED = [
     ("Workspaces", [f"Mod+{n}" for n in "1234567890"] + [f"Mod+Shift+{n}" for n in "1234567890"]),
     ("Workspace left / right", ["Mod+a", "Mod+s", "Mod+Shift+a", "Mod+Shift+s"]),
     ("Previous / next tab", ["Mod+bracketleft", "Mod+bracketright"]),
-    ("Layouts", ["Mod+backslash", "Mod+minus", "Mod+period", "Mod+comma", "Mod+t"]),
+    ("Layouts", ["Mod+backslash", "Mod+minus", "Mod+period", "Mod+comma"]),
     ("Focus floating ⇄ tiled", ["Mod+Shift+space"]),
     ("Focus the parent", ["Mod+p"]),
 ]
