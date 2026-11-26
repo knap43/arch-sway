@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Keyboard shortcuts cheat sheet (Mod+/), in the terminal.
 
-The README's key tables: the ones shared by every flavour, then the running
-compositor's. Type to filter, arrows / Page Up / Page Down to scroll, Escape
+The shortcuts Settings can change, as they are now, then the README's fixed
+keys: the ones shared by every flavour, then the running compositor's. Type to filter, arrows / Page Up / Page Down to scroll, Escape
 clears the search or closes.
 
   mbp-shortcuts            show it here
@@ -16,6 +16,7 @@ import sys
 import textwrap
 
 README = "/usr/local/share/mbp/README.md"
+SHORTCUTS_PY = "/usr/lib/mbp-settings/mbpsettings/shortcuts.py"
 APP_ID = "mbp-shortcuts"
 NAMES = {"sway": "sway", "hyprland": "Hyprland", "mango": "Mango"}
 # The accent colours as the nearest of the terminal's 256.
@@ -36,22 +37,41 @@ def flavour():
         return "sway"
 
 
+def changeable(fl):
+    """The shortcuts Settings can change, as they are now (shortcuts.py)."""
+    import importlib.util
+    try:
+        spec = importlib.util.spec_from_file_location("mbp_shortcuts", SHORTCUTS_PY)
+        sc = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sc)
+    except (OSError, ImportError):
+        return []
+    rows, custom = sc.current(fl)
+    out = [("Changeable in Settings", [(" / ".join(sc.label(k) for k in keys), a.label)
+                                       for a, keys in rows if keys])]
+    if custom:
+        out.append(("Your own", [(sc.label(k), c) for k, c in custom]))
+    return out
+
+
 def tables(fl):
-    """[(title, [(keys, action)])]: the shared table, then this flavour's."""
+    """[(title, [(keys, action)])]: the shortcuts Settings can change, as they are
+    now, then the README's fixed keys shared by every flavour, then this flavour's."""
+    out = changeable(fl)
     try:
         text = open(README).read()
     except OSError:
-        return []
-    out, current, inkeys = [], None, False
+        return out
+    current, inkeys = None, False
     for line in text.splitlines():
         if line.startswith("## "):
-            inkeys = line.startswith("## Keys")
-            current = ("Everywhere", []) if inkeys else None
-            if current:
-                out.append(current)
+            inkeys, current = line.startswith("## Keys"), None
             continue
         if line.startswith("### "):
-            current = (f"Only in {NAMES.get(fl, fl)}", []) if inkeys and line[4:].strip().lower() == fl else None
+            name = line[4:].strip().lower()
+            # "Changeable" lists the defaults: the live keys are shown above instead
+            current = (("Everywhere", []) if name == "fixed" else
+                       (f"Only in {NAMES.get(fl, fl)}", []) if name == fl else None) if inkeys else None
             if current:
                 out.append(current)
             continue

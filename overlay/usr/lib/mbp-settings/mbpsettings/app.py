@@ -5,7 +5,7 @@ import traceback
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from .common import Conf, compositor
-from . import bluetooth, desktop, displays, network, power, sound, system
+from . import bluetooth, desktop, displays, keyshortcuts, network, power, sound, system
 from .style import ACCENTS, BASE_CSS, accent_css, colours
 
 APP_ID = "org.mbp.Settings"
@@ -18,6 +18,8 @@ PANELS = [
     ("sound", "Sound", "audio-speakers-symbolic", sound.sound),
     ("displays", "Displays", "video-display-symbolic", displays.displays),
     ("keyboard", "Keyboard", "input-keyboard-symbolic", desktop.keyboard),
+    ("shortcuts", "Keyboard shortcuts", "preferences-desktop-keyboard-shortcuts-symbolic",
+     keyshortcuts.keyboard_shortcuts),
     ("mouse", "Mouse & touchpad", "input-mouse-symbolic", desktop.mouse),
     ("appearance", "Appearance", "preferences-desktop-appearance-symbolic", desktop.appearance),
     ("windows", "Windows", "view-grid-symbolic", desktop.windows),
@@ -106,6 +108,11 @@ class Window(Adw.ApplicationWindow):
 
     def set_accent(self, name):
         set_accent(name)
+
+    def show_panel(self, pid):
+        ids = [p[0] for p in PANELS]
+        if pid in ids:
+            self.listbox.select_row(self.listbox.get_row_at_index(ids.index(pid)))
 
     def toast(self, text):
         self.toasts.add_toast(Adw.Toast(title=GLib.markup_escape_text(text), timeout=4))

@@ -74,7 +74,14 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 trade places, so ⌘ is the key next to the space bar there too (the Alt key), and Alt moves to the
 Windows key, so the layout switch is **Win ⇧** there (Option ⇧ on the MacBook: the same spot, just left of ⌘). The choice is made per machine (anything but a Mac swaps); *Settings* →
 Keyboard can turn it on or off for good. All shortcuts work in
-both the US and Russian layouts. Caps Lock and Escape are swapped. These are the same in every flavour:
+both the US and Russian layouts. Caps Lock and Escape are swapped.
+
+### Changeable in Settings
+
+*Settings* → **Keyboard shortcuts** lets you change these (press the new keys; it warns about keys
+already taken), remove them, give a shortcut to Settings or the lock screen, and add your own
+shortcuts that run any command. The changes live in `~/.config/mbp/shortcuts.conf`; the ⌘ / cheat
+sheet always shows the keys as they are now. The defaults:
 
 | Keys | Action |
 |---|---|
@@ -83,20 +90,30 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 | ⌘ E / ⌘ B | Thunar / Zen Browser |
 | ⌘ V | clipboard history |
 | ⌘ W | close window |
+| ⌘ Tab | switch between tabbed and tiled |
+| ⌘ F / ⌘ ⇧ F | fullscreen / floating |
+| ⌘ G | float every window on this workspace, or tile them all again (none of the three has a true floating layout) |
+| ⌘ Return | tiled: this window takes the left half, the others share the right (Mango: swaps it into the master area) |
+| ⌘ ⇧ Tab | cycle through all windows (sway, Hyprland) |
+| ⌘ ⇧ Q | Mango: overview of every window (pick one, or Esc or ⌘ ⇧ Q to leave) |
+| ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
+| ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
+| ⌘ / | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ / or Esc closes it) |
+| ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |
+| ⌘ Esc or ⌘ ⇧ Q | power menu (lock, suspend, log out, reboot, power off); Mango: ⌘ Esc only |
+| ⌘ N | night light on / off (on by default, 4000 K) |
+| ⌘ ⇧ C | reload the config |
+
+### Fixed
+
+These are the same in every flavour:
+
+| Keys | Action |
+|---|---|
 | ⌘ [ / ⌘ ] | previous / next window on this workspace |
 | ⌘ arrows | focus; add ⇧ to move the window (⌘ ⇧ H J K L too) |
 | ⌘ H J K L | resize: narrower, taller, shorter, wider (hold to repeat) |
-| ⌘ / | keyboard shortcuts cheat sheet, in a terminal: type to search (⌘ / or Esc closes it) |
 | ⌘ ⇧ A / ⌘ ⇧ S | take the window to the previous / next workspace |
-| ⌘ F / ⌘ ⇧ F | fullscreen / floating |
-| ⌘ Return | tiled: this window takes the left half, the others share the right (Mango: swaps it into the master area) |
-| ⌘ G | float every window on this workspace, or tile them all again (none of the three has a true floating layout) |
-| ⌘ R | resize mode (arrows or HJKL, Esc to leave) |
-| ⌘ \` / ⌘ ⇧ \` | show / stash scratchpad |
-| ⌘ Ctrl S / ⌘ Ctrl ⇧ S | screenshot region / whole screen (saved + copied) |
-| ⌘ ⇧ Q or ⌘ Esc | power menu (lock, suspend, log out, reboot, power off); Mango: ⌘ Esc only |
-| ⌘ ⇧ C | reload the config |
-| ⌘ N | night light on / off (on by default, 4000 K) |
 | Win ⇧ (Mac: Option ⇧) | switch US ⇄ RU (the key just left of ⌘, plus Shift) |
 | F1/F2, F5/F6, F10–F12 | screen brightness, keyboard backlight, volume (with a popup bar) |
 | F7 / F8 / F9 | previous / play-pause / next, for any player |
@@ -105,8 +122,6 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ Tab | switch between tabbed and tiled |
-| ⌘ ⇧ Tab | cycle through all windows |
 | ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
 | ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ ⇧ Space | switch focus between floating and tiled |
@@ -118,8 +133,6 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ Tab | switch between tabbed and tiled |
-| ⌘ ⇧ Tab | cycle through all windows |
 | ⌘ A / ⌘ S | previous / next workspace (past the last: a fresh empty one) |
 | ⌘ 1…0 / ⌘ ⇧ 1…0 | go to / send window to workspace |
 | ⌘ ⇧ Space | switch focus between floating and tiled |
@@ -132,8 +145,6 @@ both the US and Russian layouts. Caps Lock and Escape are swapped. These are the
 
 | Keys | Action |
 |---|---|
-| ⌘ Tab | switch between tabbed and tiled |
-| ⌘ ⇧ Q | overview of every window (pick one, or Esc or ⌘ ⇧ Q to leave) |
 | ⌘ A / ⌘ S | tag (workspace) to the left / right |
 | ⌘ 1…9 / ⌘ ⇧ 1…9 | go to / send window to tag (Mango has nine) |
 | ⌘ . | tiled: switch between side-by-side and top-and-bottom |
@@ -161,6 +172,7 @@ desktop's square, dark style. It works the same in all three flavours and change
 | Sound | output and input device, volume, mute |
 | Displays | per display: on/off, resolution, refresh rate, scale, rotation, position next to the built-in one (with *Keep these settings?* and a 15-second undo); brightness now and at login; night light and its temperature; scale for other displays |
 | Keyboard | layouts, Alt ⇄ Win swap, Caps Lock ⇄ Escape, key repeat; every shortcut for this flavour |
+| Keyboard shortcuts | change the keys of the main actions (apps, closing, fullscreen, floating, layouts, scratchpad, screenshots, power menu, lock, cheat sheet...): press the new keys, add a second one or turn one off; it warns when a key is taken and can take it over. Add your own shortcuts that run any command. Moving, resizing and workspace keys stay fixed |
 | Mouse & touchpad | pointer speed, left-handed, focus follows mouse, hiding the pointer when idle (3 s) and while typing, tap to click, natural scrolling, ignore while typing, three-finger swipe between workspaces |
 | Appearance | dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur, unfocused-window opacity |
 | Windows | whether new workspaces open tabbed or tiled |
@@ -176,7 +188,7 @@ Wi-Fi and new VPNs; the Bluetooth manager (`blueman-manager`); and the volume co
 per-app volumes. The lid and user changes ask for an administrator's password (polkit).
 
 The desktop settings live in `~/.config/mbp/settings.conf`; `mbp-conf` turns them into
-`~/.config/mbp/generated/{sway.conf,sway-vars.conf,hyprland.lua,mango.conf,waybar.css,mako.conf}`, which the
+`~/.config/mbp/generated/{sway.conf,sway-vars.conf,sway-binds.conf,hyprland.lua,mango.conf,mango-binds.conf,waybar.css,mako.conf}`, which the
 compositors, Waybar and mako load after their own defaults (regenerated at every login for the machine it runs on).
 Edit the file by hand if you like, then run `mbp-conf apply`. In Mango, a rotated display isn't remembered
 after logging out: its display rules have no rotation.

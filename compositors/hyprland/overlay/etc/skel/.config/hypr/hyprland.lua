@@ -326,27 +326,12 @@ local function bind(keys, action, opts) hl.bind(mod .. " + " .. keys, action, op
 local function run(cmd) return hl.dsp.exec_cmd(cmd) end
 
 -------------------------------------------------------------------------------
--- Apps
+-- Windows (apps, closing, fullscreen, floating and the like are further down,
+-- under "Shortcuts you can change in Settings")
 -------------------------------------------------------------------------------
 
-bind("D",      run(term))
-bind("space",  run(menu))
-bind("Q",      run(menu))
-bind("E",      run("thunar"))
-bind("B",      run("flatpak run app.zen_browser.zen"))
-bind("V",      run('cliphist list | fuzzel --dmenu --prompt "Clipboard: " | cliphist decode | wl-copy'))
-
--------------------------------------------------------------------------------
--- Windows
--------------------------------------------------------------------------------
-
-bind("W",            hl.dsp.window.close())
-bind("Tab",          tabs_or_tiles)                -- tabbed <-> tiled
-bind("SHIFT + Tab",  function() cycle_all(1) end)  -- every window, everywhere
 bind("bracketleft",  function() tab_or_window(false) end)
 bind("bracketright", function() tab_or_window(true) end)
-bind("F",            hl.dsp.window.fullscreen())
-bind("SHIFT + F",    hl.dsp.window.float({ action = "toggle" }))
 bind("SHIFT + space", focus_mode_toggle)
 
 -- Mod+H J K L resize (narrower, taller, shorter, wider; hold to repeat), Mod+arrows
@@ -359,8 +344,6 @@ end
 for key, d in pairs({ H = { -20, 0 }, J = { 0, 20 }, K = { 0, -20 }, L = { 20, 0 } }) do
     bind(key, hl.dsp.window.resize({ x = d[1], y = d[2], relative = true }), { repeating = true })
 end
--- Mod+/: the keyboard shortcuts cheat sheet
-bind("slash", run("mbp-shortcuts --toggle"))
 
 -- Drag with Mod + left button, resize with Mod + right button
 bind("mouse:272", hl.dsp.window.drag(),   { mouse = true })
@@ -391,12 +374,7 @@ bind("minus",     hl.dsp.layout("preselect d"))   -- next window opens below
 bind("period",    tile_or_flip)                   -- tiled (again: flip the split)
 bind("comma",     tab_workspace)                  -- tabbed
 bind("T",         tab_workspace)                  -- (no stacked layout: tabs too)
-bind("Return",    to_left_half)                   -- tiled: this window takes the left half
-bind("G",         toggle_all_floating)            -- float / tile every window here
-bind("grave",         hl.dsp.workspace.toggle_special("scratch"))
-bind("SHIFT + grave", hl.dsp.window.move({ workspace = "special:scratch", follow = false }))
 
-bind("R", hl.dsp.submap("resize"))
 hl.define_submap("resize", function()
     local step = 20
     for key, d in pairs({ H = { -step, 0 }, left = { -step, 0 }, L = { step, 0 }, right = { step, 0 },
@@ -408,15 +386,81 @@ hl.define_submap("resize", function()
 end)
 
 -------------------------------------------------------------------------------
--- System
+-- Shortcuts you can change in Settings
 -------------------------------------------------------------------------------
+-- Settings → Keyboard shortcuts keeps which keys do what (defaults and your
+-- own) in the generated hyprland.lua; this table says what each action does.
 
-bind("CTRL + S",         run("mbp-screenshot"))
-bind("CTRL + SHIFT + S", run("mbp-screenshot --full"))
-bind("Escape",           run("mbp-power-menu"))
-bind("SHIFT + Q",        run("mbp-power-menu"))
-bind("SHIFT + C",        hl.dsp.reload_config())
-bind("N",                run("mbp-nightlight toggle"))
+local ACTIONS = {
+    terminal        = run(term),
+    launcher        = run(menu),
+    files           = run("thunar"),
+    browser         = run("flatpak run app.zen_browser.zen"),
+    clipboard       = run('cliphist list | fuzzel --dmenu --prompt "Clipboard: " | cliphist decode | wl-copy'),
+    settings        = run("mbp-settings"),
+    close           = hl.dsp.window.close(),
+    layout_toggle   = tabs_or_tiles,                     -- tabbed <-> tiled
+    fullscreen      = hl.dsp.window.fullscreen(),
+    float           = hl.dsp.window.float({ action = "toggle" }),
+    float_all       = toggle_all_floating,               -- float / tile every window here
+    left_half       = to_left_half,                      -- tiled: this window takes the left half
+    cycle_windows   = function() cycle_all(1) end,       -- every window, everywhere
+    scratchpad_move = hl.dsp.window.move({ workspace = "special:scratch", follow = false }),
+    scratchpad_show = hl.dsp.workspace.toggle_special("scratch"),
+    resize_mode     = hl.dsp.submap("resize"),
+    cheatsheet      = run("mbp-shortcuts --toggle"),
+    screenshot      = run("mbp-screenshot"),
+    screenshot_full = run("mbp-screenshot --full"),
+    power_menu      = run("mbp-power-menu"),
+    lock            = run("mbp-lock"),
+    nightlight      = run("mbp-nightlight toggle"),
+    reload          = hl.dsp.reload_config(),
+}
+
+local function combo(s)
+    local keys = s.key
+    if s.mods ~= "" then keys = s.mods .. " + " .. keys end
+    if s.mod then keys = mod .. " + " .. keys end
+    return keys
+end
+-- The defaults, should the generated file be missing (Settings writes the real list).
+local DEFAULT_SHORTCUTS = {
+    { mod = true, mods = "", key = "D", action = "terminal" },
+    { mod = true, mods = "", key = "space", action = "launcher" },
+    { mod = true, mods = "", key = "Q", action = "launcher" },
+    { mod = true, mods = "", key = "E", action = "files" },
+    { mod = true, mods = "", key = "B", action = "browser" },
+    { mod = true, mods = "", key = "V", action = "clipboard" },
+    { mod = true, mods = "", key = "W", action = "close" },
+    { mod = true, mods = "", key = "Tab", action = "layout_toggle" },
+    { mod = true, mods = "", key = "F", action = "fullscreen" },
+    { mod = true, mods = "SHIFT", key = "F", action = "float" },
+    { mod = true, mods = "", key = "G", action = "float_all" },
+    { mod = true, mods = "", key = "Return", action = "left_half" },
+    { mod = true, mods = "SHIFT", key = "Tab", action = "cycle_windows" },
+    { mod = true, mods = "SHIFT", key = "grave", action = "scratchpad_move" },
+    { mod = true, mods = "", key = "grave", action = "scratchpad_show" },
+    { mod = true, mods = "", key = "R", action = "resize_mode" },
+    { mod = true, mods = "", key = "slash", action = "cheatsheet" },
+    { mod = true, mods = "CTRL", key = "S", action = "screenshot" },
+    { mod = true, mods = "CTRL + SHIFT", key = "S", action = "screenshot_full" },
+    { mod = true, mods = "", key = "Escape", action = "power_menu" },
+    { mod = true, mods = "SHIFT", key = "Q", action = "power_menu" },
+    { mod = true, mods = "", key = "N", action = "nightlight" },
+    { mod = true, mods = "SHIFT", key = "C", action = "reload" },
+}
+for _, s in ipairs(setting("shortcuts", DEFAULT_SHORTCUTS)) do
+    if ACTIONS[s.action] then hl.bind(combo(s), ACTIONS[s.action]) end
+end
+for _, s in ipairs(setting("custom_shortcuts", {})) do
+    hl.bind(combo(s), run(s.command))
+end
+
+-- Settings switches to this submap while you press a new shortcut, so the keys
+-- reach it; Mod+Ctrl+Escape leaves it should Settings go away.
+hl.define_submap("mbp-capture", function()
+    hl.bind(mod .. " + CTRL + Escape", hl.dsp.submap("reset"))
+end)
 
 -- Laptop function keys (work on the lock screen too); levels pop up via wob
 local locked = { locked = true, repeating = true }

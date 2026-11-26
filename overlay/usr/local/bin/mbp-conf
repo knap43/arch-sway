@@ -14,6 +14,8 @@ mbp-settings is the friendly way to change them.
   mbp-conf apply                generate, then reload the running compositor
                                 and restart wallpaper, night light and idle
   mbp-conf wallpaper            (re)start the wallpaper (Hyprland, Mango)
+  mbp-conf shortcuts            write the keyboard shortcuts (shortcuts.conf, from
+                                Settings) and reload the running compositor only
 """
 import glob, json, os, re, shlex, subprocess, sys
 
@@ -350,6 +352,7 @@ def hyprland_lua(v):
         f"    hide_cursor_sec = {v['HIDE_CURSOR_SEC']},",
         f"    hide_cursor_typing = {str(on(v, 'HIDE_CURSOR_TYPING')).lower()},",
         f"    displays = {{ {hypr_displays(v)} }},",
+        shortcuts_module().hyprland_lua().rstrip("\n") if shortcuts_module() else "",
         "}",
     ]) + "\n"
 
@@ -480,6 +483,22 @@ window {{
 
 
 STYLE_PY = "/usr/lib/mbp-settings/mbpsettings/style.py"
+SHORTCUTS_PY = "/usr/lib/mbp-settings/mbpsettings/shortcuts.py"
+_shortcuts = []
+
+
+def shortcuts_module():
+    """The keyboard shortcuts (shortcuts.py, shared with Settings), or None."""
+    if not _shortcuts:
+        import importlib.util
+        try:
+            spec = importlib.util.spec_from_file_location("mbp_shortcuts", SHORTCUTS_PY)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+        except (OSError, ImportError):
+            mod = None
+        _shortcuts.append(mod)
+    return _shortcuts[0]
 
 
 def tether_style(v):
@@ -504,7 +523,9 @@ def generate(v=None):
     for name, text in (("sway-vars.conf", sway_vars(v)), ("sway.conf", sway_conf(v)),
                        ("hyprland.lua", hyprland_lua(v)), ("mango.conf", mango_conf(v)),
                        ("waybar.css", waybar_css(v)), ("mako.conf", mako_conf(v)),
-                       ("gtklock.css", gtklock_css(v))):
+                       ("gtklock.css", gtklock_css(v)),
+                       *((("sway-binds.conf", sc.sway_binds()), ("mango-binds.conf", sc.mango_binds()))
+                         if (sc := shortcuts_module()) else ())):
         path = os.path.join(GENERATED, name)
         with open(path + ".tmp", "w") as f:
             f.write(text)
@@ -604,6 +625,16 @@ def main(argv):
         print(f"Applied to {wm}." if wm else "Saved; applies from the next login.")
     elif cmd == "wallpaper":
         wallpaper()
+    elif cmd == "shortcuts":
+        generate()
+        wm = compositor()
+        if wm == "sway":
+            quiet("swaymsg", "reload")
+        elif wm == "hyprland":
+            quiet("hyprctl", "reload")
+        elif wm == "mango":
+            quiet("mmsg", "dispatch", "reload_config")
+        print(f"Shortcuts applied to {wm}." if wm else "Saved; applies from the next login.")
     else:
         sys.exit(__doc__)
 

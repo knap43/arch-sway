@@ -61,40 +61,29 @@ include ~/.config/mbp/generated/sway.conf
 # compositor flavour, see /usr/local/bin/mbp-session-start.
 exec mbp-session-start
 
-# ---- Apps --------------------------------------------------------------------
-bindsym --to-code {
-    $mod+d       exec $term
-    $mod+space   exec $menu
-    $mod+q       exec $menu
-    $mod+e       exec thunar
-    $mod+b       exec flatpak run app.zen_browser.zen
-    $mod+v       exec cliphist list | fuzzel --dmenu --prompt "Clipboard: " | cliphist decode | wl-copy
-}
+# ---- Shortcuts you can change in Settings -------------------------------------
+# Apps (terminal, launcher, files, browser, clipboard), closing, fullscreen,
+# floating, layouts, scratchpad, screenshots, power menu, lock, the cheat
+# sheet...: Settings → Keyboard shortcuts writes them, with their defaults and
+# your own, to this file. The keys below stay fixed.
+include ~/.config/mbp/generated/sway-binds.conf
 
 # ---- Windows -----------------------------------------------------------------
 bindsym --to-code {
-    $mod+w             kill
-    # Mod+Tab: switch this container between tabbed and tiled
-    $mod+Tab           layout toggle tabbed split
-    # Mod+Shift+Tab: cycle through every window on every workspace
-    $mod+Shift+Tab     exec sway-cycle-windows
     $mod+bracketleft   focus prev
     $mod+bracketright  focus next
-    $mod+f             fullscreen
-    $mod+Shift+f       floating toggle
     $mod+Shift+space   focus mode_toggle
     $mod+p             focus parent
 }
 floating_modifier $mod normal
 
 # ⌘+H J K L resize (narrower, taller, shorter, wider; hold to repeat), ⌘+arrows
-# focus, and Shift with either moves the window. ⌘+/ opens the shortcuts cheat sheet.
+# focus, and Shift with either moves the window.
 bindsym --to-code {
     $mod+$left   resize shrink width 20px
     $mod+$down   resize grow height 20px
     $mod+$up     resize shrink height 20px
     $mod+$right  resize grow width 20px
-    $mod+slash   exec mbp-shortcuts --toggle
     $mod+Left    focus left
     $mod+Down    focus down
     $mod+Up      focus up
@@ -147,13 +136,6 @@ bindsym --to-code {
     $mod+period     layout toggle split
     $mod+comma      layout tabbed
     $mod+t          layout stacking
-    # Tiled: this window takes the left half, the rest share the right
-    $mod+Return     exec sway-layout left-half
-    # Float every window on this workspace, or tile them all again
-    $mod+g          exec sway-layout float-all
-    $mod+r          mode "resize"
-    $mod+Shift+grave  move scratchpad
-    $mod+grave        scratchpad show
 }
 
 mode "resize" {
@@ -167,16 +149,6 @@ mode "resize" {
     bindsym Right  resize grow width 20px
     bindsym Return mode "default"
     bindsym Escape mode "default"
-}
-
-# ---- System ------------------------------------------------------------------
-bindsym --to-code {
-    $mod+Ctrl+s        exec mbp-screenshot
-    $mod+Ctrl+Shift+s  exec mbp-screenshot --full
-    $mod+Escape        exec mbp-power-menu
-    $mod+Shift+q       exec mbp-power-menu
-    $mod+Shift+c       reload
-    $mod+n             exec mbp-nightlight toggle
 }
 
 # Mac function keys (work on the lock screen too); levels pop up via wob
