@@ -44,13 +44,13 @@ WALLPAPERS = "/usr/share/backgrounds/mbp"
 THEMES = {
     "default": {
         "label": "Default", "accent": "blue", "wallpaper": f"{WALLPAPERS}/wallpaper.jpg",
-        "background": "1e1e1e", "foreground": "d8d8d8",
+        "background": "1e1e1e", "foreground": "d8d8d8", "dim": "8a8a8a", "match": "81a1c1",
         "colours": ["2a2a2a", "bf616a", "a3be8c", "ebcb8b", "5e81ac", "b48ead", "88c0d0", "d8d8d8",
                     "4c4c4c", "d08770", "b5d19c", "f0d399", "81a1c1", "c895bf", "8fbcbb", "ffffff"],
     },
     "everforest": {          # Everforest dark, medium (github.com/sainnhe/everforest)
         "label": "Everforest", "accent": "everforest", "wallpaper": f"{WALLPAPERS}/everforest.jpg",
-        "background": "2d353b", "foreground": "d3c6aa",
+        "background": "2d353b", "foreground": "d3c6aa", "dim": "859289", "match": "dbbc7f",
         "colours": ["475258", "e67e80", "a7c080", "dbbc7f", "7fbbb3", "d699b6", "83c092", "d3c6aa",
                     "859289", "e67e80", "a7c080", "dbbc7f", "7fbbb3", "d699b6", "83c092", "f2efdf"],
     },
@@ -263,6 +263,17 @@ def foot_colours(v):
     bg, fg = accent(v)
     lines += [f"selection-background={bg}", f"selection-foreground={fg}"]
     return "\n".join(lines) + "\n"
+
+
+def fuzzel_colours(v):
+    """The launcher and menus (fuzzel.ini includes this file): the theme's
+    background and text, the selection and border in the accent colour."""
+    t = THEMES[v["COLOUR_THEME"]]
+    bg, fg = accent(v)
+    colours = {"background": t["background"], "text": t["foreground"], "prompt": t["foreground"],
+               "input": t["foreground"], "placeholder": t["dim"], "counter": t["dim"], "match": t["match"],
+               "selection": bg, "selection-text": fg, "selection-match": fg, "border": bg}
+    return "\n".join([f"# {HEADER}", "[colors]"] + [f"{k}={c}ff" for k, c in colours.items()]) + "\n"
 
 
 def sway_vars(v):
@@ -559,6 +570,7 @@ def generate(v=None):
                        ("hyprland.lua", hyprland_lua(v)), ("mango.conf", mango_conf(v)),
                        ("waybar.css", waybar_css(v)), ("mako.conf", mako_conf(v)),
                        ("gtklock.css", gtklock_css(v)), ("foot-colours.ini", foot_colours(v)),
+                       ("fuzzel-colours.ini", fuzzel_colours(v)),
                        *((("sway-binds.conf", sc.sway_binds()), ("mango-binds.conf", sc.mango_binds()))
                          if (sc := shortcuts_module()) else ())):
         path = os.path.join(GENERATED, name)
