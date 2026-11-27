@@ -99,6 +99,8 @@ xarchiver
 
 # --- development ---
 git
+# unsquashfs: mbp-update unpacks the emulators' AppImages with it
+squashfs-tools
 base-devel
 vim
 python

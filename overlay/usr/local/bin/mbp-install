@@ -187,29 +187,10 @@ genfstab -U "$MNT" >> "$MNT/etc/fstab"
 
 # ---- Carry over configs from the live session --------------------------------
 info "Copying desktop configuration"
-cp -rT /etc/skel/.config "$MNT/etc/skel/.config"
-for f in /usr/local/bin/*; do
-    case ${f##*/} in mbp-install|live-user-setup|live-welcome|mbp-flatpak-live) ;; *) install -Dm755 "$f" "$MNT$f" ;; esac
-done
-cp -a /usr/lib/tether "$MNT/usr/lib/"
-cp -a /usr/lib/retrohub "$MNT/usr/lib/"
-install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/retrohub.desktop
-install -Dm644 -t "$MNT/usr/share/fish/vendor_completions.d" /usr/share/fish/vendor_completions.d/retrohub.fish
-cp -a /usr/lib/mbp-settings "$MNT/usr/lib/"
-install -Dm644 -t "$MNT/usr/share/glib-2.0/schemas" /usr/share/glib-2.0/schemas/90-mbp.gschema.override
+# Scripts, Settings, the skeleton home configs, launcher entries, the bundled
+# apps, ...: the same step mbp-update runs on an installed system.
+/usr/local/bin/mbp-install-files / "$MNT"
 arch-chroot "$MNT" glib-compile-schemas /usr/share/glib-2.0/schemas   # Mousepad defaults
-install -Dm644 -t "$MNT/usr/local/share/mbp" /usr/local/share/mbp/README.md   # the shortcuts cheat sheet
-install -Dm644 -t "$MNT/usr/local/share/mbp" /usr/local/share/mbp/gtklock.ui  # the lock screen's layout
-install -Dm644 /etc/xdg/user-dirs.conf "$MNT/etc/xdg/user-dirs.conf"  # no Desktop, Documents, ... made at login
-install -Dm644 -t "$MNT/usr/share/polkit-1/actions" /usr/share/polkit-1/actions/org.mbp.settings.policy
-# Emulators unpacked from AppImages (DuckStation, PCSX2), when the ISO has them
-for d in /opt/duckstation /opt/pcsx2; do
-    [[ -d $d ]] || continue
-    cp -a "$d" "$MNT/opt/"
-    n=${d##*/}
-    install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/mbp-$n.desktop
-    for i in /usr/share/pixmaps/$n.*; do [[ -f $i ]] && install -Dm644 -t "$MNT/usr/share/pixmaps" "$i"; done
-done
 
 # Zen Browser and its runtime: the Flatpak installation packed in the ISO
 if [[ -f /usr/local/share/mbp/flatpak.sfs ]]; then
@@ -221,21 +202,6 @@ if [[ -f /usr/local/share/mbp/flatpak.sfs ]]; then
     umount "$fpimg"; rmdir "$fpimg"
 fi
 
-if [[ -d /usr/lib/tiny-games ]]; then
-    cp -a /usr/lib/tiny-games "$MNT/usr/lib/"
-    install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/tiny-games-*.desktop
-fi
-# Our launcher entries, including ones that shadow packages' own: mupen64plus
-# (with a ROM picker); hidden: gpsd's xgps and xgpsspeed, the network,
-# Bluetooth and volume tools that Settings opens itself, Zathura, Ristretto,
-# Xarchiver, vim and winetricks.
-install -Dm644 -t "$MNT/usr/local/share/applications" /usr/local/share/applications/*.desktop
-install -Dm644 -t "$MNT/etc/systemd/user" /etc/systemd/user/tether.service
-install -Dm644 -t "$MNT/usr/share/applications" /usr/share/applications/dev.tether.Tether.desktop
-install -Dm644 -t "$MNT/usr/share/icons/hicolor/scalable/apps" /usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg
-install -Dm644 -t "$MNT/usr/share/backgrounds/mbp" /usr/share/backgrounds/mbp/*.jpg
-cp -rT /etc/xkb "$MNT/etc/xkb"     # mbp:swap_alt_win (see mbp-conf)
-install -Dm644 -t "$MNT/etc/polkit-1/rules.d" /etc/polkit-1/rules.d/50-mbp-networkmanager.rules
 copy_wifi_connections
 
 cat > "$MNT/etc/systemd/zram-generator.conf" <<'EOF'

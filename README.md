@@ -54,6 +54,30 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
    system starts again, remove the stick and reboot once more.
    Log in on the console — the compositor starts by itself.
 
+## Update an installed system
+
+No new ISO needed: run **`mbp-update`** (or Settings → About → *Update the desktop*). It fetches
+this repo from GitHub, shows the commits since your install or last update, and after you agree:
+
+- installs packages the lists have gained, together with a full `pacman -Syu`. Packages the lists
+  have **dropped** are only listed, with the `sudo pacman -Rns …` command to remove them;
+- replaces the scripts, Settings, launcher entries, wallpapers and the bundled apps (Tether,
+  RetroHub, toofan, the emulators, the games, Zen's extensions), and removes files since dropped;
+- updates Zen (`flatpak update`);
+- updates **your configs** in `~/.config`: files you never changed are replaced, new ones added;
+  a file **you have changed is kept**, with the new default saved beside it as `FILE.new` (the
+  summary lists them). Your Settings and shortcuts are never touched, and are applied afterwards.
+
+`mbp-update --check` only shows what's new. It updates the flavour you installed;
+`MBP_REPO=` and `MBP_BRANCH=` point it at another fork or branch.
+
+**Installed before `mbp-update` existed?** Run it once from a fresh copy of the repo; from then on
+it's installed:
+
+```fish
+git clone https://github.com/knap43/arch-sway /tmp/arch-sway; and /tmp/arch-sway/overlay/usr/local/bin/mbp-update
+```
+
 ## What's in it
 
 | Area | Choice |

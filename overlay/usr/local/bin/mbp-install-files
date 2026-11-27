@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+# mbp-install-files SRC DEST
+#
+# Copies our part of the system (scripts, Settings, launcher entries, the
+# skeleton home configs in /etc/skel, the bundled apps, ...) from SRC to the
+# system rooted at DEST. SRC is the live system (/) when mbp-install installs,
+# or a tree made by `build.sh --stage` when mbp-update updates. Run as root.
+#
+# Everything copied is listed in DEST/usr/local/share/mbp/installed-files, so
+# that the next run can delete what has since been dropped. Bundled apps that
+# are missing from SRC (an emulator that couldn't be downloaded, say) are kept
+# as they are rather than deleted.
+set -euo pipefail
+
+SRC=${1:?usage: mbp-install-files SRC DEST}
+DEST=${2:?usage: mbp-install-files SRC DEST}
+SRC=${SRC%/}; DEST=${DEST%/}
+(( EUID == 0 )) || { echo "mbp-install-files: run as root" >&2; exit 1; }
+
+MANIFEST="$DEST/usr/local/share/mbp/installed-files"
+OLD=$(mktemp); NEW=$(mktemp)
+trap 'rm -f "$OLD" "$NEW"' EXIT
+[[ -f $MANIFEST ]] && cp "$MANIFEST" "$OLD"
+
+# Each manifest line: group <tab> path (a trailing / marks a whole directory).
+file() {    # group relpath mode
+    [[ -f $SRC/$2 ]] || return 0
+    install -D -o root -g root -m "$3" "$SRC/$2" "$DEST/$2"
+    printf '%s\t/%s\n' "$1" "$2" >> "$NEW"
+}
+tree() {    # group relpath -- a directory that is entirely ours: replaced whole
+    [[ -d $SRC/$2 ]] || return 0
+    rm -rf "${DEST:?}/$2"
+    install -d "$(dirname "$DEST/$2")"
+    cp -r --preserve=mode,timestamps "$SRC/$2" "$DEST/$2"
+    chown -R root:root "$DEST/$2"
+    find "$DEST/$2" -name __pycache__ -prune -exec rm -rf {} +
+    printf '%s\t/%s/\n' "$1" "$2" >> "$NEW"
+}
+files_in() {   # group reldir mode [find tests...] -- each file below reldir
+    local g=$1 d=$2 m=$3 f; shift 3
+    [[ -d $SRC/$d ]] || return 0
+    while IFS= read -r -d '' f; do
+        file "$g" "${f#"$SRC/"}" "${m:-$(stat -c %a "$f")}"
+    done < <(find "$SRC/$d" -type f -not -path '*/__pycache__/*' "$@" -print0 | sort -z)
+}
+TAB=$'\t'
+present() { grep -q "^$1$TAB" "$NEW"; }
+carry() {   # keep a group's old entries when SRC doesn't have it
+    present "$1" || grep "^$1$TAB" "$OLD" >> "$NEW" || true
+}
+
+# The bundled apps, so their files can be told apart.
+GAMES=(); for g in "$SRC"/usr/lib/tiny-games/*.py; do [[ -f $g ]] && { g=${g##*/}; GAMES+=("${g%.py}"); }; done
+EMUS=(duckstation pcsx2)
+group_of_bin() {
+    local n=$1 x
+    for x in "${EMUS[@]}"; do [[ $n == "$x" ]] && { echo "emu-$x"; return; }; done
+    for x in "${GAMES[@]}"; do [[ $n == "$x" ]] && { echo games; return; }; done
+    [[ $n == toofan ]] && { echo toofan; return; }
+    echo core
+}
+
+# Skeleton home configs: new users get them, and mbp-update compares your
+# own copies with them to see what you have changed.
+files_in core etc/skel ""
+
+# Our commands (the installer and the live session's own helpers stay behind).
+for f in "$SRC"/usr/local/bin/*; do
+    [[ -f $f ]] || continue
+    n=${f##*/}
+    case $n in mbp-install|live-user-setup|live-welcome|mbp-flatpak-live) continue ;; esac
+    file "$(group_of_bin "$n")" "usr/local/bin/$n" 755
+done
+
+# Settings, and what it relies on
+tree core usr/lib/mbp-settings
+chmod 755 "$DEST/usr/lib/mbp-settings/mbp-settings-helper" 2>/dev/null || true
+file core usr/share/polkit-1/actions/org.mbp.settings.policy 644
+file core usr/share/glib-2.0/schemas/90-mbp.gschema.override 644   # Mousepad defaults
+
+# The cheat sheet, the lock screen's layout, the package list, flavour, version
+for f in README.md gtklock.ui packages.system flavour version; do
+    file core "usr/local/share/mbp/$f" 644
+done
+
+# Launcher entries, including ones that shadow packages' own: mupen64plus
+# (with a ROM picker); hidden: gpsd's xgps and xgpsspeed, the network,
+# Bluetooth and volume tools that Settings opens itself, Zathura, Ristretto,
+# Xarchiver, vim and winetricks.
+files_in core usr/local/share/applications 644 -name '*.desktop'
+
+# Tether and RetroHub
+tree core usr/lib/tether
+tree core usr/lib/retrohub
+file core usr/share/applications/dev.tether.Tether.desktop 644
+file core usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg 644
+file core usr/share/applications/retrohub.desktop 644
+file core usr/share/fish/vendor_completions.d/retrohub.fish 644
+file core etc/systemd/user/tether.service 644
+
+# Wallpapers, keyboard layout (mbp:swap_alt_win, see mbp-conf), polkit rule
+# for Wi-Fi, no Desktop/Documents/... made at login
+files_in core usr/share/backgrounds/mbp 644 -name '*.jpg'
+files_in core etc/xkb 644
+file core etc/polkit-1/rules.d/50-mbp-networkmanager.rules 644
+file core etc/xdg/user-dirs.conf 644
+
+# Emulators unpacked from AppImages (DuckStation, PCSX2)
+for e in "${EMUS[@]}"; do
+    [[ -d $SRC/opt/$e ]] || continue
+    tree "emu-$e" "opt/$e"
+    file "emu-$e" "usr/share/applications/mbp-$e.desktop" 644
+    for i in "$SRC"/usr/share/pixmaps/"$e".*; do
+        [[ -f $i ]] && file "emu-$e" "usr/share/pixmaps/${i##*/}" 644
+    done
+done
+
+# tiny-games
+if (( ${#GAMES[@]} )); then
+    tree games usr/lib/tiny-games
+    files_in games usr/share/applications 644 -name 'tiny-games-*.desktop'
+fi
+
+# Zen's extensions (uBlock Origin, Vimium) and the policy installing them.
+# (On a new install they come with the Flatpak image instead.)
+if [[ -d $SRC/var/lib/flatpak/extension && ! -f $SRC/usr/local/share/mbp/flatpak.sfs ]]; then
+    for d in "$SRC"/var/lib/flatpak/extension/*.systemconfig/*/*; do
+        [[ -d $d ]] && tree zen "${d#"$SRC/"}"
+    done
+fi
+
+for g in emu-duckstation emu-pcsx2 games toofan zen; do carry "$g"; done
+
+# Delete what earlier versions installed and this one no longer has.
+removed=0
+# From before the manifest existed: apps since dropped or renamed.
+for p in usr/local/bin/hearth usr/lib/hearth/ usr/share/applications/hearth.desktop \
+         usr/share/fish/vendor_completions.d/hearth.fish \
+         usr/local/bin/lantern usr/lib/lantern/ usr/share/lantern/ usr/share/applications/lantern.desktop \
+         usr/local/bin/wmai usr/lib/wmai/ usr/share/wmai/ etc/systemd/user/wmai-server.service \
+         usr/local/bin/mbp-display-scale usr/local/bin/mbp-xkb-options \
+         usr/local/share/applications/mbp-settings.desktop; do
+    grep -q "$TAB/${p%/}/\{0,1\}\$" "$NEW" && continue
+    [[ -e $DEST/$p || -L $DEST/${p%/} ]] || continue
+    rm -rf "${DEST:?}/${p%/}"
+    removed=$((removed + 1))
+    echo "   removed /${p%/}"
+done
+if [[ -s $OLD ]]; then
+    while IFS=$'\t' read -r _ p; do
+        [[ $p == /* && $p != *..* ]] || continue
+        grep -qxF "$p" <(cut -f2 "$NEW") && continue
+        if [[ $p == */ && -d $DEST$p ]]; then
+            rm -rf "${DEST:?}$p"
+        elif [[ $p != */ ]] && [[ -e $DEST$p || -L $DEST$p ]]; then
+            rm -f "$DEST$p"
+        else
+            continue
+        fi
+        removed=$((removed + 1))
+        echo "   removed $p"
+    done < "$OLD"
+fi
+
+install -D -m 644 "$NEW" "$MANIFEST"
+echo ":: Installed $(wc -l < "$NEW") files and folders$( ((removed)) && echo ", removed $removed old ones")"

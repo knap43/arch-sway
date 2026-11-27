@@ -283,6 +283,18 @@ def about_page(win, conf):
                  ("Up for", f"{up // 86400} d {up % 86400 // 3600} h {up % 3600 // 60} min" if up >= 86400
                   else f"{up // 3600} h {up % 3600 // 60} min")):
         g.add(fact(k, v))
+    version = read("/usr/local/share/mbp/version").strip()
+    if version:
+        g.add(fact("Desktop version", version[:7]))
+    if not os.path.exists("/etc/mbp-live"):
+        up_row = action_row("Update the desktop",
+                            "Fetches the newest configs, scripts and apps from GitHub; "
+                            "files you have changed are kept", activatable=True)
+        up_row.add_suffix(Gtk.Image(icon_name="adw-external-link-symbolic"))
+        up_row.connect("activated", lambda *_: spawn(
+            "foot", "--title=Update the desktop", "sh", "-c",
+            "mbp-update; echo; read -r -p 'Press Enter to close. ' _"))
+        g.add(up_row)
     return p
 
 

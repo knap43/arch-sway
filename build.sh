@@ -2,18 +2,37 @@
 # Builds the ISO on top of Arch's official "releng" profile.
 # Usage: ./build.sh [sway|hyprland|mango]     (default: sway)
 #        needs the 'archiso' package; asks for sudo
+#
+#        ./build.sh --stage DIR [flavour]
+#        no ISO: puts our files and the bundled apps (Tether, RetroHub, toofan,
+#        the emulators, tiny-games, Zen's extensions) into DIR, laid out as on
+#        the live system. mbp-update uses it to update an installed machine;
+#        it needs no archiso and no root.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STAGE=""
+if [[ ${1-} == --stage ]]; then
+    STAGE=${2:?"--stage needs a directory"}
+    shift 2
+fi
 FLAVOUR=${1:-sway}
 FLAVOUR_DIR="$HERE/compositors/$FLAVOUR"
 [[ -d $FLAVOUR_DIR ]] || { echo "Unknown flavour '$FLAVOUR'. Choose one of: $(ls "$HERE/compositors" | tr '\n' ' ')" >&2; exit 1; }
 RELENG=/usr/share/archiso/configs/releng
-WORK="$HERE/work"
-PROFILE="$WORK/profile"
-OUT="$HERE/out"
-
-[[ -d $RELENG ]] || { echo "archiso is not installed: sudo pacman -S archiso" >&2; exit 1; }
+if [[ -n $STAGE ]]; then
+    WORK=$(mktemp -d)
+    trap 'rm -rf "$WORK"' EXIT
+    ROOT=$STAGE
+    mkdir -p "$ROOT"
+else
+    WORK="$HERE/work"
+    PROFILE="$WORK/profile"
+    ROOT="$ROOT"       # the live system's files
+    OUT="$HERE/out"
+    [[ -d $RELENG ]] || { echo "archiso is not installed: sudo pacman -S archiso" >&2; exit 1; }
+fi
+iso() { [[ -z $STAGE ]]; }
 
 command -v git >/dev/null || { echo "git is needed to fetch Tether: sudo pacman -S git" >&2; exit 1; }
 TETHER_REPO=${TETHER_REPO:-https://github.com/knap43/tether}
@@ -59,70 +78,77 @@ clean_work() {
     sudo rm -rf --one-file-system "$WORK"
 }
 
-echo ":: Preparing the $FLAVOUR profile from releng"
-clean_work
-mkdir -p "$WORK"
-cp -a "$RELENG" "$PROFILE"
-# multilib, for umu-launcher and the 32-bit Vulkan driver it needs (RetroHub)
-sed -i '/^#\[multilib\]$/{s/^#//;n;s/^#//}' "$PROFILE/pacman.conf"
-grep -q '^\[multilib\]' "$PROFILE/pacman.conf" || printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> "$PROFILE/pacman.conf"
+if iso; then
+    echo ":: Preparing the $FLAVOUR profile from releng"
+    clean_work
+    mkdir -p "$WORK"
+    cp -a "$RELENG" "$PROFILE"
+    # multilib, for umu-launcher and the 32-bit Vulkan driver it needs (RetroHub)
+    sed -i '/^#\[multilib\]$/{s/^#//;n;s/^#//}' "$PROFILE/pacman.conf"
+    grep -q '^\[multilib\]' "$PROFILE/pacman.conf" || printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> "$PROFILE/pacman.conf"
 
-# The installed system's packages: shared ones + this flavour's.
-# One name per line; '#' starts a comment, also after a name.
-sed -E 's/#.*//; s/[[:space:]]+$//; s/^[[:space:]]+//; /^$/d' "$HERE/packages.system" "$FLAVOUR_DIR/packages" > "$WORK/system-pkgs"
+    # The installed system's packages: shared ones + this flavour's.
+    # One name per line; '#' starts a comment, also after a name.
+    sed -E 's/#.*//; s/[[:space:]]+$//; s/^[[:space:]]+//; /^$/d' "$HERE/packages.system" "$FLAVOUR_DIR/packages" > "$WORK/system-pkgs"
 
-# Packages: releng's list + ours, deduplicated.
-# (releng still lists the prebuilt broadcom-wl, which Arch has dropped
-#  in favour of broadcom-wl-dkms, so filter it out.)
-grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$WORK/system-pkgs" \
-    | grep -vx 'broadcom-wl' | sort -u > "$WORK/pkgs"
-mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
+    # Packages: releng's list + ours, deduplicated.
+    # (releng still lists the prebuilt broadcom-wl, which Arch has dropped
+    #  in favour of broadcom-wl-dkms, so filter it out.)
+    grep -vhE '^\s*(#|$)' "$PROFILE/packages.x86_64" "$WORK/system-pkgs" \
+        | grep -vx 'broadcom-wl' | sort -u > "$WORK/pkgs"
+    mv "$WORK/pkgs" "$PROFILE/packages.x86_64"
 
-# Offline install: every package the installed system needs (with all
-# dependencies) goes into a small repository inside the ISO, which the
-# installer uses instead of the internet. Packages are fetched into the
-# normal pacman cache, which mkarchiso reads too, so nothing downloads twice.
-echo ":: Collecting packages for offline installation"
-mapfile -t SYS_PKGS < "$WORK/system-pkgs"
-SYS_PKGS+=(grub)                       # for installs booted in BIOS mode
-PKG_CACHE=/var/cache/pacman/pkg
-REPO="$PROFILE/airootfs/var/lib/mbp/repo"
-mkdir -p "$WORK/dbpath" "$REPO"
-pacman_args=(--config "$PROFILE/pacman.conf" --dbpath "$WORK/dbpath" --cachedir "$PKG_CACHE")
-sudo pacman -Syw --noconfirm "${pacman_args[@]}" "${SYS_PKGS[@]}"
-# The empty database means -Sp lists the complete dependency closure.
-mapfile -t PKG_FILES < <(pacman -Sp --print-format '%f' "${pacman_args[@]}" "${SYS_PKGS[@]}")
-for f in "${PKG_FILES[@]}"; do
-    cp "$PKG_CACHE/$f" "$REPO/"
-done
-repo-add -q "$REPO/mbp.db.tar.gz" "${PKG_FILES[@]/#/$REPO/}"
-echo "   ${#PKG_FILES[@]} packages, $(du -sh "$REPO" | cut -f1)"
+    # Offline install: every package the installed system needs (with all
+    # dependencies) goes into a small repository inside the ISO, which the
+    # installer uses instead of the internet. Packages are fetched into the
+    # normal pacman cache, which mkarchiso reads too, so nothing downloads twice.
+    echo ":: Collecting packages for offline installation"
+    mapfile -t SYS_PKGS < "$WORK/system-pkgs"
+    SYS_PKGS+=(grub)                       # for installs booted in BIOS mode
+    PKG_CACHE=/var/cache/pacman/pkg
+    REPO="$ROOT/var/lib/mbp/repo"
+    mkdir -p "$WORK/dbpath" "$REPO"
+    pacman_args=(--config "$PROFILE/pacman.conf" --dbpath "$WORK/dbpath" --cachedir "$PKG_CACHE")
+    sudo pacman -Syw --noconfirm "${pacman_args[@]}" "${SYS_PKGS[@]}"
+    # The empty database means -Sp lists the complete dependency closure.
+    mapfile -t PKG_FILES < <(pacman -Sp --print-format '%f' "${pacman_args[@]}" "${SYS_PKGS[@]}")
+    for f in "${PKG_FILES[@]}"; do
+        cp "$PKG_CACHE/$f" "$REPO/"
+    done
+    repo-add -q "$REPO/mbp.db.tar.gz" "${PKG_FILES[@]/#/$REPO/}"
+    echo "   ${#PKG_FILES[@]} packages, $(du -sh "$REPO" | cut -f1)"
+fi
 
 # Overlay our files onto the live root filesystem.
-cp -a "$HERE/overlay/." "$PROFILE/airootfs/"
-cp -a "$FLAVOUR_DIR/overlay/." "$PROFILE/airootfs/"
-install -Dm644 "$WORK/system-pkgs" "$PROFILE/airootfs/usr/local/share/mbp/packages.system"
+cp -a "$HERE/overlay/." "$ROOT/"
+cp -a "$FLAVOUR_DIR/overlay/." "$ROOT/"
+sed -E 's/#.*//; s/[[:space:]]+$//; s/^[[:space:]]+//; /^$/d' "$HERE/packages.system" "$FLAVOUR_DIR/packages" \
+    | install -Dm644 /dev/stdin "$ROOT/usr/local/share/mbp/packages.system"
 # Marks the live system (the installer doesn't copy it); holds the flavour.
-echo "$FLAVOUR" > "$PROFILE/airootfs/etc/mbp-live"
-install -Dm644 "$HERE/README.md" "$PROFILE/airootfs/usr/local/share/mbp/README.md"
+iso && echo "$FLAVOUR" > "$ROOT/etc/mbp-live"
+install -Dm644 "$HERE/README.md" "$ROOT/usr/local/share/mbp/README.md"
+# What was installed, for mbp-update: the flavour, and the repo's commit.
+echo "$FLAVOUR" > "$ROOT/usr/local/share/mbp/flavour"
+git -C "$HERE" rev-parse HEAD > "$ROOT/usr/local/share/mbp/version" 2>/dev/null \
+    || date -u +%Y-%m-%dT%H:%M:%SZ > "$ROOT/usr/local/share/mbp/version"
 
 # Tether (clipboard + file sharing with the phone and other computers).
 echo ":: Fetching Tether from $TETHER_REPO"
 git clone -q --depth 1 "$TETHER_REPO" "$WORK/tether"
-install -d "$PROFILE/airootfs/usr/lib/tether"
-cp -r "$WORK/tether/linux/tether" "$PROFILE/airootfs/usr/lib/tether/"
-find "$PROFILE/airootfs/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
+install -d "$ROOT/usr/lib/tether"
+cp -r "$WORK/tether/linux/tether" "$ROOT/usr/lib/tether/"
+find "$ROOT/usr/lib/tether" -name __pycache__ -prune -exec rm -rf {} +
 install -Dm644 "$WORK/tether/linux/desktop/dev.tether.Tether.svg" \
-    "$PROFILE/airootfs/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
+    "$ROOT/usr/share/icons/hicolor/scalable/apps/dev.tether.Tether.svg"
 
 # RetroHub (terminal game launcher: Proton through umu-launcher, Wine, native).
 echo ":: Fetching RetroHub from $RETROHUB_REPO"
 git clone -q --depth 1 "$RETROHUB_REPO" "$WORK/retrohub"
-install -d "$PROFILE/airootfs/usr/lib/retrohub"
-cp -r "$WORK/retrohub/src/retrohub" "$PROFILE/airootfs/usr/lib/retrohub/"
-find "$PROFILE/airootfs/usr/lib/retrohub" -name __pycache__ -prune -exec rm -rf {} +
+install -d "$ROOT/usr/lib/retrohub"
+cp -r "$WORK/retrohub/src/retrohub" "$ROOT/usr/lib/retrohub/"
+find "$ROOT/usr/lib/retrohub" -name __pycache__ -prune -exec rm -rf {} +
 install -Dm644 "$WORK/retrohub/packaging/retrohub.fish" \
-    "$PROFILE/airootfs/usr/share/fish/vendor_completions.d/retrohub.fish"
+    "$ROOT/usr/share/fish/vendor_completions.d/retrohub.fish"
 
 # toofan (github.com/vyrx-dev/toofan): a typing-speed test for the terminal.
 # Its latest release's static binary, checked against the release's
@@ -146,7 +172,7 @@ if [[ -n $toofan_ver ]]; then
     if [[ -f $HERE/cache/$toofan_tar && -n $toofan_sum ]] \
         && echo "$toofan_sum  $HERE/cache/$toofan_tar" | sha256sum -c --quiet - 2>/dev/null; then
         tar -xzf "$HERE/cache/$toofan_tar" -C "$WORK" toofan
-        install -Dm755 "$WORK/toofan" "$PROFILE/airootfs/usr/local/bin/toofan"
+        install -Dm755 "$WORK/toofan" "$ROOT/usr/local/bin/toofan"
         toofan_ok=1
         echo ":: toofan $toofan_ver added"
     else
@@ -211,26 +237,28 @@ for entry in "${EMULATORS[@]}"; do
         echo "!! Couldn't unpack $title's AppImage; building without it" >&2
         continue
     fi
-    install -d "$PROFILE/airootfs/opt"
-    cp -a "$WORK/$emu.AppDir" "$PROFILE/airootfs/opt/$emu"
-    chmod -R u+rwX,go+rX,go-w "$PROFILE/airootfs/opt/$emu"
+    install -d "$ROOT/opt"
+    cp -a "$WORK/$emu.AppDir" "$ROOT/opt/$emu"
+    chmod -R u+rwX,go+rX,go-w "$ROOT/opt/$emu"
     printf '#!/bin/sh\n# %s (%s), unpacked from its AppImage when the ISO was built.\nexec /opt/%s/AppRun "$@"\n' \
-        "$title" "$emu_tag" "$emu" > "$PROFILE/airootfs/usr/local/bin/$emu"
-    chmod 755 "$PROFILE/airootfs/usr/local/bin/$emu"
+        "$title" "$emu_tag" "$emu" > "$ROOT/usr/local/bin/$emu"
+    chmod 755 "$ROOT/usr/local/bin/$emu"
     # mkarchiso doesn't keep modes, so list everything that must stay executable.
-    echo "file_permissions[\"/usr/local/bin/$emu\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
-    while IFS= read -r -d '' x; do
-        echo "file_permissions[\"/opt/$emu/${x#"$WORK/$emu.AppDir/"}\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
-    done < <(find "$WORK/$emu.AppDir" -type f -perm -u+x -print0)
+    if iso; then
+        echo "file_permissions[\"/usr/local/bin/$emu\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+        while IFS= read -r -d '' x; do
+            echo "file_permissions[\"/opt/$emu/${x#"$WORK/$emu.AppDir/"}\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+        done < <(find "$WORK/$emu.AppDir" -type f -perm -u+x -print0)
+    fi
     # The icon the AppImage itself uses (.DirIcon, followed if it's a link).
     emu_icon=$(readlink -f "$WORK/$emu.AppDir/.DirIcon" 2>/dev/null || true)
     icon_name=applications-games
     if [[ -f $emu_icon ]]; then
         ext=${emu_icon##*.}; [[ $ext == svg ]] || ext=png
-        install -Dm644 "$emu_icon" "$PROFILE/airootfs/usr/share/pixmaps/$emu.$ext"
+        install -Dm644 "$emu_icon" "$ROOT/usr/share/pixmaps/$emu.$ext"
         icon_name=$emu
     fi
-    cat > "$PROFILE/airootfs/usr/share/applications/mbp-$emu.desktop" <<EOF
+    cat > "$ROOT/usr/share/applications/mbp-$emu.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=$title
@@ -256,44 +284,31 @@ done
 # without Zen. ZEN_APP=... picks another Flathub app id.
 ZEN_APP=${ZEN_APP:-app.zen_browser.zen}
 FP="$HERE/cache/flatpak"
-zen_ok=""
-if command -v flatpak >/dev/null; then
-    fp() { sudo env FLATPAK_SYSTEM_DIR="$FP" flatpak --system "$@"; }
-    sudo mkdir -p "$FP"
-    echo ":: Fetching $ZEN_APP from Flathub (cached in ./cache/flatpak)"
-    if fp remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo \
-        && fp install -y --noninteractive --or-update flathub "$ZEN_APP"; then
-        fp update -y --noninteractive || true
-        # Intel video decoding inside the sandbox (both laptops have Intel graphics).
-        branch=$(fp info --show-runtime "$ZEN_APP" 2>/dev/null | awk -F/ '{print $NF}')
-        [[ -n $branch ]] && fp install -y --noninteractive --or-update flathub \
-            "org.freedesktop.Platform.VAAPI.Intel//$branch" || true
-        fp uninstall -y --noninteractive --unused || true
-        # Extensions, through Zen's system-config extension point (mounted in the
-        # sandbox at /app/etc/zen): the .xpi files and a policies.json that installs
-        # them once from those files, so they work offline from the first start;
-        # users can remove them, and they update from addons.mozilla.org. Zen's
-        # own policies (the app's distribution/policies.json) are kept, merged in.
-        # ZEN_EXTENSIONS=... lists addons.mozilla.org slugs.
-        ZEN_EXTENSIONS=${ZEN_EXTENSIONS:-ublock-origin vimium-ff}
-        branch_app=$(fp info "$ZEN_APP" 2>/dev/null | awk -F': *' '/^ *Branch:/ {print $2; exit}')
-        zen_sys="$FP/extension/$ZEN_APP.systemconfig/x86_64/${branch_app:-stable}"
-        sudo rm -rf "$zen_sys"
-        sudo install -d "$zen_sys/extensions" "$zen_sys/policies"
-        zen_xpis=()
-        for slug in $ZEN_EXTENSIONS; do
-            xpi="$WORK/zen-$slug.xpi"
-            if curl -fsSL -o "$xpi" "https://addons.mozilla.org/firefox/downloads/latest/$slug/latest.xpi" \
-                && python3 -c 'import sys, zipfile; sys.exit(zipfile.ZipFile(sys.argv[1]).testzip() is not None)' "$xpi" 2>/dev/null; then
-                sudo install -m644 "$xpi" "$zen_sys/extensions/$slug.xpi"
-                zen_xpis+=("/app/etc/zen/extensions/$slug.xpi")
-            else
-                echo "!! Couldn't download the Zen extension $slug; leaving it out" >&2
-            fi
-        done
-        zen_dist="$FP/app/$ZEN_APP/current/active/files/bin/distribution/policies.json"
-        [[ -f $zen_dist ]] || zen_dist=""
-        python3 - "${zen_dist:-}" "${zen_xpis[@]}" > "$WORK/zen-policies.json" <<'PYEOF'
+ZEN_EXTENSIONS=${ZEN_EXTENSIONS:-ublock-origin vimium-ff}
+
+# Extensions, through Zen's system-config extension point (mounted in the
+# sandbox at /app/etc/zen): the .xpi files and a policies.json that installs
+# them once from those files, so they work offline from the first start;
+# users can remove them, and they update from addons.mozilla.org. Zen's own
+# policies (the app's distribution/policies.json, $1) are kept, merged in.
+# Builds the tree in $WORK/zen-sys. ZEN_EXTENSIONS=... lists addons.mozilla.org slugs.
+zen_systemconfig() {
+    local dist=$1 slug xpi xpis=()
+    rm -rf "$WORK/zen-sys"
+    install -d "$WORK/zen-sys/extensions" "$WORK/zen-sys/policies"
+    for slug in $ZEN_EXTENSIONS; do
+        xpi="$WORK/zen-sys/extensions/$slug.xpi"
+        if curl -fsSL -o "$xpi" "https://addons.mozilla.org/firefox/downloads/latest/$slug/latest.xpi" \
+            && python3 -c 'import sys, zipfile; sys.exit(zipfile.ZipFile(sys.argv[1]).testzip() is not None)' "$xpi" 2>/dev/null; then
+            chmod 644 "$xpi"
+            xpis+=("/app/etc/zen/extensions/$slug.xpi")
+        else
+            rm -f "$xpi"
+            echo "!! Couldn't download the Zen extension $slug; leaving it out" >&2
+        fi
+    done
+    [[ -f $dist ]] || dist=""
+    python3 - "$dist" "${xpis[@]}" > "$WORK/zen-sys/policies/policies.json" <<'PYEOF'
 import json, sys
 base = {"policies": {}}
 if sys.argv[1]:
@@ -305,22 +320,54 @@ ext = base.setdefault("policies", {}).setdefault("Extensions", {})
 ext["Install"] = list(dict.fromkeys(ext.get("Install", []) + sys.argv[2:]))
 json.dump(base, sys.stdout, indent=2)
 PYEOF
-        sudo install -m644 "$WORK/zen-policies.json" "$zen_sys/policies/policies.json"
+    chmod 644 "$WORK/zen-sys/policies/policies.json"
+}
+
+zen_ok=""
+if [[ -n $STAGE ]]; then
+    # Updating an installed system: Zen itself updates through flatpak; only its
+    # extension setup comes from here, built against the installed Zen.
+    if command -v flatpak >/dev/null && flatpak --system info "$ZEN_APP" >/dev/null 2>&1; then
+        branch_app=$(flatpak --system info "$ZEN_APP" | awk -F': *' '/^ *Branch:/ {print $2; exit}')
+        zen_systemconfig "/var/lib/flatpak/app/$ZEN_APP/current/active/files/bin/distribution/policies.json"
+        install -d "$ROOT/var/lib/flatpak/extension/$ZEN_APP.systemconfig/x86_64"
+        cp -a "$WORK/zen-sys" "$ROOT/var/lib/flatpak/extension/$ZEN_APP.systemconfig/x86_64/${branch_app:-stable}"
+        zen_ok=1
+    fi
+elif command -v flatpak >/dev/null; then
+    fp() { sudo env FLATPAK_SYSTEM_DIR="$FP" flatpak --system "$@"; }
+    sudo mkdir -p "$FP"
+    echo ":: Fetching $ZEN_APP from Flathub (cached in ./cache/flatpak)"
+    if fp remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo \
+        && fp install -y --noninteractive --or-update flathub "$ZEN_APP"; then
+        fp update -y --noninteractive || true
+        # Intel video decoding inside the sandbox (both laptops have Intel graphics).
+        branch=$(fp info --show-runtime "$ZEN_APP" 2>/dev/null | awk -F/ '{print $NF}')
+        [[ -n $branch ]] && fp install -y --noninteractive --or-update flathub \
+            "org.freedesktop.Platform.VAAPI.Intel//$branch" || true
+        fp uninstall -y --noninteractive --unused || true
+        branch_app=$(fp info "$ZEN_APP" 2>/dev/null | awk -F': *' '/^ *Branch:/ {print $2; exit}')
+        zen_systemconfig "$FP/app/$ZEN_APP/current/active/files/bin/distribution/policies.json"
+        zen_sys="$FP/extension/$ZEN_APP.systemconfig/x86_64/${branch_app:-stable}"
+        sudo rm -rf "$zen_sys"
+        sudo install -d "$(dirname "$zen_sys")"
+        sudo cp -a "$WORK/zen-sys" "$zen_sys"
+        sudo chown -R root:root "$zen_sys"
         # Links that point into the build path would dangle on the ISO.
         sudo find "$FP" -lname "$FP/*" -print0 | while IFS= read -r -d '' l; do
             t=$(readlink "$l"); sudo ln -sfn "/var/lib/flatpak/${t#"$FP/"}" "$l"
         done
-        install -d "$PROFILE/airootfs/usr/local/share/mbp"
-        sudo mksquashfs "$FP" "$PROFILE/airootfs/usr/local/share/mbp/flatpak.sfs" \
+        install -d "$ROOT/usr/local/share/mbp"
+        sudo mksquashfs "$FP" "$ROOT/usr/local/share/mbp/flatpak.sfs" \
             -comp zstd -noappend -quiet -no-progress
-        sudo chown "$(id -u):$(id -g)" "$PROFILE/airootfs/usr/local/share/mbp/flatpak.sfs"
-        mkdir -p "$PROFILE/airootfs/etc/systemd/system/multi-user.target.wants"
-        ln -sf /etc/systemd/system/mbp-flatpak-live.service "$PROFILE/airootfs/etc/systemd/system/multi-user.target.wants/mbp-flatpak-live.service"
+        sudo chown "$(id -u):$(id -g)" "$ROOT/usr/local/share/mbp/flatpak.sfs"
+        mkdir -p "$ROOT/etc/systemd/system/multi-user.target.wants"
+        ln -sf /etc/systemd/system/mbp-flatpak-live.service "$ROOT/etc/systemd/system/multi-user.target.wants/mbp-flatpak-live.service"
         zen_ok=1
-        echo ":: Zen added ($(du -h "$PROFILE/airootfs/usr/local/share/mbp/flatpak.sfs" | cut -f1) with its runtime)"
+        echo ":: Zen added ($(du -h "$ROOT/usr/local/share/mbp/flatpak.sfs" | cut -f1) with its runtime)"
     fi
 fi
-[[ -n $zen_ok ]] || echo "!! Couldn't fetch Zen from Flathub (is flatpak installed here?); building without a browser" >&2
+[[ -n $zen_ok || -n $STAGE ]] || echo "!! Couldn't fetch Zen from Flathub (is flatpak installed here?); building without a browser" >&2
 
 # Games from tiny-games. The repo is private, so this uses your own git
 # login; if it can't be fetched, the ISO is built without them.
@@ -342,21 +389,26 @@ if git clone -q --depth 1 "$GAMES_REPO" "$WORK/tiny-games"; then
             continue
         fi
         name="${game^}"
-        install -Dm644 "$src" "$PROFILE/airootfs/usr/lib/tiny-games/$game.py"
+        install -Dm644 "$src" "$ROOT/usr/lib/tiny-games/$game.py"
         printf '#!/bin/sh\nexec python3 /usr/lib/tiny-games/%s.py "$@"\n' "$game" \
-            | install -Dm755 /dev/stdin "$PROFILE/airootfs/usr/local/bin/$game"
+            | install -Dm755 /dev/stdin "$ROOT/usr/local/bin/$game"
         printf '[Desktop Entry]\nType=Application\nName=%s\nComment=%s\nExec=/usr/local/bin/%s\nIcon=applications-games\nTerminal=false\nCategories=%s\n' \
             "$name" "$comment" "$game" "$categories" \
-            | install -Dm644 /dev/stdin "$PROFILE/airootfs/usr/share/applications/tiny-games-$game.desktop"
-        echo "file_permissions[\"/usr/local/bin/$game\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
+            | install -Dm644 /dev/stdin "$ROOT/usr/share/applications/tiny-games-$game.desktop"
+        iso && echo "file_permissions[\"/usr/local/bin/$game\"]=\"0:0:755\"" >> "$PROFILE/profiledef.sh"
         echo "   + $name"
     done
 else
     echo "!! Could not fetch $GAMES_REPO (private: needs your GitHub login). Building without games." >&2
 fi
 
+if [[ -n $STAGE ]]; then
+    echo ":: Staged the $FLAVOUR files in $STAGE"
+    exit 0
+fi
+
 # Networking: NetworkManager instead of releng's iwd + systemd-networkd.
-UNITS="$PROFILE/airootfs/etc/systemd/system"
+UNITS="$ROOT/etc/systemd/system"
 find "$UNITS" \( -name 'iwd.service' -o -name 'systemd-networkd*' \) -type l -delete
 mkdir -p "$UNITS/multi-user.target.wants"
 ln -sf /usr/lib/systemd/system/NetworkManager.service "$UNITS/multi-user.target.wants/NetworkManager.service"
