@@ -79,8 +79,8 @@ def appearance(win, conf):
     g.add(accent_row(win, conf))
     g.add(combo_row(conf, "TERMINAL_OPACITY", {"1": "Opaque", "0.95": "95%", "0.9": "90%", "0.85": "85%",
                                                "0.8": "80%", "0.7": "70%"},
-                    "Terminal and menu opacity",
-                    "The background of the terminal and of menus (launcher, power menu...); text stays solid"))
+                    "Terminal, menu and bar opacity",
+                    "The background of the terminal, menus (launcher, power menu...) and the bar; text stays solid"))
 
     g = group(p, "Wallpaper")
     g.add(wallpaper_chooser(win, conf))

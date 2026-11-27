@@ -29,7 +29,7 @@ window#waybar {
 }
 
 #workspaces button.urgent {
-    color: @bar_bg;
+    color: @bar_base;
     background: @bar_urgent;
 }
 

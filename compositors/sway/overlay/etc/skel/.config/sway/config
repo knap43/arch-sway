@@ -187,7 +187,7 @@ bar {
         focused_workspace  $accent $accent $accent_text
         active_workspace   $bar_raised $bar_raised $bar_text
         inactive_workspace $bar_bg $bar_bg $bar_dim
-        urgent_workspace   $bar_urgent $bar_urgent $bar_bg
+        urgent_workspace   $bar_urgent $bar_urgent $bar_base
         binding_mode       $accent $accent $accent_text
     }
 }

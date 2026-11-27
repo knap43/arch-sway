@@ -489,10 +489,10 @@ hl.window_rule({ name = "live-welcome", match = { class = "^live-welcome$" },
 hl.window_rule({ name = "mbp-shortcuts", match = { class = "^mbp-shortcuts$" },
                  float = true, size = "820 640", center = true })
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
--- With blur on (Settings → Appearance), menus (fuzzel: "launcher") blur what's
--- behind them too: layers aren't blurred unless a rule says so.
+-- With blur on (Settings → Appearance), menus (fuzzel: "launcher") and the bar
+-- blur what's behind them too: layers aren't blurred unless a rule says so.
 if setting("blur", false) then
-    hl.layer_rule({ name = "blur-menus", match = { namespace = "^launcher$" }, blur = true })
+    hl.layer_rule({ name = "blur-menus", match = { namespace = "^(launcher|waybar)$" }, blur = true })
 end
 
 -- No border when one tiled window fills the screen (Settings → Appearance): w[tv1]

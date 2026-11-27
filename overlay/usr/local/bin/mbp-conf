@@ -105,7 +105,7 @@ SCHEMA = [
      FX + " Windows only: the launcher, menus, bar and notifications always appear at once."),
     ("BLUR", "Appearance", "Blur behind transparent windows", "bool", "off", None, FX),
     ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
-    ("TERMINAL_OPACITY", "Appearance", "Terminal (foot) and menu (fuzzel) opacity", "choice", "1",
+    ("TERMINAL_OPACITY", "Appearance", "Terminal (foot), menu (fuzzel) and bar opacity", "choice", "1",
      ["1", "0.95", "0.9", "0.85", "0.8", "0.7"],
      "The background only; text stays opaque. New terminals, and menus from the next one opened."),
     ("NOTIFY_TIMEOUT", "Notifications", "Hide notifications after (seconds, 0 = never)", "int", "2", (0, 120), ""),
@@ -292,8 +292,11 @@ def sway_vars(v):
         f"set $accent #{bg}",
         f"set $accent_text #{fg}",
         # the bar's colours, from the theme
+        # (the background as see-through as the terminal and menus; base: solid)
+        f"set $bar_bg #{THEMES[v['COLOUR_THEME']]['background']}"
+        f"{round(float(v['TERMINAL_OPACITY']) * 255):02x}",
         *(f"set $bar_{k} #{THEMES[v['COLOUR_THEME']][key]}" for k, key in
-          (("bg", "background"), ("text", "bar_text"), ("dim", "dim"), ("raised", "raised"),
+          (("base", "background"), ("text", "bar_text"), ("dim", "dim"), ("raised", "raised"),
            ("line", "line"), ("urgent", "urgent"))),
         f"set $border {v['BORDER_WIDTH']}",
         f"set $gaps_inner {v['GAPS_INNER']}",
@@ -477,9 +480,13 @@ def waybar_css(v):
     """The bar's colours, from the theme and accent; waybar/style.css uses them."""
     t = THEMES[v["COLOUR_THEME"]]
     bg, fg = accent(v)
-    colours = {"bar_bg": t["background"], "bar_fg": t["bar_text"], "bar_dim": t["dim"], "bar_warn": t["warn"],
+    colours = {"bar_fg": t["bar_text"], "bar_dim": t["dim"], "bar_warn": t["warn"],
                "bar_urgent": t["urgent"], "accent": bg, "accent_text": fg}
-    return f"/* {HEADER} */\n" + "".join(f"@define-color {k} #{c};\n" for k, c in colours.items())
+    # The bar's background is as see-through as the terminal and menus
+    # (TERMINAL_OPACITY); bar_base is the same colour, solid, for text on colour.
+    return (f"/* {HEADER} */\n" + "".join(f"@define-color {k} #{c};\n" for k, c in colours.items())
+            + f"@define-color bar_base #{t['background']};\n"
+            + f"@define-color bar_bg alpha(#{t['background']}, {v['TERMINAL_OPACITY']});\n")
 
 
 def mako_conf(v):
