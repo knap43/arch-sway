@@ -105,8 +105,9 @@ SCHEMA = [
      FX + " Windows only: the launcher, menus, bar and notifications always appear at once."),
     ("BLUR", "Appearance", "Blur behind transparent windows", "bool", "off", None, FX),
     ("SHADOWS", "Appearance", "Window shadows", "bool", "off", None, FX),
-    ("TERMINAL_OPACITY", "Appearance", "Terminal (foot) opacity", "choice", "1",
-     ["1", "0.95", "0.9", "0.85", "0.8", "0.7"], "The background only; text stays opaque. New terminals."),
+    ("TERMINAL_OPACITY", "Appearance", "Terminal (foot) and menu (fuzzel) opacity", "choice", "1",
+     ["1", "0.95", "0.9", "0.85", "0.8", "0.7"],
+     "The background only; text stays opaque. New terminals, and menus from the next one opened."),
     ("NOTIFY_TIMEOUT", "Notifications", "Hide notifications after (seconds, 0 = never)", "int", "2", (0, 120), ""),
     ("NOTIFY_POSITION", "Notifications", "Position", "choice", "top-right",
      ["top-right", "top-center", "top-left", "bottom-right", "bottom-center", "bottom-left"], ""),
@@ -271,13 +272,17 @@ def foot_colours(v):
 
 def fuzzel_colours(v):
     """The launcher and menus (fuzzel.ini includes this file): the theme's
-    background and text, the selection and border in the accent colour."""
+    background (as see-through as the terminal) and text, the selection and
+    border in the accent colour."""
     t = THEMES[v["COLOUR_THEME"]]
     bg, fg = accent(v)
     colours = {"background": t["background"], "text": t["foreground"], "prompt": t["foreground"],
                "input": t["foreground"], "placeholder": t["dim"], "counter": t["dim"], "match": t["match"],
                "selection": bg, "selection-text": fg, "selection-match": fg, "border": bg}
-    return "\n".join([f"# {HEADER}", "[colors]"] + [f"{k}={c}ff" for k, c in colours.items()]) + "\n"
+    # The background is as see-through as the terminal's (Settings → Appearance)
+    alpha = {k: "ff" for k in colours}
+    alpha["background"] = f"{round(float(v['TERMINAL_OPACITY']) * 255):02x}"
+    return "\n".join([f"# {HEADER}", "[colors]"] + [f"{k}={c}{alpha[k]}" for k, c in colours.items()]) + "\n"
 
 
 def sway_vars(v):

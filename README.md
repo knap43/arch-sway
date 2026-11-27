@@ -182,7 +182,7 @@ desktop's square, dark style. It works the same in all three flavours and change
 | Keyboard | layouts, Alt ⇄ Win swap, Caps Lock ⇄ Escape, key repeat; every shortcut for this flavour |
 | Keyboard shortcuts | change the keys of the main actions (apps, closing, fullscreen, floating, layouts, scratchpad, screenshots, power menu, lock, cheat sheet...): press the new keys, add a second one or turn one off; it warns when a key is taken and can take it over. Add your own shortcuts that run any command. Moving, resizing and workspace keys stay fixed |
 | Mouse & touchpad | pointer speed, left-handed, focus follows mouse, hiding the pointer when idle (3 s) and while typing, tap to click, natural scrolling, ignore while typing, three-finger swipe between workspaces |
-| Appearance | theme, dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur; terminal (foot) opacity |
+| Appearance | theme, dark or light apps, text size, accent colour, wallpaper (thumbnails, or any image), borders, gaps; in Hyprland and Mango also rounded corners, animations, shadows, blur; terminal (foot) and menu (fuzzel) opacity |
 | Windows | whether new workspaces open tabbed or tiled |
 | Notifications | do not disturb, how long they stay, where they appear, show the last one again |
 | Power | battery charge, health and power draw; lock / screen off / suspend times; what closing the lid does |
