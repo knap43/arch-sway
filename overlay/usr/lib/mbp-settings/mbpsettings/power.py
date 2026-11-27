@@ -69,8 +69,6 @@ def power(win, conf):
 
     g = group(p, "When idle", "Minutes without using the keyboard or mouse; 0 means never.")
     g.add(spin_row(conf, "LOCK_MIN", "Lock the screen after"))
-    g.add(switch_row(conf, "LOCK_BLUR", "Blur the lock screen",
-                     "A blurred wallpaper behind the clock; off: the wallpaper, dimmed"))
     g.add(spin_row(conf, "SCREEN_OFF_MIN", "Turn the screen off after"))
     g.add(spin_row(conf, "SUSPEND_MIN", "Suspend after"))
     g.add(combo_row(conf, "SUSPEND_WHEN", {"battery": "Only on battery", "always": "Always", "never": "Never"},

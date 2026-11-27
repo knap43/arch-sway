@@ -60,7 +60,7 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
 |---|---|
 | Graphics | Intel HD 3000 (MacBook, Mesa crocus) and HD 520 (ThinkPad, Mesa iris), early KMS, VA-API video decoding, Xwayland |
 | Wi-Fi | NetworkManager, managed in Settings; its icon in the bar shows the signal (Hyprland, Mango: click for Settings, hover for the network). MacBook: `broadcom-wl-dkms` (BCM4331, built for the kernel at install); ThinkPad: iwlwifi from `linux-firmware`. `wheel` users manage networks without a password prompt, and Wi-Fi passwords are stored system-wide |
-| Session | sway, Hyprland or Mango; swayidle/gtklock (the time at the top, the password box at the bottom, over the blurred wallpaper, or the dimmed one: Settings → Power & idle), mako, fuzzel, foot, wob popups |
+| Session | sway, Hyprland or Mango; swayidle/gtklock (the time at the top, the password box at the bottom, over the blurred wallpaper, or the dimmed one: Settings → Appearance), mako, fuzzel, foot, wob popups |
 | Shell | fish (starts the compositor on tty1) |
 | Audio | PipeWire + WirePlumber, pavucontrol |
 | Power | TLP, zram swap (zstd); lock at 5 min idle, screen off at 10, suspend at 15 on battery; battery warnings at 15% and 5% |

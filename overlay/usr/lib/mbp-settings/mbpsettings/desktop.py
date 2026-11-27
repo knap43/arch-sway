@@ -84,6 +84,8 @@ def appearance(win, conf):
 
     g = group(p, "Wallpaper")
     g.add(wallpaper_chooser(win, conf))
+    g.add(switch_row(conf, "LOCK_BLUR", "Blur it on the lock screen",
+                     "A blurred copy behind the clock; off: the wallpaper, dimmed"))
 
     g = group(p, "Windows")
     g.add(spin_row(conf, "BORDER_WIDTH", "Border width (px)"))
