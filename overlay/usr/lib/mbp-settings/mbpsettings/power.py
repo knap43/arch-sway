@@ -3,7 +3,7 @@ import glob
 
 from gi.repository import Adw, GLib, Gtk
 
-from .common import action_row, combo_row, group, page, read, root_helper, spin_row
+from .common import action_row, combo_row, group, page, read, root_helper, spin_row, switch_row
 
 LID_CONF = "/etc/systemd/logind.conf.d/50-mbp-lid.conf"
 LID = [("suspend", "Suspend"), ("lock", "Lock the screen"), ("ignore", "Nothing"), ("poweroff", "Power off")]
@@ -69,6 +69,8 @@ def power(win, conf):
 
     g = group(p, "When idle", "Minutes without using the keyboard or mouse; 0 means never.")
     g.add(spin_row(conf, "LOCK_MIN", "Lock the screen after"))
+    g.add(switch_row(conf, "LOCK_BLUR", "Blur the lock screen",
+                     "A blurred wallpaper behind the clock; off: the wallpaper, dimmed"))
     g.add(spin_row(conf, "SCREEN_OFF_MIN", "Turn the screen off after"))
     g.add(spin_row(conf, "SUSPEND_MIN", "Suspend after"))
     g.add(combo_row(conf, "SUSPEND_WHEN", {"battery": "Only on battery", "always": "Always", "never": "Never"},

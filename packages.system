@@ -80,6 +80,8 @@ ttf-nerd-fonts-symbols
 # --- applications ---
 mpv
 mpv-mpris
+# blurs the wallpaper for the lock screen (mbp-conf); mpv needs it anyway
+ffmpeg
 kew
 # Zen Browser comes from Flathub (see build.sh)
 flatpak

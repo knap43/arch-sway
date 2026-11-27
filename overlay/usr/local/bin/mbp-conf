@@ -114,6 +114,8 @@ SCHEMA = [
     ("DISPLAYS", "Displays", "Display layout", "json", "{}", None,
      "Per display: mode, position, scale, rotation, on/off (set by the Displays panel)."),
     ("LOCK_MIN", "Power & idle", "Lock after (minutes, 0 = never)", "int", "5", (0, 240), ""),
+    ("LOCK_BLUR", "Power & idle", "Lock screen: blurred wallpaper (off: dimmed)", "bool", "on", None,
+     "A blurred copy of the wallpaper behind the clock, made when the wallpaper changes."),
     ("SCREEN_OFF_MIN", "Power & idle", "Screen off after (minutes, 0 = never)", "int", "10", (0, 240), ""),
     ("SUSPEND_MIN", "Power & idle", "Suspend after (minutes, 0 = never)", "int", "15", (0, 240), ""),
     ("SUSPEND_WHEN", "Power & idle", "Suspend when idle", "choice", "battery", ["battery", "always", "never"],
@@ -517,15 +519,55 @@ def gsettings(v):
     quiet("gsettings", "set", iface, "text-scaling-factor", v["TEXT_SCALE"])
 
 
+def blurred_wallpaper(wall):
+    """A blurred copy of the wallpaper for the lock screen, made with ffmpeg once
+    per wallpaper (by path, size and time) in ~/.cache/mbp; None if it can't be.
+    Small (1280 px wide): the lock screen stretches it, and blur hides that."""
+    import hashlib
+    try:
+        st = os.stat(wall)
+    except OSError:
+        return None
+    cache = os.path.join(os.environ.get("XDG_CACHE_HOME", os.path.join(HOME, ".cache")), "mbp")
+    key = hashlib.sha1(f"{os.path.abspath(wall)}:{st.st_size}:{st.st_mtime_ns}".encode()).hexdigest()[:12]
+    out = os.path.join(cache, f"lock-{key}.jpg")
+    if os.path.isfile(out):
+        return out
+    os.makedirs(cache, exist_ok=True)
+    try:
+        r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", wall, "-frames:v", "1",
+                            "-vf", "scale=1280:-2,gblur=sigma=18", "-q:v", "3", out + ".tmp.jpg"],
+                           capture_output=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if r.returncode != 0 or not os.path.isfile(out + ".tmp.jpg"):
+        return None
+    os.replace(out + ".tmp.jpg", out)
+    for f in os.listdir(cache):               # the old ones
+        if f.startswith("lock-") and f.endswith(".jpg") and f != os.path.basename(out):
+            try:
+                os.remove(os.path.join(cache, f))
+            except OSError:
+                pass
+    return out
+
+
 def gtklock_css(v):
-    """The lock screen: clock, date and a password box over the dimmed wallpaper,
-    square and in the accent colour. GTK 3 CSS, for gtklock (see mbp-lock)."""
+    """The lock screen: clock, date and a password box over the blurred (or
+    dimmed) wallpaper, square and in the accent colour. GTK 3 CSS, for gtklock
+    (see mbp-lock)."""
     from urllib.parse import quote
     bg, _ = accent(v)
     wall = v["WALLPAPER"]
-    layers = "linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55))"
-    if os.path.isfile(wall):
-        layers += f', url("file://{quote(os.path.abspath(wall))}")'
+    blurred = blurred_wallpaper(wall) if on(v, "LOCK_BLUR") and os.path.isfile(wall) else None
+    if blurred:
+        layers = f'url("file://{quote(blurred)}")'
+    else:
+        layers = "linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55))"
+        if os.path.isfile(wall):
+            layers += f', url("file://{quote(os.path.abspath(wall))}")'
+    # Over a blurred wallpaper (no dimming), a soft shadow keeps the clock readable
+    shadow = "text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);" if blurred else ""
     return f"""/* {HEADER} */
 window {{
     background-color: #1e1e1e;
@@ -535,8 +577,8 @@ window {{
     background-repeat: no-repeat;
 }}
 * {{ font-family: "JetBrains Mono", monospace; border-radius: 0; box-shadow: none; text-shadow: none; }}
-#clock-label {{ font-size: 72px; color: #eeeeee; }}
-#date-label {{ font-size: 16px; color: #bbbbbb; }}
+#clock-label {{ font-size: 72px; color: #eeeeee; {shadow} }}
+#date-label {{ font-size: 16px; color: #dddddd; {shadow} }}
 #input-field {{
     background: #2a2a2a; color: #dddddd; caret-color: #{bg};
     border: 1px solid #333333; padding: 6px 10px; min-width: 260px;
