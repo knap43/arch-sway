@@ -48,7 +48,8 @@ hl.config({
         -- When on (Settings → Appearance): a small, faint shadow, not Hyprland's dark default
         shadow = { enabled = setting("shadows", false), range = 6, render_power = 3,
                    color = "rgba(00000040)" },
-        blur = { enabled = setting("blur", false) },
+        -- xray off: blur what's really behind a window, not only the wallpaper
+        blur = { enabled = setting("blur", false), xray = false },
     },
     animations = { enabled = setting("animations", false) },
     -- New windows always open to the right (or below), not on the cursor's side
