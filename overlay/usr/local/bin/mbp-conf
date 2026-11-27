@@ -441,6 +441,8 @@ def mango_conf(v):
               f"animations={1 if on(v, 'ANIMATIONS') else 0}",
               "layer_animations=0",          # menus, bar, notifications: always instant
               f"blur={1 if on(v, 'BLUR') else 0}",
+              # and behind menus, notifications and the bar (not the wallpaper)
+              f"blur_layer={1 if on(v, 'BLUR') else 0}",
               f"shadows={1 if on(v, 'SHADOWS') else 0}",
               f"focus_color=0x{bg}ff", f"scratchpad_color=0x{bg}ff",
               f"tab_bar_decorate_focus_bg_color=0x{bg}ff",
