@@ -49,8 +49,9 @@ sudo dd bs=4M if=out/mbp-sway-*.iso of=/dev/sdX status=progress oflag=sync
      language, then **wipes the whole disk** (macOS or Windows included) and installs.
    - **Q** closes the window; reopen it from the launcher as *Install to Disk*
      (or run `sudo mbp-install` in a terminal).
-3. When it's done, press Enter to power off. **Keep the stick in until the machine is off** —
-   the live system runs from it right to the end — then remove it and turn the machine on.
+3. When it's done, press Enter to reboot. **Keep the stick in until the screen goes dark** or shows
+   the maker's logo — the live system runs from it right to the end — then remove it. If the live
+   system starts again, remove the stick and reboot once more.
    Log in on the console — the compositor starts by itself.
 
 ## What's in it

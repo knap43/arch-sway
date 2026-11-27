@@ -78,12 +78,13 @@ install() {
     status=$?
     echo
     if (( status == 0 )); then
-        # The live system runs from the stick, down to the shutdown itself, so
-        # the stick must stay in until the machine is off.
-        printf '%s\n' "${grn}${b}Done.${r} Press Enter to power off (Q to stay)."
-        printf '%s\n' "${ylw}Keep the USB stick in until the machine is off${r}, then remove it and turn it on."
+        # The live system runs from the stick until the very end, so it must
+        # stay in until the screen goes dark.
+        printf '%s\n' "${grn}${b}Done.${r} Press Enter to reboot (Q to stay)."
+        printf '%s\n' "${ylw}Keep the USB stick in until the screen goes dark${r} or shows the maker's logo, then remove it."
+        printf '%s\n' "If the live system starts again, remove the stick and reboot once more."
         read -rsn1 k
-        [[ ${k,,} == q ]] || systemctl poweroff
+        [[ ${k,,} == q ]] || systemctl reboot
     else
         printf '%s' "${ylw}The installer stopped.${r} Press any key to go back. "
         read -rsn1
