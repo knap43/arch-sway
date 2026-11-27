@@ -9,14 +9,14 @@
     ],
     "modules-center": [],
     "modules-right": [
-        "network",
-        "bluetooth",
         "wireplumber",
         "battery",
         "cpu",
         "memory",
         "clock",
-        "tray"
+        "tray",
+        "network",
+        "bluetooth"
     ],
     "hyprland/workspaces": {
         "format": "{name}",

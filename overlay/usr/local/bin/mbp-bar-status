@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The sway bar's status line: i3status's, with a Bluetooth icon put in after the
-network ones (i3status has no Bluetooth module). Icons: Symbols Nerd Font."""
+network ones at the right end (i3status has no Bluetooth module). Icons:
+Symbols Nerd Font."""
 import json
 import subprocess
 import sys
@@ -49,7 +50,10 @@ def main():
             if blocks is not None:
                 bt = bluetooth()
                 if bt:
-                    at = sum(1 for b in blocks if b.get("name") in ("wireless", "ethernet"))
+                    # after the Wi-Fi and wired icons
+                    names = [b.get("name") for b in blocks]
+                    at = max((i + 1 for i, n in enumerate(names) if n in ("wireless", "ethernet")),
+                             default=len(blocks))
                     blocks.insert(at, bt)
                 line = prefix + json.dumps(blocks, ensure_ascii=False) + "\n"
         sys.stdout.write(line)

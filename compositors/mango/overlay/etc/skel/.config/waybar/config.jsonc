@@ -10,14 +10,14 @@
     ],
     "modules-center": [],
     "modules-right": [
-        "network",
-        "bluetooth",
         "wireplumber",
         "battery",
         "cpu",
         "memory",
         "clock",
-        "tray"
+        "tray",
+        "network",
+        "bluetooth"
     ],
     "mango/workspaces": {
         "format": "{index}",
