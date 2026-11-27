@@ -31,7 +31,9 @@ bg udiskie --smart-tray
 # Wi-Fi and Bluetooth are icons in the bar (click: Settings), so the applets
 # draw none: nm-applet isn't started (Settings asks for Wi-Fi passwords), and
 # blueman-applet runs without its tray icon, for pairing prompts and transfers.
-gsettings set org.blueman.general plugin-list "['!StatusIcon']" 2>/dev/null
+# (StatusIcon itself can't be turned off; StatusNotifierItem is what puts it
+# in the tray.)
+gsettings set org.blueman.general plugin-list "['!StatusNotifierItem']" 2>/dev/null
 bg blueman-applet
 bg mbp-battery-watch
 bg mbp-nightlight start

@@ -39,6 +39,8 @@ window#waybar {
 
 #wireplumber.muted { color: @bar_dim; }
 #network.disconnected, #network.disabled, #bluetooth.off, #bluetooth.disabled { color: @bar_dim; }
+/* The Nerd Font icons, a little larger than the text */
+#network, #bluetooth { font-size: 15px; }
 #battery.warning:not(.charging) { color: @bar_warn; }
 #battery.critical:not(.charging) { color: @bar_urgent; }
 #keymode { background: @accent; color: @accent_text; }

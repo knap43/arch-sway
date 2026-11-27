@@ -7,6 +7,11 @@ import sys
 import time
 
 ON, CONNECTED, OFF = "\U000f00af", "\U000f00b1", "\U000f00b2"
+
+
+def icon(glyph):
+    """A little larger than the text, as the Wi-Fi icon (pango markup)."""
+    return f"<span size='large'>{glyph}</span>"
 _cache = [0.0, None]
 
 
@@ -19,11 +24,12 @@ def bluetooth():
         show = subprocess.run(["bluetoothctl", "show"], capture_output=True, text=True, timeout=2).stdout
         if "Controller" in show:
             if "Powered: yes" not in show:
-                block = {"name": "bluetooth", "full_text": OFF, "color": "#888888"}
+                block = {"name": "bluetooth", "full_text": icon(OFF), "color": "#888888", "markup": "pango"}
             else:
                 conn = subprocess.run(["bluetoothctl", "devices", "Connected"],
                                       capture_output=True, text=True, timeout=2).stdout
-                block = {"name": "bluetooth", "full_text": CONNECTED if conn.strip() else ON}
+                block = {"name": "bluetooth", "full_text": icon(CONNECTED if conn.strip() else ON),
+                         "markup": "pango"}
     except (OSError, subprocess.TimeoutExpired):
         pass
     _cache[:] = [time.monotonic(), block]
